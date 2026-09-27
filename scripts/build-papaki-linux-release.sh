@@ -54,7 +54,6 @@ mkdir -p -- "$build_root" "$standalone_root" "$output_dir"
 echo "Copying a secret-free source snapshot into the Linux build workspace..."
 tar \
   --exclude='./.git' \
-  --exclude='./.github' \
   --exclude='./.next' \
   --exclude='./.next-*' \
   --exclude='./node_modules' \
