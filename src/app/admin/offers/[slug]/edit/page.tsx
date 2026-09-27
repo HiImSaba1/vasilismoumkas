@@ -1,0 +1,5 @@
+import { notFound,redirect } from "next/navigation";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { getAdminOffer } from "@/lib/offers";
+import { OfferEditForm } from "./OfferEditForm";
+export default async function EditOfferPage({params}:{params:Promise<{slug:string}>}){const slug=decodeURIComponent((await params).slug);const offer=await getAdminOffer(slug);if(!offer)notFound();if(!["draft","revoked"].includes(offer.status))redirect("/admin/offers");return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12"><AdminPageHeader eyebrow="Offer management" title="Edit offer" description="Update the client details and collections stored behind this private proposal link."/><div className="mt-5 border-l-2 border-soft-yellow bg-[#f7f3e9] p-4 text-sm">Editing is available only for drafts and revoked offers. Sent versions remain unchanged so the studio always knows exactly what the client received.</div><OfferEditForm slug={slug} initial={offer.payload}/></main>}

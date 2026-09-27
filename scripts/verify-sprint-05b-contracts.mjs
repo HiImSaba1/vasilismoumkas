@@ -1,0 +1,18 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");
+const checks=[];
+const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[chrome,reminders,portfolio,headerTest,portfolioTest]=await Promise.all([read("src/app/admin/AdminChrome.tsx"),read("src/components/admin/WorkflowReminderCenter.tsx"),read("src/components/sections/Projects/ProjectContent.tsx"),read("e2e/admin-header.spec.ts"),read("e2e/portfolio-mobile.spec.ts")]);
+requireText(chrome,/<WorkflowReminderCenter reminders=\{reminders\}\/><button[^>]*data-testid="admin-menu"/,"notifications appear immediately left of the mobile menu");
+requireText(chrome,/<header className="sticky top-0 z-50 flex h-16/,"one responsive admin header remains visible while scrolling");
+requireText(reminders,/data-testid="admin-notifications"/,"notification control is available throughout the admin");
+requireText(reminders,/bg-transparent p-2/,"notification control uses the clean borderless style");
+requireText(reminders,/Nothing needs attention/,"zero-notification state remains useful and visible");
+requireText(portfolio,/grid grid-cols-1 md:grid-cols-2/,"portfolio uses a two-column desktop metro grid");
+requireText(portfolio,/isLandscape\?"md:col-span-2":"md:col-span-1"/,"landscape images span both desktop columns");
+requireText(portfolio,/data-desktop-metro-gallery[\s\S]*h-auto w-full object-contain/,"desktop project images retain their natural ratio");
+requireText(headerTest,/x\+boxes\[0\]!\.width[\s\S]*boxes\[1\]!\.x/,"browser test verifies notification placement before the menu");
+requireText(portfolioTest,/rendered:box\.width\/box\.height,natural:img\.naturalWidth\/img\.naturalHeight/,"browser test verifies intrinsic desktop image ratios");
+console.log(checks.join("\n"));
+console.log(`PASS - ${checks.length} Sprint 05B source contracts verified.`);

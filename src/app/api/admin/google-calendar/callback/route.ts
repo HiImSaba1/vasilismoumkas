@@ -1,0 +1,5 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { exchangeGoogleCode } from "@/lib/google-calendar";
+
+export async function GET(request:Request){const url=new URL(request.url);const jar=await cookies();const expected=jar.get("moumkas_google_calendar_state")?.value;jar.delete("moumkas_google_calendar_state");const origin=(process.env.NEXT_PUBLIC_SITE_URL??url.origin).replace(/\/$/,"");if(!expected||url.searchParams.get("state")!==expected)return NextResponse.redirect(`${origin}/admin/calendar?google=invalid-state`);const code=url.searchParams.get("code");if(!code)return NextResponse.redirect(`${origin}/admin/calendar?google=cancelled`);try{await exchangeGoogleCode(code);return NextResponse.redirect(`${origin}/admin/calendar?google=connected`)}catch(error){const timeout=error instanceof Error&&(error.name==="TimeoutError"||error.name==="AbortError");console.error(`[google-calendar] OAuth callback failed (${timeout?"provider-timeout":"exchange-or-storage"}).`);return NextResponse.redirect(`${origin}/admin/calendar?google=${timeout?"timeout":"failed"}`)}}

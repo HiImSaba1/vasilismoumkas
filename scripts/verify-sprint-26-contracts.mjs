@@ -1,0 +1,18 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");
+const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[workflow,page,composer,action,financials,sharedComposer]=await Promise.all([read("src/lib/client-workflow.ts"),read("src/app/admin/clients/[id]/email/page.tsx"),read("src/app/admin/clients/[id]/email/ClientEmailComposer.tsx"),read("src/app/admin/clients/[id]/email/actions.ts"),read("src/lib/client-email-financials.ts"),read("src/components/admin/EditableEmailComposer.tsx")]);
+requireText(workflow,/\["002","003","004","005","006","007","008","009"\]\.includes\(key\)[\s\S]*\/email\?template=\$\{key\}/,"client workflow email actions open the composer on their exact template");
+requireText(workflow,/Compose follow-up[\s\S]*Compose final follow-up[\s\S]*Compose welcome email[\s\S]*Compose Client Portal email[\s\S]*Compose contract email[\s\S]*Compose invoice email[\s\S]*Compose schedule email[\s\S]*Compose thank-you/,"every client workflow email card uses an explicit composition label");
+requireText(page,/requestedTemplate[\s\S]*activeTemplates\.some\(\(item\) => item\.id === requestedTemplate\)/,"client composer honors the template requested by the workflow card");
+requireText(page,/getInvoicePaymentSummary\(client\.id\)/,"client composer derives amounts from the connected invoice");
+requireText(composer,/\.\.\.financialValues,couple_names/,"client preview receives calculated financial placeholders");
+requireText(sharedComposer,/portalUrl:values\.portal_url/,"composer preview renders the Template 005 portal CTA");
+requireText(financials,/total\*\.25[\s\S]*net\*\.24/,"Template 005 calculates 25 percent net deposit and 24 percent VAT");
+requireText(financials,/deposit_net_amount[\s\S]*deposit_vat_amount[\s\S]*deposit_total_amount[\s\S]*remaining_net_amount/,"Template 005 exposes every requested dynamic amount");
+requireText(financials,/Για την οριστική κράτηση της ημερομηνίας[\s\S]*Καθαρή αξία προκαταβολής:[\s\S]*Το υπόλοιπο της καθαρής αξίας/,"Template 005 uses the approved dynamic Greek financial paragraph");
+requireText(action,/template\.id==="005"&&\(!invoice\|\|invoice\.invoiceTotal<=0\)/,"server blocks Template 005 when accepted invoice total is unavailable");
+requireText(action,/renderTemplate\(template,\{\.\.\.clientEmailFinancialValues\(invoice\?\.invoiceTotal\?\?0\)/,"server delivery recalculates amounts independently of the browser");
+requireText(action,/portal_url:portalUrl,offer_url:offerUrl/,"edited delivery retains portal and offer CTA rendering context");
+for(const check of checks)console.log(check);console.log(`PASS - ${checks.length} Sprint 26 client workflow email contracts verified.`);

@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { respondToOffer } from "@/lib/offers";
+import { revalidateAdminWorkflow } from "@/lib/admin-workflow-revalidation";
+const schema=z.object({action:z.enum(["accept","revision"]),name:z.string().trim().min(2).max(190),email:z.email().max(320),packageName:z.string().trim().max(190).optional(),message:z.string().trim().max(3000).optional()}).superRefine((value,ctx)=>{if(value.action==="accept"&&!value.packageName)ctx.addIssue({code:"custom",message:"Package is required",path:["packageName"]});if(value.action==="revision"&&!value.message)ctx.addIssue({code:"custom",message:"Message is required",path:["message"]})});
+export async function POST(request:Request,{params}:{params:Promise<{slug:string}>}){try{const{slug}=await params;const input=schema.parse(await request.json());await respondToOffer(decodeURIComponent(slug),input);revalidateAdminWorkflow();return NextResponse.json({success:true})}catch(error){const unavailable=error instanceof Error&&error.message==="Offer unavailable";return NextResponse.json({success:false,error:unavailable?"This offer is not open for responses. Please ask the photographer to mark it as sent or issue a current link.":"Please review the response fields and try again."},{status:unavailable?410:400})}}

@@ -1,0 +1,5 @@
+"use client";
+"use client";
+import { useState } from "react";
+
+export function EmailPreview({subject,html}:{subject:string;html:string}){const[mobile,setMobile]=useState(false);return <div><div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-black/10 pb-4"><p className="text-sm"><span className="text-ink-black/45">Subject · </span>{subject}</p><div className="grid grid-cols-2 border border-ink-black/20 text-[12px]  uppercase"><button type="button" aria-pressed={!mobile} onClick={()=>setMobile(false)} className={`px-3 py-2 ${!mobile?"bg-ink-black text-white":""}`}>Desktop</button><button type="button" aria-pressed={mobile} onClick={()=>setMobile(true)} className={`px-3 py-2 ${mobile?"bg-ink-black text-white":""}`}>Mobile</button></div></div><div className="mt-4 overflow-x-auto bg-[#e8e4dc] p-3"><iframe title={`${mobile?"Mobile":"Desktop"} email preview`} sandbox="" srcDoc={html} style={{width:mobile?"390px":"100%"}} className="mx-auto block min-h-[720px] max-w-full bg-white transition-[width]"/></div></div>}

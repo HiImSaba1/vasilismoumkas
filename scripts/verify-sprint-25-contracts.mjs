@@ -1,0 +1,20 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");
+const checks=[];
+const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const forbidText=(source,pattern,label)=>{if(pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[portal,invoice,pdf,typography,locale]=await Promise.all([read("src/app/portal/[slug]/page.tsx"),read("src/app/portal/[slug]/PortalInvoicePanel.tsx"),read("src/app/api/portal/[slug]/contract.pdf/route.ts"),read("src/lib/greek-typography.ts"),read("src/components/admin/AdminLocale.tsx")]);
+requireText(portal,/Ο χωρος της συνεργασιας μας/,"portal overview heading follows toneless uppercase Greek typography");
+requireText(portal,/Καλως ηρθατε/,"portal uppercase welcome label is toneless");
+requireText(portal,/Πελατης[\s\S]*Ημερομηνια[\s\S]*Τοποθεσια/,"portal metadata labels are toneless");
+requireText(portal,/Ιδιωτικα αρχεια[\s\S]*Παραστατικα και αποδειξεις[\s\S]*Ληψη/,"portal private-file headings and action are toneless");
+forbidText(portal,/Ο χώρος της συνεργασίας μας|Καλώς ήρθατε|Πελάτης|Ημερομηνία|Τοποθεσία|Ιδιωτικά αρχεία|Παραστατικά και αποδείξεις|Λήψη/,"no accented Greek remains in portal labels rendered uppercase");
+requireText(locale,/getComputedStyle\(element\)\.textTransform==="uppercase"\?removeGreekTonos/,"admin translations automatically remove tonos from uppercase UI text");
+requireText(typography,/normalize\("NFD"\)\.replace\(\/\[\\u0301\\u0342\]\//,"shared typography helper removes Greek tonos without mutating stored data");
+requireText(portal,/removeGreekTonos\(portal\.coupleNames\)/,"client portal removes tonos from uppercase couple names");
+requireText(invoice,/removeGreekTonos\(data\.client_name\|\|portal\.coupleNames\)/,"portal invoice removes tonos from its uppercase client heading");
+requireText(pdf,/removeGreekTonos\(portal\.coupleNames\)\.toUpperCase\(\)/,"contract PDF removes tonos from uppercase couple names");
+for(const check of checks)console.log(check);
+console.log(`PASS - ${checks.length} Sprint 25 toneless uppercase Greek contracts verified.`);

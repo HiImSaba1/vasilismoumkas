@@ -1,0 +1,4 @@
+"use client";
+import { useState } from "react";
+import { deleteOfferAction } from "./actions";
+export function DeleteOfferButton({slug,name}:{slug:string;name:string}){const[open,setOpen]=useState(false);return open?<form action={deleteOfferAction} className="col-span-2 border border-red-300 bg-red-50 p-3"><input type="hidden" name="slug" value={slug}/><p className="mb-3 text-sm  text-red-900">Delete {name}? This permanently removes this draft/revoked offer and its private link.</p><div className="flex gap-2"><button className="bg-red-800 px-3 py-2 text-[10px] uppercase text-white">Confirm delete</button><button type="button" onClick={()=>setOpen(false)} className="border border-red-300 px-3 py-2 text-[10px] uppercase">Cancel</button></div></form>:<button type="button" onClick={()=>setOpen(true)} className="h-full w-full border border-red-300 px-3 py-3 text-[10px] uppercase text-red-800">Delete</button>}

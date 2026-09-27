@@ -1,0 +1,13 @@
+import{readFile}from"node:fs/promises";import{resolve}from"node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[spec,route,manifest,release]=await Promise.all([read("e2e/invoice-payments.spec.ts"),read("src/app/admin/verification-invoice-payments/page.tsx"),read("scripts/prepare-sprint-11-release-manifest.mjs"),read("SPRINT_11_RELEASE.md")]);
+requireText(route,/NODE_ENV\s*===\s*"production"\)\s*notFound\(\)/,"verification fixture is unavailable in production");
+requireText(spec,/email\\\?template=006/,"browser test verifies the Template 006 handoff");
+requireText(spec,/toHaveAttribute\("max","1250"\)/,"browser test verifies the remaining-balance ceiling");
+requireText(spec,/Reason for deletion/,"browser test verifies double-confirm deletion flow");
+requireText(spec,/getByText\("Pay Now"\)\)\.toHaveCount\(0\)/,"browser test verifies Pay Now is absent");
+requireText(spec,/scrollWidth-document\.documentElement\.clientWidth/,"browser test checks responsive overflow");
+for(const file of["database/migrations/018_invoice_payment_ledger.sql","src/lib/invoice-payments.ts","src/app/admin/clients/[id]/InvoicePaymentManager.tsx","src/app/portal/[slug]/PortalInvoicePanel.tsx","src/lib/email-delivery.ts","src/app/sendEmail.ts"])requireText(manifest,new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")),`${file} is included in the release manifest`);
+requireText(manifest,/Import migration 018 once/,"manifest documents the one-time database import");
+requireText(release,/Reply now targets `INQUIRY_NOTIFICATION_EMAIL`/,"release notes document contact-form Reply-To behavior");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 11 release contracts verified.`);

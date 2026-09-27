@@ -1,0 +1,11 @@
+import{readFile}from"node:fs/promises";import{resolve}from"node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[manifest,guide,browser,fixture]=await Promise.all([read("scripts/prepare-sprint-05-release-manifest.mjs"),read("SPRINT_05_RELEASE.md"),read("e2e/client-workspace.spec.ts"),read("src/app/admin/verification-client-workspace/page.tsx")]);
+for(const file of["AdminDatePicker.tsx","AdminChrome.tsx","WorkflowReminderCenter.tsx","ProjectContent.tsx","clients.ts","ClientWorkspaceSection.tsx","clients/[id]/page.tsx","AdminLocale.tsx"])requireText(manifest,new RegExp(file.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")),`${file} is included in the production upload manifest`);
+requireText(manifest,/No migration or SQL import is required for Sprint 05/,"release explicitly requires no database migration");
+requireText(manifest,/verification-client-workspace\/page\.tsx[\s\S]*LOCAL VERIFICATION ONLY|localOnly=\[[\s\S]*verification-client-workspace\/page\.tsx/,"test-only fixture is excluded from required production uploads");
+requireText(guide,/Remove the existing `\.next` directory/,"deployment guide requires a clean Papaki build");
+requireText(guide,/No SQL import is required/,"deployment guide states the database requirement clearly");
+if(/test\.skip/.test(browser))throw new Error("FAIL - release browser gate contains a skip");checks.push("PASS - release browser gate cannot silently skip");
+requireText(fixture,/process\.env\.NODE_ENV==="production"/,"browser fixture is unavailable in production");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 05D release contracts verified.`);

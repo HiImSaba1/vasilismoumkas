@@ -1,0 +1,16 @@
+import {readFile} from "node:fs/promises";
+import {resolve} from "node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[files,actions,upload,portalData,portalPage,download,clientPage,motion,overview]=await Promise.all([read("src/lib/client-files.ts"),read("src/app/admin/clients/[id]/actions.ts"),read("src/app/admin/clients/[id]/ClientFileUpload.tsx"),read("src/lib/client-portals.ts"),read("src/app/portal/[slug]/page.tsx"),read("src/app/api/portal/[slug]/files/[fileId]/route.ts"),read("src/app/admin/clients/[id]/page.tsx"),read("src/app/admin-motion.css"),read("src/app/admin/overview/page.tsx")]);
+requireText(files,/MAX_FILE_BYTES=5\*1024\*1024[\s\S]*application\/pdf[\s\S]*image\/jpeg[\s\S]*signatureMatches/,"private receipt uploads enforce 5 MB type and file-signature limits");
+requireText(files,/storage[\s\S]*client-files[\s\S]*document_type='other'[\s\S]*readClientFile/,"client files are stored outside public uploads and mapped to the existing documents table");
+requireText(actions,/requireAdmin\(\)[\s\S]*storeClientFile[\s\S]*Private file uploaded/,"only an authenticated administrator can upload a client file");
+requireText(upload,/accept="application\/pdf,image\/jpeg,image\/png,image\/webp"[\s\S]*does not change the invoice total, balance or payment status/,"admin upload clearly states accepted formats and invoice isolation");
+requireText(portalData,/documents WHERE client_id=\? AND document_type='other' AND status='active'/,"portal data exposes only active files belonging to its resolved client");
+requireText(download,/getPortalBySlug[\s\S]*readClientFile\(portal\.clientId,fileId\)[\s\S]*private, no-store[\s\S]*nosniff/,"downloads validate portal ownership and return private hardened responses");
+requireText(portalPage,/\["home","questionnaire","contract","invoice"\][\s\S]*tab!?:"home"[\s\S]*Receipts and documents[\s\S]*Download/,"client portal defaults to a Home overview with downloadable private files");
+requireText(portalPage,/do not automatically change the invoice amount or payment status/,"portal tells clients that uploaded files do not mutate invoice accounting");
+requireText(clientPage,/listClientFiles\(id\)[\s\S]*title="Private files"[\s\S]*ClientFileUpload/,"client admin workspace lists and uploads private portal files");
+requireText(motion,/:has\(> details\[open\]\)[\s\S]*details\[open\] > summary[\s\S]*background: rgb\(29 29 27\)[\s\S]*details\[open\] > div[\s\S]*position: absolute[\s\S]*width: calc\(60%/,"client workspace keeps an uninterrupted right selector list, highlights the active item, and opens its content in the wide left panel");
+requireText(overview,/(?=[\s\S]*data-todays-crm-updates)(?=[\s\S]*Leads → επιλογή lead → καρτέλα lead)(?=[\s\S]*Guided Workflow → Send & Track)(?=[\s\S]*Automation Queue)(?=[\s\S]*Client → Private files → View client portal)(?=[\s\S]*αναμονή τελικού Sprint 21 PASS)/,"Overview temporarily presents today's implementations as linked walkthrough cards with honest verification status");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 21 client portal file contracts verified.`);

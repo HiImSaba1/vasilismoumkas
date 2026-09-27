@@ -1,0 +1,15 @@
+import{readFile}from"node:fs/promises";import{resolve}from"node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};const rejectText=(source,pattern,label)=>{if(pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[portalPage,invoicePanel,ledger,workflow,onboarding,portals,seed]=await Promise.all([read("src/app/portal/[slug]/page.tsx"),read("src/app/portal/[slug]/PortalInvoicePanel.tsx"),read("src/lib/invoice-payments.ts"),read("src/lib/client-workflow.ts"),read("src/lib/onboarding.ts"),read("src/lib/client-portals.ts"),read("database/production-seed.sql")]);
+requireText(portalPage,/getInvoicePaymentSummary\(portal\.clientId\)/,"portal loads the live invoice ledger");
+requireText(invoicePanel,/summary\?\.payments\.filter\(item=>!item\.voidedAt\)/,"portal displays only active payments");
+requireText(invoicePanel,/Payments are arranged directly with the studio/,"portal explains the manual studio payment process");
+rejectText(invoicePanel,/Pay Now|mailto:info@vasilismoumkas\.com\?subject=Invoice payment/,"misleading Pay Now action is removed");
+requireText(ledger,/invoice-payment-confirmed/,"confirmed deposit schedules the timeline reminder once");
+requireText(workflow,/value==="part-paid"/,"a recorded deposit resolves invoice workflow evidence");
+requireText(onboarding,/invoice_status:\["not-issued","issued","part-paid","paid"\]/,"onboarding exposes the partial-payment state");
+requireText(onboarding,/invoice_status IN \('part-paid','paid'\)/,"onboarding confirms booking from a signed contract and deposit");
+requireText(portals,/invoice_status IN \('part-paid','paid'\)/,"contract signing reconciles an existing deposit");
+requireText(seed,/I have received your deposit and the required documents/,"Template 006 English confirmation uses the approved copy");
+requireText(seed,/Έχω παραλάβει την προκαταβολή σας/,"Template 006 includes the Greek confirmation variant");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 10 portal and booking contracts verified.`);

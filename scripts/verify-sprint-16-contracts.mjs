@@ -1,0 +1,18 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[migration,schema,leads,actions,wizard,templates,templatePage,documents,nativeDocuments,renderer,nav]=await Promise.all([read("database/migrations/020_workflow_profile_document_templates.sql"),read("database/schema.sql"),read("src/lib/leads.ts"),read("src/app/admin/leads/actions.ts"),read("src/app/admin/leads/LeadWorkflowWizard.tsx"),read("src/lib/document-templates.ts"),read("src/app/admin/document-templates/page.tsx"),read("src/app/admin/leads/NativeDocumentManager.tsx"),read("src/lib/lead-native-documents.ts"),read("src/lib/email-renderer.ts"),read("src/app/admin/AdminChrome.tsx")]);
+requireText(migration,/workflow_locale ENUM\('el','en'\)/,"migration stores the lead workflow locale");
+requireText(schema,/CREATE TABLE IF NOT EXISTS document_templates/,"baseline schema includes reusable document templates");
+requireText(leads,/qualifyLeadWorkflow/,"workflow profile has a server-owned transaction");
+requireText(leads,/status NOT IN \('draft','revoked'\)/,"sent offers lock event and locale changes");
+requireText(actions,/wedding-el.*wedding-en.*baptism-el.*baptism-en/,"server validates all four workflow profiles");
+requireText(wizard,/Workflow type \*/,"Qualify requires one workflow choice");
+requireText(wizard,/Offers, emails, questionnaire, contract, invoice/,"wizard explains inherited workflow scope");
+requireText(templates,/saveDocumentTemplate/,"document templates are persistently editable");
+requireText(templatePage,/Wedding GR.*Wedding EN.*Baptism GR.*Baptism EN/s,"template library exposes all four scopes");
+requireText(documents,/Inherited profile/,"client documents display their inherited profile");
+requireText(nativeDocuments,/t\.event_type=l\.event_type AND t\.locale=l\.workflow_locale/,"server enforces document templates from the selected workflow");
+requireText(renderer,/offerIndex>closingIndex/,"proposal CTA is moved before the closing text");
+requireText(nav,/Document Templates/,"document template library is in admin navigation");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 16 workflow, document-template, and proposal-email contracts verified.`);

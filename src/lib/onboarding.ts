@@ -1,0 +1,24 @@
+import "server-only";
+import { randomUUID } from "node:crypto";
+import type { RowDataPacket } from "mysql2/promise";
+import { getDatabase } from "@/lib/database";
+import { sendInternalWorkflowNotification } from "@/lib/email-delivery";
+
+export const onboardingFields={questionnaire_status:["not-sent","sent","completed"],agreement_status:["not-sent","sent","approved"],invoice_status:["not-issued","issued","part-paid","paid"],booking_status:["pending","confirmed","cancelled"],timeline_status:["not-started","draft","sent","approved"],production_status:["not-started","event-complete","wedding-complete","editing","gallery-delivered"]} as const;
+type Row=RowDataPacket&{id:string;client_id:string;couple_names:string;email:string|null;event_date:Date|null;event_type:string;questionnaire_status:string;agreement_status:string;invoice_status:string;booking_status:string;timeline_status:string;production_status:string;updated_at:Date};
+
+export async function listOnboarding(){
+  await getDatabase().execute("UPDATE onboarding o JOIN clients c ON c.id=o.client_id LEFT JOIN lead_document_records q ON q.lead_id=c.lead_id AND q.document_type='questionnaire' LEFT JOIN lead_document_records a ON a.lead_id=c.lead_id AND a.document_type='contract' LEFT JOIN lead_document_records i ON i.lead_id=c.lead_id AND i.document_type='invoice' SET o.questionnaire_status=IF(q.status='completed','completed',o.questionnaire_status),o.agreement_status=IF(a.status='signed','approved',o.agreement_status),o.invoice_status=IF(i.status='paid','paid',IF(i.status='part-paid','part-paid',IF(i.status='issued' AND o.invoice_status='not-issued','issued',o.invoice_status))),o.booking_status=IF((a.status='signed' OR o.agreement_status='approved') AND (i.status IN ('part-paid','paid') OR o.invoice_status IN ('part-paid','paid')),'confirmed',o.booking_status)");
+  const[rows]=await getDatabase().query<Row[]>("SELECT o.*,c.couple_names,c.email,c.event_date,c.event_type FROM onboarding o JOIN clients c ON c.id=o.client_id ORDER BY c.event_date IS NULL,c.event_date,o.updated_at DESC");
+  return rows.map(row=>({id:row.id,clientId:row.client_id,coupleNames:row.couple_names,email:row.email,eventDate:row.event_date?new Date(row.event_date).toISOString().slice(0,10):null,eventType:row.event_type,questionnaireStatus:row.questionnaire_status,agreementStatus:row.agreement_status,invoiceStatus:row.invoice_status,bookingStatus:row.booking_status,timelineStatus:row.timeline_status,productionStatus:row.production_status,updatedAt:new Date(row.updated_at).toISOString()}));
+}
+
+export async function updateOnboardingField(id:string,field:keyof typeof onboardingFields,value:string){
+  if(!(onboardingFields[field] as readonly string[]).includes(value))throw new Error("Invalid onboarding status");const db=getDatabase();
+  const[beforeRows]=await db.query<(RowDataPacket&{client_id:string;lead_id:string|null;couple_names:string;email:string|null;previous_value:string})[]>(`SELECT o.client_id,c.lead_id,c.couple_names,c.email,o.${field} previous_value FROM onboarding o JOIN clients c ON c.id=o.client_id WHERE o.id=? LIMIT 1`,[id]);const before=beforeRows[0];
+  await db.execute(`UPDATE onboarding SET ${field}=? WHERE id=?`,[value,id]);
+  await db.execute("UPDATE onboarding SET booking_status='confirmed' WHERE id=? AND agreement_status='approved' AND invoice_status IN ('part-paid','paid') AND booking_status='pending'",[id]);
+  if(field==="invoice_status"||field==="agreement_status"){await db.execute("INSERT IGNORE INTO automation_jobs (id,job_key,job_type,client_id,offer_id,template_id,scheduled_for,payload) SELECT ?,CONCAT('client:',c.id,':booking-confirmation'),'booking-confirmation',c.id,c.accepted_offer_id,'007',DATE_ADD(CURRENT_TIMESTAMP,INTERVAL 1 DAY),JSON_OBJECT('source','booking-confirmed') FROM onboarding o JOIN clients c ON c.id=o.client_id WHERE o.id=? AND o.booking_status='confirmed'",[randomUUID(),id]);await db.execute("INSERT IGNORE INTO automation_jobs (id,job_key,job_type,client_id,template_id,scheduled_for,payload) SELECT ?,CONCAT('client:',c.id,':timeline-reminder'),'timeline-reminder',c.id,'009',DATE_SUB(c.event_date,INTERVAL 60 DAY),JSON_OBJECT('source','booking-confirmed') FROM onboarding o JOIN clients c ON c.id=o.client_id WHERE o.id=? AND o.booking_status='confirmed' AND c.event_date IS NOT NULL",[randomUUID(),id])}
+  await db.execute("INSERT INTO activity_log (client_id,event_type,summary,metadata) SELECT client_id,'onboarding-status',?,JSON_OBJECT('field',?,'value',?) FROM onboarding WHERE id=?",[`${field.replaceAll("_"," ")} changed to ${value}`,field,value,id]);
+  if(before&&before.previous_value!==value&&field==="invoice_status"&&["part-paid","paid"].includes(value))await sendInternalWorkflowNotification({event:"payment-completed",clientName:before.couple_names,clientEmail:before.email,leadId:before.lead_id,clientId:before.client_id,details:["The invoice/deposit was marked received in onboarding."]});
+}

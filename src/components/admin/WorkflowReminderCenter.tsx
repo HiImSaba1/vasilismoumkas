@@ -1,0 +1,24 @@
+"use client";
+/* eslint-disable react-hooks/set-state-in-effect -- reminder visibility is restored from browser-local daily/snooze state */
+import { useEffect,useMemo,useState } from "react";
+import Link from "next/link";
+import { Bell,Clock3,X } from "lucide-react";
+import type { WorkflowReminder } from "@/lib/workflow-reminders";
+
+const dayKey=()=>new Date().toLocaleDateString("en-CA");
+export function WorkflowReminderCenter({reminders}:{reminders:WorkflowReminder[]}){
+  const[open,setOpen]=useState(false);
+  const grouped=useMemo(()=>({critical:reminders.filter(item=>item.priority==="critical"),required:reminders.filter(item=>item.priority==="required")}),[reminders]);
+  const signature=useMemo(()=>reminders.map(item=>item.id).sort().join("|"),[reminders]);
+  useEffect(()=>{if(!reminders.length)return;const snoozedUntil=Number(localStorage.getItem("moumkas-reminders-snoozed-until")??0);const seen=localStorage.getItem("moumkas-reminders-seen");if(Date.now()>=snoozedUntil&&seen!==`${dayKey()}|${signature}`)setOpen(true)},[reminders.length,signature]);
+  const closeForToday=()=>{localStorage.setItem("moumkas-reminders-seen",`${dayKey()}|${signature}`);setOpen(false)};
+  const snooze=()=>{localStorage.setItem("moumkas-reminders-snoozed-until",String(Date.now()+4*60*60*1000));localStorage.removeItem("moumkas-reminders-seen");setOpen(false)};
+  return <>
+    <button type="button" onClick={()=>setOpen(true)} aria-label="Open workflow reminders" data-testid="admin-notifications" className="relative flex items-center gap-2 bg-transparent p-2 text-[10px] uppercase text-ink-black transition-colors hover:bg-ink-black hover:text-white"><Bell className="size-5"/><span className="hidden xl:inline">Reminders</span><span className={`absolute right-0 top-0 flex size-5 -translate-y-1/4 translate-x-1/4 items-center justify-center rounded-full text-[12px]  text-white ${reminders.length?"bg-red-700":"bg-ink-black/35"}`}>{reminders.length}</span></button>
+    {open&&<div className="fixed inset-0 z-[120] flex items-center justify-center bg-ink-black/75 p-3 sm:p-6"><section role="dialog" aria-modal="true" aria-label="Workflow reminders" className="flex max-h-[calc(100svh-1.5rem)] w-full max-w-3xl flex-col overflow-hidden bg-soft-white shadow-2xl sm:max-h-[calc(100svh-3rem)]">
+      <header className="flex shrink-0 items-start justify-between border-b border-ink-black/15 p-5 sm:p-6"><div><p className="text-[10px] uppercase tracking-[.18em] text-red-800">Workflow reminders · {reminders.length}</p><h2 className="mt-2 text-3xl font-light uppercase sm:text-4xl">What needs attention?</h2><p className="mt-2 max-w-xl text-sm text-ink-black/55">Nothing here is permanently dismissed. Complete the action and it disappears automatically.</p></div><button type="button" onClick={closeForToday} aria-label="Close reminders" className="border border-ink-black/20 p-2"><X className="size-5"/></button></header>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">{!reminders.length&&<div className="py-14 text-center"><p className="text-2xl font-light uppercase">Nothing needs attention</p><p className="mt-2 text-sm text-ink-black/50">Every required action is currently up to date.</p></div>}{(["critical","required"] as const).map(priority=>grouped[priority].length?<section key={priority} className="mb-7 last:mb-0"><div className="mb-3 flex items-center justify-between"><h3 className="text-sm  uppercase tracking-[.16em]">{priority==="critical"?"Important · do not miss":"Required next actions"}</h3><span className="text-sm ">{grouped[priority].length}</span></div><div className="grid gap-3">{grouped[priority].map(item=><article key={item.id} className={`border-l-4 p-4 ${priority==="critical"?"border-red-700 bg-red-50":"border-orange-500 bg-orange-50"}`}><div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"><div><div className="flex flex-wrap gap-2"><span className="border border-current/20 px-2 py-1 text-[12px]  uppercase">{item.kind}</span><span className="text-[12px]  uppercase opacity-55">{item.clientName}</span></div><h4 className="mt-2 text-lg font-medium uppercase">{item.title}</h4><p className="mt-1 text-sm  opacity-60">{item.description}</p></div><Link href={item.href} onClick={()=>setOpen(false)} className="bg-ink-black px-4 py-3 text-center text-[10px] uppercase text-white">{item.actionLabel} →</Link></div></article>)}</div></section>:null)}</div>
+      <footer className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-ink-black/15 bg-[#f7f3e9] p-4 sm:p-5"><button type="button" onClick={snooze} className="flex items-center gap-2 border border-ink-black/20 px-4 py-3 text-[10px] uppercase"><Clock3 className="size-4"/>Remind me in 4 hours</button><button type="button" onClick={closeForToday} className="bg-ink-black px-5 py-3 text-[10px] uppercase text-white">Close for today</button></footer>
+    </section></div>}
+  </>
+}

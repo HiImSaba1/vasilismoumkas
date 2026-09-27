@@ -1,0 +1,38 @@
+import {readFile} from "node:fs/promises";
+import {resolve} from "node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");
+const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[page,leadsPage,offersPage,clientsPage,collapsible,actions,overrides,clients,questionnaires,portalPage,portalData,pdfData,portalPdf,marquee,payments]=await Promise.all([
+  read("src/app/admin/clients/[id]/page.tsx"),read("src/app/admin/leads/page.tsx"),read("src/app/admin/offers/page.tsx"),read("src/app/admin/clients/page.tsx"),read("src/components/admin/CollapsibleAdminCard.tsx"),read("src/app/admin/clients/[id]/actions.ts"),read("src/lib/client-document-overrides.ts"),read("src/lib/clients.ts"),read("src/lib/questionnaire-definitions.ts"),read("src/app/portal/[slug]/page.tsx"),read("src/lib/client-portals.ts"),read("src/lib/client-document-pdf.ts"),read("src/app/api/portal/[slug]/documents/[type]/pdf/route.ts"),read("src/app/portal/[slug]/PortalMarquee.tsx"),read("src/lib/invoice-payments.ts"),
+]);
+requireText(page,/(?=[\s\S]*data-client-quick-actions)(?=[\s\S]*>View<)(?=[\s\S]*>Preview<)(?=[\s\S]*>Send \/ Resend<)/,"client workspace exposes compact contextual quick actions inside its accordions");
+for(const[id,template]of [["offer-record","001"],["questionnaire-record","005"],["contract-record","006"],["invoice-record","007"]])requireText(page,new RegExp(`id="${id}"[\\s\\S]*email\\?template=${template}`),`${id} maps Send or Resend to Template ${template}`);
+requireText(page,/api\/admin\/clients\/\$\{client\.id\}\/documents\/invoice\/pdf[\s\S]*api\/admin\/clients\/\$\{client\.id\}\/documents\/contract\/pdf[\s\S]*api\/admin\/clients\/\$\{client\.id\}\/documents\/questionnaire\/pdf/,"client document actions download the exact client invoice, contract and questionnaire PDFs");
+requireText(page,/portal\/\$\{workspace\.portal\.slug\}\?tab=invoice[\s\S]*tab=contract[\s\S]*tab=questionnaire/,"Preview actions open the exact document tabs in the connected client portal");
+requireText(page,/workspace\.offer\.updatedAt[\s\S]*invoice\.updatedAt[\s\S]*contract\.updatedAt[\s\S]*nativeQuestionnaire\.updatedAt/,"client record rows display their own last-updated evidence");
+requireText(page,/ClientContractEditor[\s\S]*ClientQuestionnaireEditor[\s\S]*ClientInvoiceEditor/,"contract, questionnaire and invoice editors stay inside the client workspace");
+requireText(page,/signed and preserved as legal evidence[\s\S]*completed questionnaire is preserved|submitted answers are preserved/,"signed agreements and submitted questionnaires are protected from silent rewriting");
+requireText(actions,/saveClientContractAction[\s\S]*saveClientQuestionnaireAction[\s\S]*saveClientInvoiceTermsAction/ ,"authenticated client-specific Save actions cover all editable documents");
+requireText(overrides,/JOIN lead_document_records[\s\S]*UPDATE lead_document_records SET status=\?,document_data=\? WHERE id=\?/,"document edits target the existing record connected to this client");
+if(/INSERT INTO lead_document_records/.test(overrides))throw new Error("FAIL - client document editing must never provision duplicate records");
+checks.push("PASS - client document editing never inserts or duplicates a native document record");
+if(/document_templates/.test(overrides))throw new Error("FAIL - client-specific editing must not update master templates");
+checks.push("PASS - client-specific editing is isolated from master document templates");
+requireText(overrides,/signed agreement is immutable[\s\S]*completed questionnaire is preserved/,"server enforcement protects accepted legal and submitted records");
+requireText(overrides,/manual_total[\s\S]*vat_rate[\s\S]*deposit_percentage[\s\S]*balance_due/,"invoice editor stores client-specific total, VAT, deposit and balance values");
+requireText(payments,/manualTotal=money\(documentData\.manual_total\)[\s\S]*if\(manualTotal>0\)return manualTotal/,"payment ledger honors an explicit client invoice total override");
+requireText(questionnaires,/customQuestionnaireFields[\s\S]*custom_questions[\s\S]*questionnaireFields[\s\S]*sanitizeQuestionnaireAnswers/,"custom client questions join the workflow questionnaire allowlist safely");
+requireText(portalPage,/questionnaireFields\(eventType,language,document\?\.data\)[\s\S]*document\?\.data\.instructions/,"client portal renders client-specific instructions and custom questions");
+requireText(portalData,/sanitizeQuestionnaireAnswers\(portal\.eventType,portal\.language,data,current\?\.data\)/,"portal submission validates against that exact client questionnaire schema");
+requireText(pdfData,/LEFT JOIN lead_document_records[\s\S]*questionnaireFields\(document\.eventType,document\.language,document\.data\)/,"PDF generation works before submission and uses the exact client questionnaire schema");
+requireText(portalPdf,/getPortalBySlug\(slug\)[\s\S]*renderClientDocumentPdf\(portal\.clientId/,"portal PDF access no longer requires a pre-existing saved-answer record");
+requireText(marquee,/loading=\{index<3\?"eager":"lazy"\}[\s\S]*fetchPriority=\{index<3\?"high":"auto"\}/,"above-fold portal marquee images are eagerly loaded for LCP");
+requireText(clients,/o\.updated_at[\s\S]*updatedAt:new Date\(offer\.updated_at\)/,"connected offer summary exposes its real last-updated timestamp");
+requireText(leadsPage,/sorted=\[\.\.\.leads\]\.sort[\s\S]*new Date\(b\.updatedAt\)[\s\S]*leadMonthKey[\s\S]*data-monthly-lead-groups/,"lead cards are grouped into collapsible months after newest-first sorting");
+requireText(leadsPage,/offerFor\(lead\)\?\.status==="expired"[\s\S]*Expired offers \/ leads[\s\S]*expired\.map\(renderLead\)/,"expired offer leads are moved to a final collapsed section in newest-first order");
+requireText(offersPage,/data-monthly-offer-groups[\s\S]*monthly\.map[\s\S]*records\.map\(renderOffer\)/,"offers use the same compact collapsible monthly groups");
+requireText(offersPage,/status==="expired"[\s\S]*Expired offers[\s\S]*expired\.map\(renderOffer\)/,"expired offers remain available in the final collapsed group");
+requireText(clientsPage,/data-monthly-client-groups[\s\S]*monthly\.map[\s\S]*records\.map\(renderClient\)/,"clients use the same compact collapsible monthly groups");
+for(const[source,label]of[[leadsPage,"leads"],[offersPage,"offers"],[clientsPage,"clients"]])requireText(source,/<span className="mt-0\.5 block text-2xl font-light uppercase leading-none">/,`${label} month labels use compact non-heading text`);
+requireText(collapsible,/Link href=\{workspaceHref\}[\s\S]*Open record/,"lead and client card headers use real links instead of fragile summary click routing");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 35 client job control center contracts verified.`);

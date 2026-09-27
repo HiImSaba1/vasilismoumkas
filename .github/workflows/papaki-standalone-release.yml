@@ -1,0 +1,44 @@
+name: Papaki standalone release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: papaki-standalone-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-release:
+    name: Build Linux standalone artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out secret-free source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build and verify minimal Papaki runtime
+        shell: bash
+        run: bash scripts/build-papaki-linux-release.sh "github-${GITHUB_RUN_NUMBER}"
+
+      - name: Publish tar and checksum
+        uses: actions/upload-artifact@v4
+        with:
+          name: moumkas-papaki-standalone-${{ github.run_number }}
+          path: |
+            tmp/moumkas-papaki-standalone-*.tar.gz
+            tmp/moumkas-papaki-standalone-*.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14

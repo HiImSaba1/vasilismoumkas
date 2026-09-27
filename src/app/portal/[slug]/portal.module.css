@@ -1,0 +1,3 @@
+@keyframes portalMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.track { animation: portalMarquee 55s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .track { animation-play-state: paused; } }

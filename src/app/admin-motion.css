@@ -1,0 +1,167 @@
+@keyframes admin-section-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.admin-page-enter > :is(main, div) > * {
+  opacity: 0;
+  animation: admin-section-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.admin-page-enter > :is(main, div) > :nth-child(1) { animation-delay: 30ms; }
+.admin-page-enter > :is(main, div) > :nth-child(2) { animation-delay: 90ms; }
+.admin-page-enter > :is(main, div) > :nth-child(3) { animation-delay: 150ms; }
+.admin-page-enter > :is(main, div) > :nth-child(4) { animation-delay: 210ms; }
+.admin-page-enter > :is(main, div) > :nth-child(5) { animation-delay: 270ms; }
+.admin-page-enter > :is(main, div) > :nth-child(6) { animation-delay: 330ms; }
+.admin-page-enter > :is(main, div) > :nth-child(n + 7) { animation-delay: 390ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-enter > :is(main, div) > * {
+    opacity: 1;
+    transform: none;
+    animation: none;
+    will-change: auto;
+  }
+}
+
+/* Compact admin hierarchy for page, tutorial and record-card titles. */
+[aria-label="Admin page tutorial"] h2 {
+  font-size: 1.5rem !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.admin-page-enter > main > h1,
+.admin-page-enter > div > h1 {
+  font-size: clamp(2.5rem, 5.5vw, 5rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.admin-page-enter article h2,
+.admin-page-enter section > a h2 {
+  overflow-wrap: anywhere;
+  font-size: 1.5rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Raise supporting card metadata one readable step; status chips stay unchanged. */
+.admin-page-enter article [class~="text-sm "],
+.admin-page-enter section > a [class~="text-sm "] {
+  font-size: 0.875rem !important;
+}
+
+.admin-page-enter article [class~="text-sm"],
+.admin-page-enter section > a [class~="text-sm"] {
+  font-size: 1rem !important;
+}
+
+/* Keep the lead workflow wizard centered and contained inside the viewport. */
+div:has(> [role="dialog"][aria-label="Lead workflow wizard"]) {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important;
+}
+
+[role="dialog"][aria-label="Lead workflow wizard"] {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 0 !important;
+  max-height: calc(100svh - 1.5rem) !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  box-shadow: 0 24px 80px rgb(0 0 0 / 0.3);
+}
+
+[role="dialog"][aria-label="Lead workflow wizard"] > header,
+[role="dialog"][aria-label="Lead workflow wizard"] > nav,
+[role="dialog"][aria-label="Lead workflow wizard"] > footer {
+  flex-shrink: 0;
+}
+
+[role="dialog"][aria-label="Lead workflow wizard"] > nav + div {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  [role="dialog"][aria-label="Lead workflow wizard"] {
+    max-height: calc(100svh - 3rem) !important;
+  }
+}
+
+.admin-lead-date {
+  color-scheme: light;
+}
+
+.admin-lead-date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: none;
+  opacity: 0.8;
+}
+
+/* Dedicated CRM record pages must stay dense inside the two-column workspace. */
+.admin-record-workspace { overflow-x: clip; }
+.admin-record-workspace :is(h1,h2,h3,h4) { margin: 0 !important; overflow-wrap: anywhere; }
+.admin-record-workspace h1 { font-size: clamp(2rem, 4vw, 4rem) !important; line-height: .95 !important; }
+.admin-record-workspace h2 { font-size: clamp(1.35rem, 2vw, 1.9rem) !important; line-height: 1.05 !important; }
+.admin-record-workspace h3 { font-size: clamp(1.2rem, 1.7vw, 1.6rem) !important; line-height: 1.08 !important; }
+.admin-record-workspace h4 { font-size: 1.05rem !important; line-height: 1.15 !important; }
+.admin-record-workspace :is(section,article,aside,details,summary,div) { min-width: 0; }
+
+/* Keep temporary Overview release cards unambiguously dark on hover. */
+[data-overview-update-card]:hover {
+  background-color: #221f20 !important;
+  border-color: #221f20 !important;
+  color: white !important;
+}
+[data-overview-update-card]:hover :is(p,h3,ul,li,span,svg) { color: white !important; }
+
+/* Client workspace: compact selectors stay right; the active panel owns the wider left column. */
+@media (min-width: 1280px) {
+  [data-client-workspace-accordions] {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(20rem, 2fr);
+    align-items: start;
+    column-gap: 1.25rem;
+    min-height: 46rem;
+    position: relative;
+  }
+  [data-client-workspace-accordions] > [data-client-workflow-panel] {
+    grid-column: 1;
+    grid-row: 1 / span 30;
+    position: sticky;
+    top: 1.5rem;
+  }
+  [data-client-workspace-accordions]:has(> details[open]) > [data-client-workflow-panel] { display: none; }
+  [data-client-workspace-accordions] > :not(details):not([data-client-workflow-panel]) { grid-column: 2; }
+  [data-client-workspace-accordions] > details { display: contents; }
+  [data-client-workspace-accordions] > details > summary {
+    grid-column: 2;
+    border-bottom: 1px solid rgb(29 29 27 / .15);
+  }
+  [data-client-workspace-accordions] > details[open] > summary {
+    background: rgb(29 29 27);
+    color: rgb(247 243 233);
+  }
+  [data-client-workspace-accordions] > details[open] > div {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    width: calc(60% - .75rem);
+    max-height: calc(100svh - 3rem);
+    overflow-y: auto;
+    border: 1px solid rgb(29 29 27 / .15);
+  }
+}

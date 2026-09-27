@@ -1,0 +1,72 @@
+.admin-shell :is(button, a[href]) {
+  cursor: pointer;
+  transition: transform 600ms cubic-bezier(.19,1,.22,1), box-shadow 600ms cubic-bezier(.19,1,.22,1), background-color 600ms cubic-bezier(.19,1,.22,1), border-color 600ms cubic-bezier(.19,1,.22,1), color 600ms cubic-bezier(.19,1,.22,1), opacity 600ms cubic-bezier(.19,1,.22,1);
+  will-change: transform;
+}
+.admin-shell main :is(button, a[href]):hover {
+  transform: translateY(-2px);
+  background-color: var(--color-ink-black) !important;
+  border-color: var(--color-ink-black) !important;
+  color: var(--color-soft-white) !important;
+  box-shadow: 0 9px 20px rgb(17 17 24 / .13);
+}
+.admin-shell main :is(button, a[href])[class*="bg-ink-black"]:hover,
+.admin-shell main :is(button, a[href])[class*="bg-black"]:hover {
+  background-color: var(--color-soft-yellow) !important;
+  border-color: var(--color-ink-black) !important;
+  color: var(--color-ink-black) !important;
+}
+.admin-shell .admin-collapsible-card > summary,
+.admin-shell main details > summary {
+  transition: background-color 450ms cubic-bezier(.19,1,.22,1), color 450ms cubic-bezier(.19,1,.22,1), padding 450ms cubic-bezier(.19,1,.22,1);
+}
+.admin-shell .admin-collapsible-card > summary:hover,
+.admin-shell main details > summary:hover {
+  background: var(--color-ink-black);
+  color: var(--color-soft-white);
+}
+@media (max-width: 640px) {
+  .admin-shell main h1 { font-size: clamp(2rem, 11vw, 3rem) !important; line-height: 1 !important; }
+  .admin-shell main h2 { font-size: clamp(1.25rem, 7vw, 1.75rem) !important; line-height: 1.1 !important; }
+  .admin-shell main h3 { font-size: clamp(1.05rem, 5.5vw, 1.4rem) !important; line-height: 1.15 !important; }
+}
+.admin-shell :is(button, a[href]):active {
+  transform: translateY(0) scale(.98);
+  box-shadow: 0 3px 8px rgb(17 17 24 / .1);
+  transition-duration: 90ms;
+}
+.admin-shell :is(button, a[href]):focus-visible {
+  outline: 2px solid var(--color-ink-black);
+  outline-offset: 3px;
+}
+@media (min-width: 1024px) {
+  .admin-shell main section:has(> .admin-collapsible-card),
+  .admin-shell main section:has(> article .font-mono) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  .admin-shell .admin-collapsible-card > div > .grid,
+  .admin-shell main section:has(> article .font-mono) > article > .grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+.admin-shell button:disabled,
+.admin-shell button[aria-disabled="true"],
+.admin-shell a[aria-disabled="true"] {
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: .4;
+}
+.admin-shell :is(button, a[href]) svg {
+  transition: transform 600ms cubic-bezier(.19,1,.22,1), color 600ms cubic-bezier(.19,1,.22,1);
+}
+.admin-shell :is(button, a[href]):hover svg {
+  transform: translateX(2px) scale(1.06);
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell :is(button, a[href]), .admin-shell :is(button, a[href]) svg {
+    transition-duration: .01ms !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,18 @@
+import{readFile}from"node:fs/promises";import{resolve}from"node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[migration,sender,composer,wizard,seeder,manifest,guide]=await Promise.all([read("database/migrations/017_template_001_offer_validity.sql"),read("src/app/admin/leads/LeadEmailSender.tsx"),read("src/components/admin/EditableEmailComposer.tsx"),read("src/app/admin/leads/LeadWorkflowWizard.tsx"),read("scripts/seed-bilingual-email-templates.mjs"),read("scripts/prepare-sprint-06-release-manifest.mjs"),read("SPRINT_06_RELEASE.md")]);
+requireText(migration,/UPDATE email_templates[\s\S]*WHERE id = '001'/,"migration updates the legacy Template 001 record");
+requireText(migration,/UPDATE email_template_variants[\s\S]*WHERE template_id = '001'/,"migration updates every bilingual event variant");
+requireText(migration,/επόμενες 15 ημέρες'[\s\S]*επόμενες 30 ημέρες'/,"Greek validity changes from 15 to 30 days");
+requireText(migration,/next 15 days'[\s\S]*next 30 days'/,"English validity changes from 15 to 30 days");
+requireText(sender,/const recipient=email\?\.trim\(\)\|\|null/,"lead recipient is normalized before composing");
+requireText(sender,/recipient=\{recipient\}/,"normalized lead recipient reaches the shared composer");
+requireText(wizard,/LeadEmailSender leadId=\{lead\.id\} email=\{lead\.email\}/,"workflow passes the connected lead email");
+requireText(composer,/data-recipient-ready=\{recipient\?"true":"false"\}/,"recipient readiness is explicit and testable");
+requireText(composer,/Automatically inherited from this lead or client/,"admin sees where the recipient came from");
+requireText(composer,/const unavailable=!recipient\|\|!smtpReady/,"missing recipients still block sending");
+requireText(seeder,/επόμενες 15 ημέρες[\s\S]*επόμενες 30 ημέρες/,"future Greek seeds retain 30-day validity");
+requireText(seeder,/next 15 days[\s\S]*next 30 days/,"future English seeds retain 30-day validity");
+requireText(manifest,/017_template_001_offer_validity\.sql/,"release manifest includes migration 017");
+requireText(guide,/Import `database\/migrations\/017_template_001_offer_validity\.sql`/,"deployment guide requires the migration import");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 06 contracts verified.`);
