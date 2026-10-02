@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "verify:storage-paths": "node --experimental-strip-types scripts/verify-runtime-storage-paths.mjs",
     "verify:standalone": "node scripts/verify-standalone-conversion-contracts.mjs && eslint next.config.ts start.js scripts/verify-standalone-conversion-contracts.mjs scripts/verify-papaki-standalone-release.mjs",
     "db:check-schema": "node --env-file=.env scripts/check-database-schema.mjs",
     "db:clean-crm": "node --env-file=.env.development.local scripts/clean-crm-data.mjs --confirm-clean-crm",
