@@ -174,7 +174,10 @@ CREATE TABLE IF NOT EXISTS google_calendar_connections (
 
 CREATE TABLE IF NOT EXISTS google_calendar_events (
   client_id CHAR(36) NOT NULL PRIMARY KEY,
-  google_event_id VARCHAR(255) NOT NULL,
+  google_event_id VARCHAR(255) NULL,
+  sync_status ENUM('pending','synced','failed') NOT NULL DEFAULT 'pending',
+  last_error TEXT NULL,
+  last_attempt_at DATETIME NULL,
   synced_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_google_calendar_event_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
   UNIQUE KEY uq_google_calendar_event_id (google_event_id)
@@ -284,8 +287,10 @@ CREATE TABLE IF NOT EXISTS automation_jobs (
   client_id CHAR(36) NULL,
   offer_id BIGINT UNSIGNED NULL,
   template_id VARCHAR(20) NULL,
+  send_mode ENUM('automatic','manual') NOT NULL DEFAULT 'automatic',
   status ENUM('scheduled','processing','sent','cancelled','failed') NOT NULL DEFAULT 'scheduled',
   scheduled_for DATETIME NOT NULL,
+  timezone VARCHAR(64) NOT NULL DEFAULT 'Europe/Athens',
   attempts SMALLINT UNSIGNED NOT NULL DEFAULT 0,
   last_error TEXT NULL,
   locked_at DATETIME NULL,

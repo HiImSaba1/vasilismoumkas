@@ -8,7 +8,7 @@ import { cancelJobAction,retryJobAction } from "./actions";
 
 const statuses=["scheduled","processing","sent","cancelled","failed"] as const;
 const date=(value:string)=>new Date(value).toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"});
-const actionName=(type:string)=>type==="offer-followup"?"Send offer follow-up":type==="booking-confirmation"?"Send booking confirmation":type==="timeline-reminder"?"Remind couple about timeline":type.replaceAll("-"," ");
+const actionName=(type:string)=>type==="offer-followup"?"Send offer follow-up":type==="post-event-thank-you"?"Send post-event thank-you":type==="timeline-reminder"?"Remind couple about timeline":type.replaceAll("-"," ");
 
 export default async function Page({searchParams}:{searchParams:Promise<{status?:string}>}){
   const requested=(await searchParams).status;

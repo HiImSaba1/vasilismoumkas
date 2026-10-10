@@ -33,11 +33,11 @@ const definitions=[
   {key:"004",number:"004",title:"Welcome to our collaboration",description:"Send the booking thank-you message",phase:"lead",requirement:"required",actionLabel:"Compose welcome email"},
   {key:"005",number:"005",title:"Your personal Client Portal",description:"Send the questionnaire",phase:"lead",requirement:"required",actionLabel:"Compose Client Portal email"},
   {key:"006",number:"006",title:"Collaboration agreement",description:"Send the contract for signature",phase:"lead",requirement:"required",actionLabel:"Compose contract email"},
-  {key:"007",number:"007",title:"Booking confirmation",description:"Deposit and invoice",phase:"lead",requirement:"required",actionLabel:"Compose invoice email"},
   {key:"job-accepted",number:"✓",title:"JOB ACCEPTED",description:"Automatic status change",phase:"lead",requirement:"automatic",actionLabel:"Review onboarding"},
-  {key:"009",number:"009",title:"Organizing the schedule",description:"Timeline approximately one month before the event",phase:"production",requirement:"required",actionLabel:"Compose schedule email"},
+  {key:"009",number:"009",title:"Organizing the schedule",description:"Timeline 60 days before the event",phase:"production",requirement:"required",actionLabel:"Compose schedule email"},
   {key:"main-shoot",number:"DAY",title:"EVENT DAY · MAIN SHOOT",description:"Photography coverage of the day",phase:"production",requirement:"required",actionLabel:"Review production"},
-  {key:"008",number:"008",title:"A personal thank you",description:"Send after the event",phase:"completion",requirement:"required",actionLabel:"Compose thank-you"},
+  {key:"007",number:"007",title:"A personal thank you",description:"Send the day after the event",phase:"completion",requirement:"required",actionLabel:"Compose thank-you"},
+  {key:"008",number:"008",title:"Gallery delivery",description:"Send after final gallery delivery",phase:"completion",requirement:"required",actionLabel:"Compose gallery delivery"},
   {key:"gallery-complete",number:"✓",title:"DELIVERY · JOB COMPLETE",description:"The work and final delivery are complete",phase:"completion",requirement:"automatic",actionLabel:"Review completion"},
 ] as const;
 
@@ -84,11 +84,11 @@ export async function getClientWorkflow(leadId:string){
     "004":sent("004")?{status:"completed",reason:"Template 004 was delivered successfully.",resolvedAt:sentAt("004")}:undefined,
     "005":sent("005")||done(evidence.questionnaire_status)?{status:"completed",reason:done(evidence.questionnaire_status)?"The questionnaire was completed in the Client Portal.":"Template 005 was delivered successfully.",resolvedAt:sentAt("005")}:undefined,
     "006":done(evidence.contract_status)?{status:"completed",reason:"The agreement was signed or approved.",resolvedAt:null}:undefined,
-    "007":done(evidence.invoice_status)?{status:"completed",reason:"The invoice or deposit was marked paid.",resolvedAt:null}:undefined,
+    "007":sent("007")?{status:"completed",reason:"Template 007 was delivered after the event.",resolvedAt:sentAt("007")}:undefined,
     "job-accepted":evidence.booking_status==="confirmed"||(done(evidence.contract_status)&&done(evidence.invoice_status))?{status:"accepted",reason:"Contract approval and payment confirmed the booking automatically.",resolvedAt:null}:undefined,
     "009":evidence.timeline_slug&&evidence.timeline_status==="approved"?{status:"completed",reason:"The client timeline was approved.",resolvedAt:null}:undefined,
     "main-shoot":["event-complete","wedding-complete","editing","gallery-delivered"].includes(evidence.production_status??"")?{status:"completed",reason:`The ${evidence.event_type} coverage was marked complete.`,resolvedAt:null}:undefined,
-    "008":sent("008")?{status:"completed",reason:"Template 008 was delivered successfully.",resolvedAt:sentAt("008")}:undefined,
+    "008":sent("008")?{status:"completed",reason:"Template 008 delivered the final gallery message.",resolvedAt:sentAt("008")}:undefined,
     "gallery-complete":evidence.production_status==="gallery-delivered"||evidence.lead_status==="completed"?{status:"completed",reason:"The final delivery was marked complete.",resolvedAt:null}:undefined,
   };
 

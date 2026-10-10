@@ -3,7 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Papaki runs the traced standalone server produced on Linux. This keeps the
   // production runtime independent from the full source tree and build toolchain.
-  output: "standalone",
+  output: process.env.NEXT_SKIP_STANDALONE === "1" ? undefined : "standalone",
   // Browser verification runs beside the developer's normal server and needs
   // its own Next.js lock/build directory.
   distDir: process.env.NEXT_DIST_DIR ?? ".next",

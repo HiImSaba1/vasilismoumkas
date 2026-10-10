@@ -8,7 +8,7 @@ import { getEmailTemplate,renderEditedEmail,renderTemplate,updateEmailTemplate }
 import { getLatestOfferForLead } from "@/lib/offers";
 import { getPortalForLead } from "@/lib/client-portals";
 import { revalidateAdminWorkflow } from "@/lib/admin-workflow-revalidation";
-import { reconcileAutomationAfterDeliveredTemplate } from "@/lib/automations";
+import { reconcileAutomationAfterDeliveredTemplate,scheduleManualEmail } from "@/lib/automations";
 import { getInvoicePaymentSummary } from "@/lib/invoice-payments";
 import { clientEmailFinancialValues,withClientFinancialParagraph } from "@/lib/client-email-financials";
 import { listPortfolioEmailImages } from "@/lib/portfolio";
@@ -35,14 +35,16 @@ export async function sendClientEmailAction(_state:ClientEmailSendState,formData
   try{
     await requireAdmin();
     if(!smtpConfigured())throw new Error("SMTP is disabled.");
-    const input=z.object({clientId:z.uuid(),templateId:z.string().regex(/^\d{3}$/),locale:z.enum(["el","en"]),idempotencyKey:z.uuid(),recipient:z.email().max(320),subject:z.string().trim().min(1).max(500),bodyText:z.string().trim().min(1).max(50000)}).parse(Object.fromEntries(formData));
+    const input=z.object({clientId:z.uuid(),templateId:z.string().regex(/^00\d$/),locale:z.enum(["el","en"]),idempotencyKey:z.uuid(),recipient:z.email().max(320),subject:z.string().trim().min(1).max(500),bodyText:z.string().trim().min(1).max(50000),headerImage:z.string().trim().max(700),deliveryAction:z.enum(["send","schedule"]),scheduledFor:z.string().max(40).optional()}).parse(Object.fromEntries(formData));
     const client=await getClient(input.clientId);
     if(!client?.email)throw new Error("Client email is missing.");
     if(input.recipient.toLowerCase()!==client.email.toLowerCase())throw new Error("The recipient no longer matches this client. Refresh the page and try again.");
-    const[offer,portal]=await Promise.all([client.leadId?getLatestOfferForLead(client.leadId):null,client.leadId?getPortalForLead(client.leadId):null]);
+    const[offer,portal,images]=await Promise.all([client.leadId?getLatestOfferForLead(client.leadId):null,client.leadId?getPortalForLead(client.leadId):null,listPortfolioEmailImages()]);
+    if(input.headerImage&&!images.some(image=>image.src===input.headerImage))throw new Error("The selected email image is no longer available. Refresh and choose it again.");
     const storedTemplate=await getEmailTemplate(input.templateId,client.eventType,input.locale);
-    const template=storedTemplate?withClientFinancialParagraph(storedTemplate):null;
+    const template=storedTemplate?withClientFinancialParagraph({...storedTemplate,headerImage:input.headerImage||null}):null;
     if(!template?.isActive)throw new Error("Template is unavailable or paused.");
+    if(input.deliveryAction==="schedule"){if(!input.scheduledFor||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input.scheduledFor))throw new Error("Choose a valid Greece date and time.");await scheduleManualEmail({clientId:client.id,leadId:client.leadId,offerId:offer?.id,templateId:template.id,scheduledFor:input.scheduledFor.replace("T"," ")+":00",headerImage:template.headerImage,subject:input.subject,bodyText:input.bodyText});revalidateAdminWorkflow({leadId:client.leadId,clientId:client.id});return{success:true,message:`Template ${template.id} scheduled for ${input.scheduledFor.replace("T"," ")} Greece time.`}}
     const origin=(process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000").replace(/\/$/,"");
     const offerUrl=offer?`${origin}/offer/${offer.slug}`:"";
     const portalUrl=portal?`${origin}/portal/${portal.slug}`:"";
