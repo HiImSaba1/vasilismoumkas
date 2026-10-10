@@ -70,8 +70,24 @@ tar \
 echo "Installing exact locked dependencies inside Linux..."
 (
   cd -- "$build_root"
-  npm ci --no-audit --no-fund
-  npm run verify:standalone
+
+  echo "=== NPM CI START ==="
+  if npm ci --no-audit --no-fund --loglevel=error; then
+    echo "=== NPM CI PASS ==="
+  else
+    result=$?
+    echo "=== NPM CI FAILED (exit $result) ===" >&2
+    exit "$result"
+  fi
+
+  echo "=== STANDALONE VERIFICATION START ==="
+  if npm run verify:standalone; then
+    echo "=== STANDALONE VERIFICATION PASS ==="
+  else
+    result=$?
+    echo "=== STANDALONE VERIFICATION FAILED (exit $result) ===" >&2
+    exit "$result"
+  fi
 )
 
 echo "Creating the traced Next.js standalone production runtime..."
