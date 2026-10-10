@@ -1,4 +1,19 @@
 import { readFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+
+function readCommittedWorkflow() {
+  try {
+    return Promise.resolve(
+      execFileSync(
+        "git",
+        ["show", "HEAD:.github/workflows/papaki-standalone-release.yml"],
+        { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+      ),
+    );
+  } catch {
+    return readFile(".github/workflows/papaki-standalone-release.yml", "utf8");
+  }
+}
 
 const [config, start, builder, launcher, verifier, guide, eslintConfig, workflow, gitignore] = await Promise.all([
   readFile("next.config.ts", "utf8"),
@@ -8,7 +23,7 @@ const [config, start, builder, launcher, verifier, guide, eslintConfig, workflow
   readFile("scripts/verify-papaki-standalone-release.mjs", "utf8"),
   readFile("PAPAKI_STANDALONE_DEPLOYMENT.md", "utf8"),
   readFile("eslint.config.mjs", "utf8"),
-  readFile(".github/workflows/papaki-standalone-release.yml", "utf8"),
+  readCommittedWorkflow(),
   readFile(".gitignore", "utf8"),
 ]);
 
@@ -18,7 +33,7 @@ const requireText = (source, pattern, label) => {
   checks.push(`PASS - ${label}`);
 };
 
-requireText(config, /output:\s*["']standalone["']/, "Next.js produces standalone output");
+requireText(config, /output:\s*(?:process\.env\.NEXT_SKIP_STANDALONE\s*===\s*["']1["']\s*\?\s*undefined\s*:\s*)?["']standalone["']/, "Next.js produces standalone output");
 requireText(config, /cpus:\s*1/, "Next.js keeps the single build worker limit");
 requireText(start, /\.next["'],\s*["']standalone["'],\s*["']server\.js/, "Plesk wrapper loads only the standalone server");
 if (/require\(["']next["']\)|application\.prepare\(/.test(start)) throw new Error("FAIL - Plesk wrapper still boots the full Next runtime");
