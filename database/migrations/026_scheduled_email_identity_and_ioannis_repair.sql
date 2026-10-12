@@ -53,8 +53,8 @@ FROM offers o
 WHERE o.lead_id='b5a6ff7d-1c60-4b40-9d59-433a7a50b0ac'
   AND o.status IN ('sent','viewed') AND o.sent_at IS NOT NULL
 ON DUPLICATE KEY UPDATE
-  scheduled_for=IF(status IN ('scheduled','failed'),VALUES(scheduled_for),scheduled_for),
-  preview_notified_at=IF(status IN ('scheduled','failed'),NULL,preview_notified_at);
+  scheduled_for=IF(automation_jobs.status IN ('scheduled','failed'),VALUES(scheduled_for),automation_jobs.scheduled_for),
+  preview_notified_at=IF(automation_jobs.status IN ('scheduled','failed'),NULL,automation_jobs.preview_notified_at);
 
 INSERT INTO automation_jobs
   (id,job_key,job_type,lead_id,offer_id,template_id,send_mode,scheduled_for,timezone,payload)
@@ -64,8 +64,8 @@ FROM offers o
 WHERE o.lead_id='b5a6ff7d-1c60-4b40-9d59-433a7a50b0ac'
   AND o.status IN ('sent','viewed') AND o.sent_at IS NOT NULL
 ON DUPLICATE KEY UPDATE
-  scheduled_for=IF(status IN ('scheduled','failed'),VALUES(scheduled_for),scheduled_for),
-  preview_notified_at=IF(status IN ('scheduled','failed'),NULL,preview_notified_at);
+  scheduled_for=IF(automation_jobs.status IN ('scheduled','failed'),VALUES(scheduled_for),automation_jobs.scheduled_for),
+  preview_notified_at=IF(automation_jobs.status IN ('scheduled','failed'),NULL,automation_jobs.preview_notified_at);
 
 INSERT INTO activity_log (lead_id,event_type,summary,metadata)
 SELECT 'b5a6ff7d-1c60-4b40-9d59-433a7a50b0ac','email-evidence-repaired',
