@@ -982,7 +982,7 @@ function Invoke-Sprint37Verification {
         Write-RunnerLine "Project: $ProjectRoot"
         Invoke-Step "SPRINT 36 PORTAL PDF REGRESSION" { & node scripts/verify-sprint-36-contracts.mjs }
         Invoke-Step "SPRINT 37 AUTOMATION SCHEDULING BOOKING AND CALENDAR CONTRACTS" { & node scripts/verify-sprint-37-contracts.mjs }
-        Invoke-Step "SCOPED ESLINT" { & npx eslint "src/lib/workflow-template-registry.ts" "src/lib/automations.ts" "src/lib/automation-runner.ts" "src/lib/clients.ts" "src/lib/invoice-payments.ts" "src/lib/google-calendar.ts" "src/components/admin/EditableEmailComposer.tsx" "src/app/admin/leads/actions.ts" "src/app/admin/clients/[id]/actions.ts" "src/app/admin/clients/[id]/email/actions.ts" "src/app/admin/clients/[id]/page.tsx" "src/app/admin/automations/page.tsx" "src/app/admin/guide/page.tsx" "scripts/verify-sprint-37-contracts.mjs" }
+        Invoke-Step "SCOPED ESLINT" { & npx eslint "src/lib/workflow-template-registry.ts" "src/lib/athens-time.ts" "src/lib/automations.ts" "src/lib/automation-runner.ts" "src/lib/clients.ts" "src/lib/invoice-payments.ts" "src/lib/google-calendar.ts" "src/components/admin/EditableEmailComposer.tsx" "src/app/admin/leads/LeadEmailSender.tsx" "src/app/admin/leads/LeadWorkflowWizard.tsx" "src/app/admin/leads/actions.ts" "src/app/admin/clients/[id]/actions.ts" "src/app/admin/clients/[id]/email/actions.ts" "src/app/admin/clients/[id]/page.tsx" "src/app/admin/automations/page.tsx" "src/app/admin/guide/page.tsx" "scripts/verify-sprint-37-contracts.mjs" }
         Invoke-Step "TYPESCRIPT" { & npx tsc --noEmit }
         Invoke-Step "PRODUCTION BUILD" {
             $buildDir=Join-Path $ProjectRoot ".next"

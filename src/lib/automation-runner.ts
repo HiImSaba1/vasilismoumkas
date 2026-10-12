@@ -3,10 +3,10 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/database";
 import { sendTrackedEmail, smtpConfigured } from "@/lib/email-delivery";
 import { getEmailTemplate, renderEditedEmail, renderTemplate } from "@/lib/email-templates";
-import { reconcileAutomationAfterDeliveredTemplate } from "@/lib/automations";
+import { finalizeAutomationDelivery,reconcileAutomationAfterDeliveredTemplate } from "@/lib/automations";
 
 type Context=RowDataPacket&{id:string;job_type:string;lead_id:string|null;client_id:string|null;offer_id:number|null;template_id:string|null;attempts:number;recipient:string|null;couple_names:string|null;event_type:"wedding"|"baptism"|null;offer_language:"gr"|"en"|null;workflow_locale:"el"|"en"|null;event_date:string|null;ceremony_location:string|null;reception_location:string|null;offer_slug:string|null;offer_status:string|null;timeline_slug:string|null;portal_slug:string|null;payload:string|Record<string,unknown>|null};
-type ManualSnapshot={headerImage?:string|null;subject?:string;bodyText?:string};
+type ManualSnapshot={templateId?:string;headerImage?:string|null;subject?:string;bodyText?:string};
 const snapshot=(value:Context["payload"]):ManualSnapshot=>{try{return (typeof value==="string"?JSON.parse(value):value??{}) as ManualSnapshot}catch{return{}}};
 
 export async function runDueAutomations(limit=10){
@@ -25,12 +25,12 @@ export async function runDueAutomations(limit=10){
       if(job.template_id==="009"&&!job.timeline_slug)throw new Error("Safety stop: Template 009 needs a published timeline link.");
       if(job.job_type==="offer-followup"&&!(job.offer_status==="sent"||job.offer_status==="viewed")){await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Offer is no longer awaiting a response' WHERE id=?",[job.id]);cancelled++;continue}
       const stored=await getEmailTemplate(job.template_id,job.event_type??"wedding",(job.workflow_locale==="en"||job.offer_language==="en")?"en":"el");if(!stored?.isActive)throw new Error("Template is unavailable or paused");
-      const manual=snapshot(job.payload);const template={...stored,headerImage:manual.headerImage===undefined?stored.headerImage:manual.headerImage};
+      const manual=snapshot(job.payload);if(job.job_type==="manual-email"&&manual.templateId!==job.template_id)throw new Error("Safety stop: scheduled template identity does not match its saved payload.");const template={...stored,headerImage:manual.headerImage===undefined?stored.headerImage:manual.headerImage};
       const origin=(process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000").replace(/\/$/,"");const names=job.couple_names??"";const firstName=names.split(/\s+(?:and|και|&)\s+/i)[0]??names;
       const eventDate=job.event_date?new Intl.DateTimeFormat(template.locale==="el"?"el-GR":"en-GB",{timeZone:"UTC"}).format(new Date(`${job.event_date}T00:00:00Z`)):"";const portalUrl=job.portal_slug?`${origin}/portal/${job.portal_slug}`:"";
       const values={couple_names:names,parents_names:names,child_name:firstName,first_name:firstName,event_date:eventDate,wedding_date:eventDate,ceremony_location:job.ceremony_location??"",reception_location:job.reception_location??"",offer_url:job.offer_slug?`${origin}/offer/${job.offer_slug}`:"",portal_url:portalUrl,questionnaire_url:portalUrl?`${portalUrl}?tab=questionnaire`:"",agreement_url:portalUrl?`${portalUrl}?tab=contract`:"",invoice_url:portalUrl?`${portalUrl}?tab=invoice`:"",timeline_url:job.timeline_slug?`${origin}/timeline/${job.timeline_slug}`:""};
       const rendered=manual.subject&&manual.bodyText?renderEditedEmail(manual.subject,manual.bodyText,template.locale,{...values,email_header_image:template.headerImage??""}):renderTemplate(template,values);
-      const result=await sendTrackedEmail({templateId:template.id,leadId:job.lead_id??undefined,clientId:job.client_id??undefined,offerId:job.offer_id??undefined,recipient:job.recipient,subject:rendered.subject,html:rendered.html,text:rendered.text,archive:{templateName:template.name,coupleNames:names,eventDate}});if(!result.success)throw new Error(result.error??"Delivery failed");
+      const result=await sendTrackedEmail({templateId:template.id,leadId:job.lead_id??undefined,clientId:job.client_id??undefined,offerId:job.offer_id??undefined,recipient:job.recipient,subject:rendered.subject,html:rendered.html,text:rendered.text,archive:{templateName:template.name,coupleNames:names,eventDate}});if(!result.success)throw new Error(result.error??"Delivery failed");await finalizeAutomationDelivery({templateId:template.id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id});
       await db.execute("UPDATE automation_jobs SET status='sent',completed_at=CURRENT_TIMESTAMP,last_error=?,locked_at=NULL WHERE id=?",[result.archiveSent===false?"Client email sent; Gmail [SENT] archive copy failed.":null,job.id]);sent++;
     }catch(error){const message=error instanceof Error?error.message:"Automation failed";await db.execute("UPDATE automation_jobs SET status='failed',last_error=?,locked_at=NULL WHERE id=?",[message.slice(0,2000),item.id]);failed++}
   }

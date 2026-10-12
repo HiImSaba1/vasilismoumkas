@@ -1,21 +1,18 @@
-name: Papaki standalone release
+name: Build Moumkas Papaki Standalone
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 permissions:
   contents: read
 
 concurrency:
-  group: papaki-standalone-${{ github.ref }}
+  group: moumkas-papaki-standalone-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   build-release:
-    name: Build Linux standalone artifact
+    name: Build verified Linux standalone artifact
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -26,19 +23,73 @@ jobs:
       - name: Use Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: "22"
           cache: npm
 
-      - name: Build and verify minimal Papaki runtime
+      - name: Build with the tested Papaki release builder
         shell: bash
-        run: bash scripts/build-papaki-linux-release.sh "github-${GITHUB_RUN_NUMBER}"
+        run: |
+          set -Eeuo pipefail
+          chmod +x scripts/build-papaki-linux-release.sh
+          scripts/build-papaki-linux-release.sh "github-${GITHUB_RUN_NUMBER}"
 
-      - name: Publish tar and checksum
+      - name: Verify archive and Plesk startup contract
+        id: release
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+
+          mapfile -t archives < <(find tmp -maxdepth 1 -type f -name 'moumkas-papaki-standalone-github-*.tar.gz' -print | sort)
+          if [[ "${#archives[@]}" -ne 1 ]]; then
+            echo "Expected exactly one Moumkas standalone archive; found ${#archives[@]}." >&2
+            exit 1
+          fi
+
+          archive="${archives[0]}"
+          checksum="${archive}.sha256"
+          [[ -f "$checksum" ]] || { echo "Missing checksum: $checksum" >&2; exit 1; }
+
+          (
+            cd tmp
+            sha256sum -c "$(basename "$checksum")"
+          )
+
+          listing="$(mktemp)"
+          trap 'rm -f -- "$listing"' EXIT
+          tar -tzf "$archive" > "$listing"
+
+          required_paths=(
+            "./start.js"
+            "./.next/standalone/server.js"
+            "./.next/standalone/.next/BUILD_ID"
+            "./.next/standalone/.next/static/"
+            "./.next/standalone/public/"
+            "./PAPAKI_RELEASE_README.txt"
+            "./PAPAKI_STANDALONE_DEPLOYMENT.md"
+          )
+
+          for required_path in "${required_paths[@]}"; do
+            if ! grep -Fqx "$required_path" "$listing"; then
+              echo "Release archive is missing required path: $required_path" >&2
+              exit 1
+            fi
+          done
+
+          if grep -E '(^|/)\.env($|\.)|(^|/)storage/client-files(/|$)|(^|/)node_modules/@next/swc-' "$listing"; then
+            echo "Release archive contains a forbidden secret, private-storage, or SWC path." >&2
+            exit 1
+          fi
+
+          echo "Archive structure and startup contract: PASS"
+          echo "archive=$archive" >> "$GITHUB_OUTPUT"
+          echo "checksum=$checksum" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Moumkas Papaki release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: moumkas-papaki-standalone-${{ github.run_number }}
+          name: moumkas-papaki-standalone-${{ github.run_number }}-${{ github.sha }}
           path: |
-            tmp/moumkas-papaki-standalone-*.tar.gz
-            tmp/moumkas-papaki-standalone-*.tar.gz.sha256
+            ${{ steps.release.outputs.archive }}
+            ${{ steps.release.outputs.checksum }}
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 7

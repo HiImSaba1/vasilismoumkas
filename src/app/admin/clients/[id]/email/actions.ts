@@ -12,6 +12,7 @@ import { reconcileAutomationAfterDeliveredTemplate,scheduleManualEmail } from "@
 import { getInvoicePaymentSummary } from "@/lib/invoice-payments";
 import { clientEmailFinancialValues,withClientFinancialParagraph } from "@/lib/client-email-financials";
 import { listPortfolioEmailImages } from "@/lib/portfolio";
+import { athensLocalToUtcSql } from "@/lib/athens-time";
 
 export type ClientEmailSendState={success:boolean;message:string;deliveryId?:string};
 
@@ -44,7 +45,7 @@ export async function sendClientEmailAction(_state:ClientEmailSendState,formData
     const storedTemplate=await getEmailTemplate(input.templateId,client.eventType,input.locale);
     const template=storedTemplate?withClientFinancialParagraph({...storedTemplate,headerImage:input.headerImage||null}):null;
     if(!template?.isActive)throw new Error("Template is unavailable or paused.");
-    if(input.deliveryAction==="schedule"){if(!input.scheduledFor||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input.scheduledFor))throw new Error("Choose a valid Greece date and time.");await scheduleManualEmail({clientId:client.id,leadId:client.leadId,offerId:offer?.id,templateId:template.id,scheduledFor:input.scheduledFor.replace("T"," ")+":00",headerImage:template.headerImage,subject:input.subject,bodyText:input.bodyText});revalidateAdminWorkflow({leadId:client.leadId,clientId:client.id});return{success:true,message:`Template ${template.id} scheduled for ${input.scheduledFor.replace("T"," ")} Greece time.`}}
+    if(input.deliveryAction==="schedule"){const scheduledForUtc=input.scheduledFor?athensLocalToUtcSql(input.scheduledFor):null;if(!scheduledForUtc)throw new Error("Choose a valid Greece date and time.");await scheduleManualEmail({clientId:client.id,leadId:client.leadId,offerId:offer?.id,templateId:template.id,scheduledFor:scheduledForUtc,headerImage:template.headerImage,subject:input.subject,bodyText:input.bodyText});revalidateAdminWorkflow({leadId:client.leadId,clientId:client.id});return{success:true,message:`Template ${template.id} scheduled for ${input.scheduledFor?.replace("T"," ")} Greece time.`}}
     const origin=(process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000").replace(/\/$/,"");
     const offerUrl=offer?`${origin}/offer/${offer.slug}`:"";
     const portalUrl=portal?`${origin}/portal/${portal.slug}`:"";
