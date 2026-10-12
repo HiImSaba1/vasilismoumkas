@@ -48,7 +48,17 @@ requireText(guide, /Rollback/i, "deployment guide includes rollback");
 requireText(guide, /\.env\.production\.local/, "deployment guide preserves the production environment file");
 requireText(eslintConfig, /\.next-playwright\/\*\*/, "generated Playwright output is excluded from lint");
 requireText(eslintConfig, /files:\s*\[["']start\.js["']\][\s\S]*no-require-imports["']:\s*["']off/, "Plesk CommonJS wrapper has a narrow lint override");
-requireText(workflow, /runs-on:\s*ubuntu-latest[\s\S]*node-version:\s*22[\s\S]*build-papaki-linux-release\.sh[\s\S]*upload-artifact@v4/, "GitHub builds and publishes the Linux standalone artifact");
+requireText(workflow, /workflow_dispatch:/, "GitHub release workflow remains manually dispatched");
+requireText(workflow, /permissions:[\s\S]*contents:\s*read/, "GitHub release workflow keeps read-only repository permissions");
+requireText(workflow, /concurrency:[\s\S]*group:\s*moumkas-papaki-standalone-[^\n]+[\s\S]*cancel-in-progress:\s*false/, "GitHub release workflow serializes Moumkas releases without cancelling an active build");
+requireText(workflow, /runs-on:\s*ubuntu-latest/, "GitHub release workflow builds on Linux");
+requireText(workflow, /node-version:\s*["']?22["']?/, "GitHub release workflow uses Node.js 22");
+requireText(workflow, /scripts\/build-papaki-linux-release\.sh/, "GitHub release workflow reuses the tested Papaki release builder");
+requireText(workflow, /\.\/start\.js[\s\S]*\.\/\.next\/standalone\/server\.js[\s\S]*\.\/\.next\/standalone\/\.next\/BUILD_ID/, "GitHub release workflow verifies the existing Plesk startup contract");
+requireText(workflow, /\.\/\.next\/standalone\/\.next\/static\/[\s\S]*\.\/\.next\/standalone\/public\//, "GitHub release workflow verifies standalone static and public assets");
+requireText(workflow, /sha256sum\s+-c/, "GitHub release workflow verifies the archive checksum");
+requireText(workflow, /\.env[\s\S]*storage\/client-files/, "GitHub release workflow rejects environment files and private client storage");
+requireText(workflow, /upload-artifact@v4[\s\S]*name:\s*moumkas-papaki-standalone-/, "GitHub publishes a Moumkas-specific Linux standalone artifact");
 for (const ignored of ["/tmp/", "/database/production-seed.sql", "/storage/client-files/", "/.next/", "/.next-*/"]) {
   if (!gitignore.includes(ignored)) throw new Error(`FAIL - Git ignores sensitive or generated path ${ignored}`);
   checks.push(`PASS - Git ignores ${ignored}`);
