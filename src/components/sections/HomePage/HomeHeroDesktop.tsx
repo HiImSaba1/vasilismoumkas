@@ -9,23 +9,24 @@ import { ArrowDown } from "lucide-react";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
 import ImageComponent from "../ImageComponent";
 import AnimatedHeadline from "@/components/animations/AnimatedHeadline";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
 gsap.registerPlugin(SplitText);
 
-const TopSubtext = () => (
+const TopSubtext = ({content}:{content:HomepageSettings["hero"]}) => (
   <div className="flex justify-between w-full mb-4 text-[clamp(14px,1.1vw,18px)] uppercase font-semibold pb-4">
-    <p className="hero-subtext-item text-left w-1/3">For modern</p>
-    <p className="hero-subtext-item text-center w-1/3">Romantic souls</p>
-    <p className="hero-subtext-item text-right w-1/3">Emotional & timeless</p>
+    <p className="hero-subtext-item text-left w-1/3">{content.topLeft}</p>
+    <p className="hero-subtext-item text-center w-1/3">{content.topCenter}</p>
+    <p className="hero-subtext-item text-right w-1/3">{content.topRight}</p>
   </div>
 );
 
-const BottomIndicators = () => (
+const BottomIndicators = ({content}:{content:HomepageSettings["hero"]}) => (
   <div className="flex items-end justify-between w-full pt-6">
     <div className="flex items-center gap-2 indicator-icon w-1/3">
       <ArrowDown className="w-5 h-5" />
       <p className="indicator-text-p text-[18px] lowercase tracking-tight">
-        Scroll for portraits
+        {content.bottomLeft}
       </p>
     </div>
     <div className="indicator-icon flex justify-center w-1/3">
@@ -41,13 +42,13 @@ const BottomIndicators = () => (
       </div>
     </div>
     <div className="flex items-center justify-end gap-2 w-1/3 indicator-icon">
-      <p className="indicator-text-p text-[18px] ">with passion & elegance</p>
+      <p className="indicator-text-p text-[18px] ">{content.bottomRight}</p>
       <ArrowDown className="w-5 h-5" />
     </div>
   </div>
 );
 
-export default function HomeHeroDesktop() {
+export default function HomeHeroDesktop({content}:{content:HomepageSettings["hero"]}) {
   const { isFirstVisit } = useInitialLoad();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -61,7 +62,7 @@ export default function HomeHeroDesktop() {
       const allText = containerRef.current.querySelectorAll(
         ".hero-subtext-item, .indicator-text-p",
       );
-      allText.forEach((item: any) => {
+      allText.forEach((item) => {
         const split = new SplitText(item, {
           type: "words",
           wordsClass: "word-inner",
@@ -103,17 +104,17 @@ export default function HomeHeroDesktop() {
       >
         <div className="relative h-full w-full px-8 flex flex-col justify-end pb-10">
           <div className="w-full flex flex-col">
-            <TopSubtext />
+            <TopSubtext content={content}/>
             <div className="py-8">
               <AnimatedHeadline animationDelay={isFirstVisit ? 0.2 : 0.5} />
             </div>
-            <BottomIndicators />
+            <BottomIndicators content={content}/>
           </div>
         </div>
       </section>
       <section className="intro relative h-svh w-full flex items-center justify-center bg-off-white z-50">
         <div className="w-full px-8">
-          <ImageComponent isDesktop={true} />
+          <ImageComponent isDesktop={true} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
         </div>
       </section>
     </>

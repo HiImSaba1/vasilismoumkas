@@ -1,28 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useSyncExternalStore } from "react";
 import HomeHeroDesktop from "./HomeHeroDesktop";
 import HomeHeroMobile from "./HomeHeroMobile";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
-export default function HomeHero() {
-  const [isClient, setIsClient] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true); // Default to desktop to avoid flickering
-
-  useEffect(() => {
-    setIsClient(true);
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+export default function HomeHero({content}:{content:HomepageSettings["hero"]}) {
+  const isClient=useSyncExternalStore(()=>()=>{},()=>true,()=>false);
+  const isDesktop=useSyncExternalStore(callback=>{const media=window.matchMedia("(min-width: 1024px)");media.addEventListener("change",callback);return()=>media.removeEventListener("change",callback)},()=>window.matchMedia("(min-width: 1024px)").matches,()=>true);
 
   if (!isClient) return <div className="h-dvh bg-white" />;
 
   return (
     <div className="relative w-full overflow-hidden">
-      {isDesktop ? <HomeHeroDesktop /> : <HomeHeroMobile />}
+      {isDesktop ? <HomeHeroDesktop content={content}/> : <HomeHeroMobile content={content}/>}
     </div>
   );
 }

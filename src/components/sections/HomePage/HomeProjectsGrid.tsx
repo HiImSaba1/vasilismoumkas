@@ -8,6 +8,7 @@ import { ProjectsData } from "@/app/(site)/data/ProjectsData";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import RevealButton from "@/components/ui/RevealButton";
 import ProjectCard from "../Projects/ProjectCard";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
@@ -16,9 +17,10 @@ if (typeof window !== "undefined") {
 interface HomeProjectsGridProps {
   isBaptism?: boolean;
   compact?: boolean;
+  content?:HomepageSettings["portfolio"];
 }
 
-const HomeProjectsGrid = ({ isBaptism = false, compact = false }: HomeProjectsGridProps) => {
+const HomeProjectsGrid = ({ isBaptism = false, compact = false,content }: HomeProjectsGridProps) => {
   // Φιλτράρουμε τα projects βάσει κατηγορίας
   const filteredProjects = ProjectsData.filter(
     (p) => p.category === (isBaptism ? "Baptism" : "Wedding")
@@ -33,19 +35,18 @@ const HomeProjectsGrid = ({ isBaptism = false, compact = false }: HomeProjectsGr
         <div className="flex-1 pr-4 ">
           <RevealAnimation>
             <span className="text-[14px] xs:text-[16px] md:text-lg lg:text-xl uppercase tracking-wide text-ink-black/80 leading-[1.1] block">
-              Best of {isBaptism ? "Baptism" : "Wedding"} <br className="hidden xs:block" />
-              Portfolio works
+              {content?.title??<>Best of {isBaptism ? "Baptism" : "Wedding"} <br className="hidden xs:block" />Portfolio works</>}
             </span>
           </RevealAnimation>
         </div>
         <div className="shrink-0">
           <RevealAnimation>
             <RevealButton
-              href="/portfolio"
+              href={content?.buttonHref??"/portfolio"}
               className="px-4 py-2 "
             >
               <div className="flex items-center gap-2">
-                <span className="text-md xs:text-xl">Full Portfolio</span>
+                <span className="text-md xs:text-xl">{content?.buttonLabel??"Full Portfolio"}</span>
                 <span className="text-sm md:text-2xl translate-y-px">→</span>
               </div>
             </RevealButton>

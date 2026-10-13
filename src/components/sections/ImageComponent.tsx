@@ -3,7 +3,7 @@
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import React, { useRef, useState, useEffect, FC } from "react";
+import React, { useRef, useSyncExternalStore, FC } from "react";
 import Link from "next/link";
 
 if (typeof window !== "undefined") {
@@ -11,15 +11,8 @@ if (typeof window !== "undefined") {
 }
 
 function useWindowSize() {
-  const [width, setWidth] = useState(0);
-  useEffect(() => {
-    // Set initial width
-    setWidth(window.innerWidth);
-    const handleResize = () => setWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  return { width };
+  const width=useSyncExternalStore(callback=>{window.addEventListener("resize",callback);return()=>window.removeEventListener("resize",callback)},()=>window.innerWidth,()=>1024);
+  return {width};
 }
 
 interface ImageComponentProps {
@@ -28,6 +21,8 @@ interface ImageComponentProps {
   desktopSrc?: string;
   mobileSrc?: string;
   projectSlug?: string;
+  projectHref?: string;
+  alt?: string;
 }
 
 const ImageComponent: FC<ImageComponentProps> = ({ 
@@ -36,6 +31,8 @@ const ImageComponent: FC<ImageComponentProps> = ({
   desktopSrc = "/uploads/portfolio/natasa-stamatis/b85c1421-3758-44f5-bc57-d6b5bf761807.webp",
   mobileSrc = "/uploads/portfolio/natasa-stamatis/7099163a-198e-4cf5-ab4c-799e6ae5757a.webp",
   projectSlug = "natasa-stamatis",
+  projectHref,
+  alt="Natasa & Stamatis wedding",
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -118,16 +115,16 @@ const ImageComponent: FC<ImageComponentProps> = ({
       } ${className ?? ""}`}
     >
       <Link 
-        href={`/portfolio/project/${projectSlug}`} 
+        href={projectHref??`/portfolio/project/${projectSlug}`}
         className="block absolute inset-0 w-full h-full cursor-pointer group"
-        aria-label="View Natasa & Stamatis project"
+        aria-label={alt}
       >
         <div className="absolute inset-0 overflow-hidden">
           {currentSrc && (
             <img
               ref={imgRef}
               src={currentSrc}
-              alt="Natasa & Stamatis wedding"
+              alt={alt}
               className="absolute top-0 left-0 w-full h-[120%] object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               style={{ top: "-10%" }} 
             />

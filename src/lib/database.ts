@@ -23,6 +23,9 @@ export function getDatabase() {
       user: required("DB_USER"),
       password: required("DB_PASSWORD", true),
       charset: "utf8mb4",
+      // CRM DATETIME values are stored as UTC. Keep mysql2 parsing stable even
+      // when Passenger, local development and the database use different zones.
+      timezone: "Z",
       waitForConnections: true,
       connectionLimit: Number(process.env.DB_CONNECTION_LIMIT ?? 6),
       queueLimit: 0,

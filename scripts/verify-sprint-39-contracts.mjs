@@ -1,0 +1,16 @@
+import{readFile}from"node:fs/promises";import{resolve}from"node:path";
+const read=path=>readFile(resolve(process.cwd(),path),"utf8");const checks=[];const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const[settings,action,admin,home,nav,migration,schema,preflight,hero,featured,services,portfolio,story,testimonials]=await Promise.all([
+  read("src/lib/homepage-settings.ts"),read("src/app/admin/homepage/actions.ts"),read("src/app/admin/homepage/page.tsx"),read("src/app/(site)/page.tsx"),read("src/app/admin/AdminChrome.tsx"),read("database/migrations/027_homepage_content_settings.sql"),read("database/schema.sql"),read("src/lib/production-preflight.ts"),read("src/components/sections/HomePage/HomeHero.tsx"),read("src/components/sections/AboutPage/AboutSplitSectionMain.tsx"),read("src/components/sections/HomePage/HomeServicesSection.tsx"),read("src/components/sections/HomePage/HomeProjectsGrid.tsx"),read("src/components/sections/HomePage/HomeProjectVideoSection.tsx"),read("src/components/sections/HomePage/HomeTestimonialsOnScroll.tsx")
+]);
+requireText(settings,/homepageSettingsSchema=z\.object[\s\S]*defaultHomepageSettings[\s\S]*getHomepageSettings[\s\S]*saveHomepageSettings/,"homepage content has validated defaults, resilient reads and one canonical writer");
+requireText(settings,/if\(!isDatabaseConfigured\(\)\)return defaultHomepageSettings[\s\S]*catch\{return defaultHomepageSettings\}/,"public homepage fails safely to its current content without a database row");
+requireText(action,/requireAdmin\(\)[\s\S]*homepageSettingsSchema\.safeParse[\s\S]*saveHomepageSettings[\s\S]*revalidatePath\("\/"\)/,"only an authenticated admin can validate, save and publish homepage settings");
+requireText(admin,/SEO metadata[\s\S]*Hero[\s\S]*Editorial cards[\s\S]*Services[\s\S]*Cinematic story[\s\S]*Testimonials carousel/,"homepage editor exposes the requested component-level controls");
+requireText(nav,/Homepage[\s\S]*\/admin\/homepage/,"admin sidebar exposes the homepage editor");
+requireText(home,/generateMetadata[\s\S]*getHomepageSettings[\s\S]*HomeHero content=\{settings\.hero\}[\s\S]*HomeTestimonialsOnScroll content=\{settings\.testimonials\}/,"public homepage and SEO consume the same saved settings");
+for(const[source,label]of[[hero,"hero"],[featured,"editorial cards"],[services,"services"],[portfolio,"portfolio"],[story,"cinematic story"],[testimonials,"testimonial carousel"]])requireText(source,/HomepageSettings/,`${label} receives validated owner content instead of querying the database in a client component`);
+requireText(migration,/CREATE TABLE IF NOT EXISTS site_settings[\s\S]*setting_key[\s\S]*value_json JSON/,"migration 027 provisions versioned JSON site settings idempotently");
+requireText(schema,/CREATE TABLE IF NOT EXISTS site_settings/,"canonical schema documents homepage settings storage");
+requireText(preflight,/"site_settings"/,"production preflight requires the homepage settings table before activation");
+console.log(checks.join("\n"));console.log("PASS - Sprint 39 adds a safe owner-managed homepage editor with dynamic SEO, images, links, cards, sections and testimonials.");

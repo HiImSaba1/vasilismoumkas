@@ -8,8 +8,9 @@ import { ArrowDown } from "lucide-react";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
 import ImageComponent from "../ImageComponent";
 import AnimatedHeadline from "@/components/animations/AnimatedHeadline";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
-export default function HomeHeroMobile() {
+export default function HomeHeroMobile({content}:{content:HomepageSettings["hero"]}) {
   const { isFirstVisit } = useInitialLoad();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,18 +51,18 @@ export default function HomeHeroMobile() {
     >
       <div className="flex justify-between w-full mb-2 overflow-hidden text-[13px] uppercase shrink-0">
         <div className="overflow-hidden">
-          <p className="mobile-reveal font-semibold">For modern</p>
+          <p className="mobile-reveal font-semibold">{content.topLeft}</p>
         </div>
         <div className="overflow-hidden">
-          <p className="mobile-reveal">Romantic souls</p>
+          <p className="mobile-reveal">{content.topCenter}</p>
         </div>
         <div className="overflow-hidden">
-          <p className="mobile-reveal font-semibold">Emotional & timeless</p>
+          <p className="mobile-reveal font-semibold">{content.topRight}</p>
         </div>
       </div>
 
       <div className="relative w-full grow overflow-hidden mb-2">
-        <ImageComponent isDesktop={false} />
+        <ImageComponent isDesktop={false} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
       </div>
 
       <div className="shrink-0 mb-4">
@@ -72,8 +73,7 @@ export default function HomeHeroMobile() {
         <div className="mobile-indicator flex flex-col gap-1 w-1/3">
           <ArrowDown className="w-5 h-5" />
           <p className="text-[14px] uppercase leading-tight tracking-wide">
-            Scroll for <br />
-            portraits
+            {content.bottomLeft}
           </p>
         </div>
         <div className="mobile-indicator flex justify-center w-1/3">
@@ -89,7 +89,7 @@ export default function HomeHeroMobile() {
         <div className="mobile-indicator flex flex-col items-end text-right gap-1 w-1/3">
           <ArrowDown className="w-5 h-5" />
           <p className="text-[14px] uppercase leading-tight tracking-wide">
-            with passion <br /> & elegance
+            {content.bottomRight}
           </p>
         </div>
       </div>

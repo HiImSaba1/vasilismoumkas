@@ -3,26 +3,24 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import SeoImage from "@/components/ui/SeoImage";
-import { ProjectsData } from "@/app/(site)/data/ProjectsData";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function AboutSplitSectionMain() {
+export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["featuredCards"]}) {
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const kimLeeProject = ProjectsData.find((p) => p.slug === "kim-lee");
 
   const galleryItems = [
     {
       id: 1,
-      src: "/uploads/portfolio/suzanna-alexis/aac71937-16fa-49a4-b564-0e4ab82563b6.webp",
-      description: "suzanna-alexis-wedding-photography",
-      location: "Greece",
-      couple: "Suzanna & Alexis",
-      href: "/portfolio/project/suzanna-alexis",
+      src: cards[0].image,
+      description: cards[0].alt,
+      location: cards[0].subtitle,
+      couple: cards[0].title,
+      href: cards[0].href,
       // Centered wrapper
       wrapperClasses: "w-full flex justify-center py-12",
       // Using responsive inline styles that cleanly override from mobile to desktop using clamp() correctly
@@ -36,11 +34,11 @@ export default function AboutSplitSectionMain() {
     },
    {
       id: 2,
-      src: "/vm_img/Projects/Kim_Lee/vasilis_moumkas_kim_lee_2.webp",
-      description: "kim-lee-santorini-wedding-photography",
-      location: kimLeeProject?.location || "Santorini Island, Greece",
-      couple: kimLeeProject?.title || "Kim & Lee",
-      href: "/portfolio/project/kim-lee",
+      src: cards[1].image,
+      description: cards[1].alt,
+      location: cards[1].subtitle,
+      couple: cards[1].title,
+      href: cards[1].href,
       // Desktop positioning wrapper: Center Right (pushed to the right)
       wrapperClasses: "w-full flex justify-end py-6 md:py-10  md:pr-[8%]",
       cardStyle: {
@@ -53,11 +51,11 @@ export default function AboutSplitSectionMain() {
    
     {
       id: 3,
-      src: "/uploads/portfolio/eva-george/6276177f-1335-488b-8546-ffe92398f7c6.webp",
-      description: "eva-george-wedding-photography",
-      location: "Greece",
-      couple: "Eva & George",
-      href: "/portfolio/project/eva-george",
+      src: cards[2].image,
+      description: cards[2].alt,
+      location: cards[2].subtitle,
+      couple: cards[2].title,
+      href: cards[2].href,
       // Desktop positioning wrapper: Bottom Left (pushed to the left)
       wrapperClasses: "w-full flex justify-start py-12 md:py-20 md:pl-[8%]",
       cardStyle: {

@@ -2,21 +2,20 @@
 
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
-import { motion, useScroll, useTransform, useInView } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
 import SeoImage from "@/components/ui/SeoImage";
 import RevealAnimation from "@/components/animations/RevealAnimation";
 import HomeMarqueeImages from "./HomeMarqueeImages";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
-import { homeServices } from "@/app/(site)/data/ServicesData";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-export default function HomeServicesSection() {
+export default function HomeServicesSection({content}:{content:HomepageSettings["services"]}) {
   return (
     <section className="relative py-10 lg:py-20 w-full overflow-hidden">
       <div className="flex flex-col gap-12 lg:gap-20 bg-ink-black/97 px-4 pt-12 lg:pt-20 pb-4">
@@ -27,7 +26,7 @@ export default function HomeServicesSection() {
                 className="text-[10px] lg:text-[12px] text-soft-yellow uppercase font-medium tracking-wider mb-2"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
-                Expertise
+                {content.eyebrow}
               </h2>
             </RevealAnimation>
             <RevealAnimation>
@@ -35,16 +34,14 @@ export default function HomeServicesSection() {
                 className="text-off-white text-[clamp(20px,2.5vw,30px)] font-medium leading-[1.1]"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
-                Capturing the art of human connection through a lens of
-                sophistication transforming moments into a permanent visual
-                legacy.
+                {content.intro}
               </p>
             </RevealAnimation>
           </div>
         </div>
 
         <div className="flex flex-col bg-ink-black px-4 lg:px-5">
-          <ServicesList />
+          <ServicesList services={content.items}/>
           <HomeMarqueeImages />
         </div>
       </div>
@@ -52,15 +49,15 @@ export default function HomeServicesSection() {
   );
 }
 
-function ServicesList() {
+function ServicesList({services}:{services:HomepageSettings["services"]["items"]}) {
   return (
     <ul className="relative flex flex-col w-full">
-      {homeServices.map((service, index) => (
+      {services.map((service, index) => (
         <ServiceCard
           key={service.title}
           service={service}
           index={index}
-          isLast={index === homeServices.length - 1}
+          isLast={index === services.length - 1}
         />
       ))}
     </ul>
@@ -72,16 +69,11 @@ function ServiceCard({
   index,
   isLast,
 }: {
-  service: any;
+  service: HomepageSettings["services"]["items"][number];
   index: number;
   isLast: boolean;
 }) {
   const imageContainerRef = useRef(null);
-
-  const isImageInView = useInView(imageContainerRef, {
-    once: true,
-    margin: "0px 0px -10% 0px",
-  });
 
   const { scrollYProgress } = useScroll({
     target: imageContainerRef,
@@ -124,7 +116,7 @@ function ServiceCard({
 
           <div className="flex flex-col gap-8">
             <ul className="flex gap-1 flex-wrap max-w-sm">
-              {service.keywords.map((keyword: string) => (
+              {service.keywords.map((keyword) => (
                 <li key={keyword} className="overflow-hidden">
                   <RevealAnimation>
                     <span className="inline-block text-[12px]  text-off-white border border-off-white/30 uppercase px-2 py-1">

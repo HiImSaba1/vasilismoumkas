@@ -6,15 +6,15 @@ import Autoplay from "embla-carousel-autoplay";
 import SeoImage from "@/components/ui/SeoImage";
 import { AnimatePresence } from "framer-motion";
 import gsap from "gsap";
-import { TestimonialsData } from "@/app/(site)/data/TestimonialsData";
 import RevealAnimation from "@/components/animations/RevealAnimation";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import { useGSAP } from "@gsap/react";
 import { SplitText } from "gsap/SplitText";
+import type {HomepageSettings} from "@/lib/homepage-settings";
 
 gsap.registerPlugin(SplitText);
 
-const HomeTestimonialsOnScroll = () => {
+const HomeTestimonialsOnScroll = ({content}:{content:HomepageSettings["testimonials"]}) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const autoplay = useRef(Autoplay({ delay: 7000, stopOnInteraction: false }));
 
@@ -67,7 +67,7 @@ const HomeTestimonialsOnScroll = () => {
         <div className="relative mb-12 inline-block">
           <RevealAnimation>
             <span className="font-saans-bold text-center text-[14px] md:text-xl uppercase tracking-[0.215em] text-ink-black pb-6 block">
-              Couple <br /> Testimonials
+              {content.title}
             </span>
           </RevealAnimation>
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24">
@@ -86,9 +86,9 @@ const HomeTestimonialsOnScroll = () => {
             ref={emblaMainRef}
           >
             <div className="flex flex-row">
-              {TestimonialsData.map((item, index) => (
+              {content.items.map((item, index) => (
                 <div
-                  key={item.id}
+                  key={`${item.couple}-${index}`}
                   className="flex-[0_0_100%] min-w-0 flex items-center justify-center"
                 >
                   <AnimatePresence mode="wait">
@@ -105,9 +105,9 @@ const HomeTestimonialsOnScroll = () => {
         <div className="w-full max-w-3xl mt-0">
           <div className="overflow-hidden" ref={emblaThumbsRef}>
             <div className="flex gap-0 md:gap-2 justify-center py-2">
-              {TestimonialsData.map((item, index) => (
+              {content.items.map((item, index) => (
                 <button
-                  key={`thumb-${item.id}`}
+                  key={`thumb-${item.couple}-${index}`}
                   onClick={() => onThumbClick(index)}
                   className={`relative flex-[0_0_40px] md:flex-[0_0_50px] aspect-square overflow-hidden transition-all duration-500 border-2 ${
                     index === selectedIndex
@@ -116,7 +116,7 @@ const HomeTestimonialsOnScroll = () => {
                   }`}
                 >
                   <SeoImage
-                    src={item.profileImage}
+                    src={item.image}
                     description={`testimonial-thumb-${item.couple.toLowerCase()}`}
                     location="greece-italy"
                     fill
@@ -133,7 +133,7 @@ const HomeTestimonialsOnScroll = () => {
   );
 };
 
-function TestimonialSlide({ item }: { item: (typeof TestimonialsData)[number] }) {
+function TestimonialSlide({ item }: { item: HomepageSettings["testimonials"]["items"][number] }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
@@ -183,8 +183,8 @@ function TestimonialSlide({ item }: { item: (typeof TestimonialsData)[number] })
     >
       <div className="slide-img relative w-46 h-58 md:w-72 md:h-96 mb-8 md:mb-12 overflow-hidden">
         <SeoImage
-          src={item.profileImage}
-          description={`testimonial-portrait-${item.couple.toLowerCase()}`}
+          src={item.image}
+          description={item.alt}
           location="greece-italy"
           fill
           className="object-cover"

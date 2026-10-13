@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("Sprint01Verify", "Sprint02Verify", "Sprint03BrowserPrepare", "Sprint03Verify", "Sprint04Verify", "Sprint05BrowserPrepare", "Sprint05AVerify", "Sprint05BVerify", "Sprint05CVerify", "Sprint05DVerify", "Sprint06Verify", "Sprint07Verify", "Sprint08Verify", "Sprint09Verify", "Sprint10Verify", "Sprint11Verify", "Sprint12Verify", "Sprint13Verify", "Sprint14Verify", "Sprint15Verify", "Sprint16Verify", "Sprint17Verify", "Sprint18Verify", "Sprint19Verify", "Sprint20Verify", "Sprint21Verify", "Sprint22Verify", "Sprint23Verify", "Sprint24Verify", "Sprint25Verify", "Sprint26Verify", "Sprint27Verify", "Sprint28Verify", "Sprint29Verify", "Sprint30Verify", "Sprint31Verify", "Sprint32Verify", "Sprint33Verify", "Sprint34Verify", "Sprint35Verify", "Sprint36Verify", "Sprint37Verify", "SeedInvoiceDemo", "RemoveInvoiceDemo", "SeedCalendarDemo", "RemoveCalendarDemo")]
+    [ValidateSet("Sprint01Verify", "Sprint02Verify", "Sprint03BrowserPrepare", "Sprint03Verify", "Sprint04Verify", "Sprint05BrowserPrepare", "Sprint05AVerify", "Sprint05BVerify", "Sprint05CVerify", "Sprint05DVerify", "Sprint06Verify", "Sprint07Verify", "Sprint08Verify", "Sprint09Verify", "Sprint10Verify", "Sprint11Verify", "Sprint12Verify", "Sprint13Verify", "Sprint14Verify", "Sprint15Verify", "Sprint16Verify", "Sprint17Verify", "Sprint18Verify", "Sprint19Verify", "Sprint20Verify", "Sprint21Verify", "Sprint22Verify", "Sprint23Verify", "Sprint24Verify", "Sprint25Verify", "Sprint26Verify", "Sprint27Verify", "Sprint28Verify", "Sprint29Verify", "Sprint30Verify", "Sprint31Verify", "Sprint32Verify", "Sprint33Verify", "Sprint34Verify", "Sprint35Verify", "Sprint36Verify", "Sprint37Verify", "Sprint38Verify", "Sprint39Verify", "SeedInvoiceDemo", "RemoveInvoiceDemo", "SeedCalendarDemo", "RemoveCalendarDemo")]
     [string]$Action = "Sprint01Verify"
 )
 
@@ -65,6 +65,8 @@ $Sprint34ResultFile = Join-Path $ArtifactDirectory "sprint-34-results.txt"
 $Sprint35ResultFile = Join-Path $ArtifactDirectory "sprint-35-results.txt"
 $Sprint36ResultFile = Join-Path $ArtifactDirectory "sprint-36-results.txt"
 $Sprint37ResultFile = Join-Path $ArtifactDirectory "sprint-37-results.txt"
+$Sprint38ResultFile = Join-Path $ArtifactDirectory "sprint-38-results.txt"
+$Sprint39ResultFile = Join-Path $ArtifactDirectory "sprint-39-results.txt"
 $script:ActiveLogFile = $null
 
 Set-Location -LiteralPath $ProjectRoot
@@ -1002,6 +1004,55 @@ function Invoke-Sprint37Verification {
     } catch { Write-RunnerLine ""; Write-RunnerLine "FAIL - Review the Sprint 37 result file."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; throw } finally { $script:ActiveLogFile=$null; Write-Host "Verification output saved to: $Sprint37ResultFile" -ForegroundColor Yellow }
 }
 
+function Invoke-Sprint38Verification {
+    New-Item -ItemType Directory -Force -Path $ArtifactDirectory | Out-Null
+    [System.IO.File]::WriteAllText($Sprint38ResultFile, "Moumkas Admin Sprint 38 verification$([Environment]::NewLine)", $Utf8NoBom)
+    $script:ActiveLogFile=$Sprint38ResultFile
+    try {
+        Write-RunnerLine "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"
+        Write-RunnerLine "Project: $ProjectRoot"
+        Invoke-Step "SPRINT 37 REGRESSION" { & node scripts/verify-sprint-37-contracts.mjs }
+        Invoke-Step "SPRINT 38 MANUAL SCHEDULING AND RUNNER CONTRACTS" { & node scripts/verify-sprint-38-contracts.mjs }
+        Invoke-Step "SCOPED ESLINT" { & npx eslint "src/lib/database.ts" "src/lib/automations.ts" "src/lib/automation-runner.ts" "src/components/admin/EditableEmailComposer.tsx" "src/app/admin/automations/page.tsx" "src/app/admin/leads/actions.ts" "src/app/admin/clients/[id]/email/actions.ts" "scripts/verify-sprint-38-contracts.mjs" }
+        Invoke-Step "TYPESCRIPT" { & npx tsc --noEmit }
+        Invoke-Step "PRODUCTION BUILD" {
+            $buildDir=Join-Path $ProjectRoot ".next"
+            if(Test-Path -LiteralPath $buildDir){Remove-Item -LiteralPath $buildDir -Recurse -Force}
+            $previousSkipStandalone=$env:NEXT_SKIP_STANDALONE
+            $env:NEXT_SKIP_STANDALONE="1"
+            & npm run build
+            if($LASTEXITCODE -ne 0){
+                Write-RunnerLine "Windows locked a generated build path. Retrying once from a clean .next directory."
+                Start-Sleep -Seconds 2
+                if(Test-Path -LiteralPath $buildDir){Remove-Item -LiteralPath $buildDir -Recurse -Force}
+                & npm run build
+            }
+            $env:NEXT_SKIP_STANDALONE=$previousSkipStandalone
+        }
+        Write-RunnerLine ""; Write-RunnerLine "PASS - Sprint 38 fixes explicit 000-009 delivery timing, Greece-time queue display, runner visibility and duplicate cancellation evidence."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"
+    } catch { Write-RunnerLine ""; Write-RunnerLine "FAIL - Review the Sprint 38 result file."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; throw } finally { $script:ActiveLogFile=$null; Write-Host "Verification output saved to: $Sprint38ResultFile" -ForegroundColor Yellow }
+}
+
+function Invoke-Sprint39Verification {
+    New-Item -ItemType Directory -Force -Path $ArtifactDirectory | Out-Null
+    [System.IO.File]::WriteAllText($Sprint39ResultFile, "Moumkas Admin Sprint 39 verification$([Environment]::NewLine)", $Utf8NoBom)
+    $script:ActiveLogFile=$Sprint39ResultFile
+    try {
+        Write-RunnerLine "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; Write-RunnerLine "Project: $ProjectRoot"
+        Invoke-Step "SPRINT 38 REGRESSION" { & node scripts/verify-sprint-38-contracts.mjs }
+        Invoke-Step "SPRINT 39 HOMEPAGE CONTENT CONTRACTS" { & node scripts/verify-sprint-39-contracts.mjs }
+        Invoke-Step "SCOPED ESLINT" { & npx eslint "src/lib/homepage-settings.ts" "src/lib/production-preflight.ts" "src/app/admin/homepage/actions.ts" "src/app/admin/homepage/page.tsx" "src/app/admin/AdminChrome.tsx" "src/app/(site)/page.tsx" "src/components/sections/HomePage/HomeHero.tsx" "src/components/sections/HomePage/HomeHeroDesktop.tsx" "src/components/sections/HomePage/HomeHeroMobile.tsx" "src/components/sections/ImageComponent.tsx" "src/components/sections/AboutPage/AboutSplitSectionMain.tsx" "src/components/sections/HomePage/HomeServicesSection.tsx" "src/components/sections/HomePage/HomeProjectsGrid.tsx" "src/components/sections/HomePage/HomeProjectVideoSection.tsx" "src/components/sections/HomePage/HomeTestimonialsOnScroll.tsx" "scripts/verify-sprint-39-contracts.mjs" }
+        Invoke-Step "TYPESCRIPT" { & npx tsc --noEmit }
+        Invoke-Step "PRODUCTION BUILD" {
+            $buildDir=Join-Path $ProjectRoot ".next-sprint39-release"; if(Test-Path -LiteralPath $buildDir){Remove-Item -LiteralPath $buildDir -Recurse -Force}
+            $previousSkipStandalone=$env:NEXT_SKIP_STANDALONE; $previousDistDir=$env:NEXT_DIST_DIR
+            $env:NEXT_SKIP_STANDALONE="1"; $env:NEXT_DIST_DIR=".next-sprint39-release"; & npm run build
+            $env:NEXT_SKIP_STANDALONE=$previousSkipStandalone; $env:NEXT_DIST_DIR=$previousDistDir
+        }
+        Write-RunnerLine ""; Write-RunnerLine "PASS - Sprint 39 adds validated owner-managed homepage content while preserving protected layout and defaults."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"
+    } catch { Write-RunnerLine ""; Write-RunnerLine "FAIL - Review the Sprint 39 result file."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; throw } finally { $script:ActiveLogFile=$null; Write-Host "Verification output saved to: $Sprint39ResultFile" -ForegroundColor Yellow }
+}
+
 if ($Action -eq "Sprint01Verify") { Invoke-Sprint01Verification }
 if ($Action -eq "Sprint02Verify") { Invoke-Sprint02Verification }
 if ($Action -eq "Sprint03BrowserPrepare") { Invoke-Sprint03BrowserPreparation }
@@ -1044,6 +1095,8 @@ if ($Action -eq "Sprint34Verify") { Invoke-Sprint34Verification }
 if ($Action -eq "Sprint35Verify") { Invoke-Sprint35Verification }
 if ($Action -eq "Sprint36Verify") { Invoke-Sprint36Verification }
 if ($Action -eq "Sprint37Verify") { Invoke-Sprint37Verification }
+if ($Action -eq "Sprint38Verify") { Invoke-Sprint38Verification }
+if ($Action -eq "Sprint39Verify") { Invoke-Sprint39Verification }
 if ($Action -eq "SeedInvoiceDemo") { & node --env-file=.env.development.local scripts/seed-invoice-payment-demo.mjs --confirm-local-invoice-demo; if ($LASTEXITCODE -ne 0) { throw "Local invoice demo seed failed with exit code $LASTEXITCODE." } }
 if ($Action -eq "RemoveInvoiceDemo") { & node --env-file=.env.development.local scripts/seed-invoice-payment-demo.mjs --confirm-local-invoice-demo --remove; if ($LASTEXITCODE -ne 0) { throw "Local invoice demo removal failed with exit code $LASTEXITCODE." } }
 if ($Action -eq "SeedCalendarDemo") { & node --env-file=.env.development.local scripts/seed-calendar-demo.mjs --confirm-local-calendar-demo; if ($LASTEXITCODE -ne 0) { throw "Local calendar demo seed failed with exit code $LASTEXITCODE." } }
