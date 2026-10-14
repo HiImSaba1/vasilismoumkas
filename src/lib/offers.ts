@@ -12,6 +12,10 @@ export type OfferStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" 
 export const OFFER_VALIDITY_DAYS = 30;
 export type OfferRecord = { id:number; slug:string; leadId:string|null; eventType:"wedding"|"baptism"; language:"en"|"gr"; clientName:string|null; clientEmail:string|null; status:OfferStatus; expiresAt:string|null; sentAt:string|null; firstViewedAt:string|null; lastViewedAt:string|null; viewCount:number; acceptedAt:string|null; payload:CrmPayload & { response?: boolean & Record<string,unknown> }; createdAt:string; updatedAt:string };
 type OfferRow = RowDataPacket & { id:number; slug:string; lead_id:string|null; event_type:OfferRecord["eventType"]; language:OfferRecord["language"]; client_name:string|null; client_email:string|null; status:OfferStatus; expires_at:Date|string|null; sent_at:Date|string|null; first_viewed_at:Date|string|null; last_viewed_at?:Date|string|null; view_count?:number|string; accepted_at:Date|string|null; payload:string|CrmPayload; created_at:Date|string; updated_at:Date|string };
+type BookingDocumentType="questionnaire"|"contract"|"invoice";
+type LeadAcceptanceRow=RowDataPacket&{event_date:Date|null;phone:string|null;ceremony_location:string|null;reception_location:string|null};
+type DocumentTemplateRow=RowDataPacket&{document_type:BookingDocumentType;template_key:string};
+export class OfferAcceptanceError extends Error{constructor(message:string){super(message);this.name="OfferAcceptanceError"}}
 const iso=(value:Date|string|null)=>value?new Date(value).toISOString():null;
 const map=(row:OfferRow):OfferRecord=>({id:Number(row.id),slug:row.slug,leadId:row.lead_id,eventType:row.event_type,language:row.language,clientName:row.client_name,clientEmail:row.client_email,status:row.status,expiresAt:iso(row.expires_at),sentAt:iso(row.sent_at),firstViewedAt:iso(row.first_viewed_at),lastViewedAt:iso(row.last_viewed_at??null),viewCount:Number(row.view_count??0),acceptedAt:iso(row.accepted_at),payload:typeof row.payload==="string"?JSON.parse(row.payload):row.payload,createdAt:iso(row.created_at)!,updatedAt:iso(row.updated_at)!});
 
@@ -84,16 +88,24 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
   try{await connection.beginTransaction();const[rows]=await connection.query<OfferRow[]>("SELECT * FROM offers WHERE slug=? FOR UPDATE",[slug]);const offer=rows[0];const publiclyAvailable=offer&&(["sent","viewed"] as OfferStatus[]).includes(offer.status)&&(!offer.expires_at||new Date(offer.expires_at)>new Date());if(!offer||(!options?.adminOverride&&!publiclyAvailable)||offer.status==="accepted")throw new Error(offer?.status==="accepted"?"Offer is already accepted":"Offer unavailable");
     const payload=typeof offer.payload==="string"?JSON.parse(offer.payload):offer.payload;payload.response={...input,submittedAt:new Date().toISOString()};
     if(input.action==="accept"){
-      const[leadDates]=offer.lead_id?await connection.query<(RowDataPacket&{event_date:Date|null})[]>("SELECT event_date FROM leads WHERE id=? LIMIT 1",[offer.lead_id]):[[]];
+      const workflowLocale=offer.language==="en"?"en":"el";
+      const[leadRows]=offer.lead_id?await connection.query<LeadAcceptanceRow[]>("SELECT event_date,phone,ceremony_location,reception_location FROM leads WHERE id=? FOR UPDATE",[offer.lead_id]):[[]];
+      const lead=leadRows[0];
+      if(offer.lead_id&&!lead)throw new OfferAcceptanceError("The connected lead could not be found. No client records were created.");
+      if(offer.lead_id){
+        const[templateRows]=await connection.query<DocumentTemplateRow[]>("SELECT document_type,template_key FROM lead_document_templates WHERE event_type=? AND locale=? AND is_active=1 AND document_type IN ('questionnaire','contract','invoice')",[offer.event_type,workflowLocale]);
+        const templates=new Map(templateRows.map(row=>[row.document_type,row.template_key]));
+        const required:BookingDocumentType[]=["questionnaire","contract","invoice"];
+        const missing=required.filter(type=>!templates.has(type));
+        if(missing.length)throw new OfferAcceptanceError(`Booking documents are not configured for this ${offer.event_type} ${workflowLocale.toUpperCase()} workflow: ${missing.join(", ")}. No client records were created.`);
+        await connection.execute("UPDATE leads SET event_type=?,workflow_locale=?,status='converted' WHERE id=?",[offer.event_type,workflowLocale,offer.lead_id]);
+      }
       const[linkedClients]=await connection.query<(RowDataPacket&{id:string})[]>("SELECT id FROM clients WHERE accepted_offer_id=? OR (lead_id IS NOT NULL AND lead_id=?) LIMIT 1",[offer.id,offer.lead_id]);
-      dateLock=await lockClientEventDate(connection,leadDates[0]?.event_date??null,linkedClients[0]?.id);
+      dateLock=await lockClientEventDate(connection,lead?.event_date??null,linkedClients[0]?.id);
       await connection.execute("UPDATE offers SET status='accepted',accepted_at=CURRENT_TIMESTAMP,payload=? WHERE id=?",[JSON.stringify(payload),offer.id]);
-      if(offer.lead_id)await connection.execute("UPDATE leads SET status='converted' WHERE id=?",[offer.lead_id]);
       const[existing]=await connection.query<(RowDataPacket&{id:string})[]>("SELECT id FROM clients WHERE accepted_offer_id=? OR (lead_id IS NOT NULL AND lead_id=?) LIMIT 1",[offer.id,offer.lead_id]);
       const clientId=existing[0]?.id??randomUUID();
       if(!existing[0]){
-        const[leadRows]=offer.lead_id?await connection.query<(RowDataPacket&{phone:string|null;event_date:Date|null;ceremony_location:string|null;reception_location:string|null})[]>("SELECT phone,event_date,ceremony_location,reception_location FROM leads WHERE id=? LIMIT 1",[offer.lead_id]):[[]];
-        const lead=leadRows[0];
         await connection.execute("INSERT INTO clients (id,lead_id,accepted_offer_id,event_type,couple_names,email,phone,event_date,ceremony_location,reception_location) VALUES (?,?,?,?,?,?,?,?,?,?)",[clientId,offer.lead_id,offer.id,offer.event_type,input.name,input.email,lead?.phone??null,lead?.event_date??null,lead?.ceremony_location??null,lead?.reception_location??null]);
       }else await connection.execute("UPDATE clients SET accepted_offer_id=?,couple_names=?,email=? WHERE id=?",[offer.id,input.name,input.email,clientId]);
       await connection.execute("INSERT IGNORE INTO onboarding (id,client_id) VALUES (?,?)",[randomUUID(),clientId]);
@@ -101,7 +113,7 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
       if(offer.lead_id){
         const selected=Object.values(payload).find(value=>value&&typeof value==="object"&&!Array.isArray(value)&&(value as Record<string,unknown>).ph===input.packageName) as Record<string,unknown>|undefined;
         const collectionPrice=String(selected?.p??"").replace(/[^0-9.,]/g,"").replace(",",".");
-        const profilePrefix=`${offer.event_type}-${offer.language}`;
+        const profilePrefix=`${offer.event_type}-${workflowLocale}`;
         for(const[type,template]of [["questionnaire",`${profilePrefix}-questionnaire`],["contract",`${profilePrefix}-contract`],["invoice",`${profilePrefix}-invoice`]] as const){
           const data=type==="contract"?{language:offer.language,contract_text:contractForWorkflowProfile(offer.event_type,offer.language)}:type==="invoice"?{client_name:input.name,client_email:input.email,collection_name:input.packageName??"Selected collection",collection_hours:String(selected?.h??""),collection_photographers:String(selected?.phot??""),collection_images:String(selected?.img??""),collection_album_prints:String(selected?.bx??""),collection_extras:String(selected?.cs??""),subtotal:collectionPrice,total:collectionPrice,prepaid_amount:"0",balance_due:collectionPrice,installment_1_status:"unpaid",installment_1_amount:collectionPrice,installment_1_due:"",payment_url:""}:{};
           await connection.execute("INSERT IGNORE INTO lead_document_records (id,lead_id,document_type,template_key,status,document_data) VALUES (?,?,?,?,\"draft\",?)",[randomUUID(),offer.lead_id,type,template,JSON.stringify(data)]);
