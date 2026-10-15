@@ -28,23 +28,27 @@ export default function HomeCurtainTransition({
       const featuredTrack=featuredTrackRef.current;
       if(!wrapper||!runway||!featuredTrack)return;
 
-      const featuredDistance=()=>Math.max(0,featuredTrack.scrollHeight-window.innerHeight);
+      const featuredDistance=()=>Math.max(0,featuredTrack.scrollHeight-window.innerHeight+120);
+      const syncRunway=()=>{runway.style.height=`${featuredDistance()}px`;};
+      syncRunway();
 
-      gsap.to(featuredTrack,{
+      const movement=gsap.to(featuredTrack,{
         y:()=>-featuredDistance(),
         ease:"none",
         scrollTrigger:{
           id:"home-featured-card-track",
           trigger:wrapper,
           start:"top top",
-          endTrigger:runway,
-          end:"bottom bottom",
+          end:()=>`+=${featuredDistance()}`,
           scrub:true,
           invalidateOnRefresh:true,
         },
       });
 
-      ScrollTrigger.refresh();
+      const observer=new ResizeObserver(()=>{syncRunway();movement.scrollTrigger?.refresh();});
+      observer.observe(featuredTrack);
+      requestAnimationFrame(()=>{syncRunway();ScrollTrigger.refresh();});
+      return()=>observer.disconnect();
     });
 
     return()=>media.revert();
@@ -52,12 +56,12 @@ export default function HomeCurtainTransition({
 
   return <section ref={scrollWrapperRef} className="relative z-[60] w-full bg-off-white">
     <div className="relative z-[60] w-full bg-off-white md:sticky md:top-0 md:h-screen md:overflow-hidden">
-      <div ref={featuredTrackRef} className="relative bg-off-white md:h-[180vh] will-change-transform">
+      <div ref={featuredTrackRef} className="relative bg-off-white will-change-transform">
         {featured}
       </div>
     </div>
-    <div ref={runwayRef} aria-hidden="true" className="hidden md:block md:h-[80vh]" />
-    <div className="relative z-[70] bg-off-white">
+    <div ref={runwayRef} aria-hidden="true" className="hidden md:block" />
+    <div className="relative z-[70] bg-off-white md:min-h-screen md:isolate">
       {video}
     </div>
   </section>;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -22,18 +22,12 @@ const InstagramHeroDesktop = () => {
   const visualWrapperRef = useRef<HTMLDivElement>(null);
   const secondaryLinksRef = useRef<HTMLDivElement>(null);
 
-  const [hasMounted, setHasMounted] = useState(false);
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   useGSAP(
     () => {
       if (
-        !hasMounted ||
         !labelRef.current ||
         !nameRef.current || // Added this check
         !buttonsRef.current
@@ -97,7 +91,7 @@ const InstagramHeroDesktop = () => {
         splitLabel.revert();
       };
     },
-    { scope: containerRef, dependencies: [hasMounted, isFirstVisit] },
+    { scope: containerRef, dependencies: [isFirstVisit] },
   );
 
   const exploreLinks = [

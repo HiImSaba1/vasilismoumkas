@@ -16,11 +16,10 @@ if (typeof window !== "undefined") {
 
 interface HomeProjectsGridProps {
   isBaptism?: boolean;
-  compact?: boolean;
   content?:HomepageSettings["portfolio"];
 }
 
-const HomeProjectsGrid = ({ isBaptism = false, compact = false,content }: HomeProjectsGridProps) => {
+const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) => {
   // Φιλτράρουμε τα projects βάσει κατηγορίας
   const filteredProjects = ProjectsData.filter(
     (p) => p.category === (isBaptism ? "Baptism" : "Wedding")
@@ -30,7 +29,7 @@ const HomeProjectsGrid = ({ isBaptism = false, compact = false,content }: HomePr
   const displayedProjects = content?.items.map(item=>({title:item.title,location:item.location,thumbnail:item.image,href:item.href,alt:item.alt}))??filteredProjects.slice(0, 2);
 
   return (
-    <section className={`${compact ? "min-h-0" : "min-h-dvh"} w-full px-4 lg:px-8 py-6 bg-off-white relative`}>
+    <section className="relative min-h-0 w-full bg-off-white px-4 py-6 lg:px-8">
       <div className="flex flex-row items-center justify-between mt-10 md:mt-16 mb-6 pt-8 md:pt-12 relative w-full">
         <div className="flex-1 pr-4 ">
           <RevealAnimation>

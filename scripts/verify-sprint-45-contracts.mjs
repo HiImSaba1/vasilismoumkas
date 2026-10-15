@@ -1,0 +1,16 @@
+import{readFileSync}from"node:fs";
+import{resolve}from"node:path";
+const read=path=>readFileSync(resolve(process.cwd(),path),"utf8");
+const checks=[];
+const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const settings=read("src/lib/homepage-settings.ts"),page=read("src/app/admin/homepage/page.tsx"),actions=read("src/app/admin/homepage/actions.ts"),marquee=read("src/components/sections/HomePage/HomeMarqueeImages.tsx"),card=read("src/components/sections/Projects/ProjectCard.tsx"),reorder=read("src/app/admin/portfolio/PortfolioImageReorder.tsx"),form=read("src/app/admin/portfolio/PortfolioForm.tsx"),video=read("src/components/sections/HomePage/HomeProjectVideoSection.tsx"),featured=read("src/components/sections/AboutPage/AboutSplitSectionMain.tsx");
+requireText(settings,/marqueeImages:z\.array\(localPath\)\.length\(12\)\.default\(HOMEPAGE_BLACK_FOOTER\.slice\(0,12\)\)/,"existing homepage records receive a twelve-image marquee default");
+requireText(page,/listPortfolioEmailImages[\s\S]*Panel title="Homepage marquee"[\s\S]*settings\.marqueeImages\.map[\s\S]*WebsiteImageSelect/,"Homepage admin selects every marquee image from the portfolio library");
+requireText(actions,/marqueeImages:Array\.from\(\{length:12\}[\s\S]*marquee\.\$\{index\}/,"Homepage save persists the exact twelve-image marquee order");
+requireText(marquee,/Array\.from\(new Set\(images\)\)[\s\S]*\[\.\.\.shuffledImages, \.\.\.shuffledImages\]/,"public marquee renders the managed pool continuously");
+requireText(card,/isMobile \|\| !hoverOverlay/,"featured Eva and George image cannot remain clipped by an offscreen reveal trigger");
+requireText(reorder,/name="existingPhotos"[\s\S]*draggable[\s\S]*onDragStart[\s\S]*onDrop[\s\S]*Move image/,"portfolio images support drag-and-drop and exact manual arrow reordering");
+requireText(form,/PortfolioImageReorder photos=\{project\.photoset\}/,"portfolio editor submits the visible ordered gallery");
+requireText(featured,/pb-\[30px\][\s\S]*md:pb-\[9vh\]/,"featured section uses a thirty-pixel mobile boundary while preserving desktop spacing");
+requireText(video,/py-\[30px\][\s\S]*md:py-24/,"video content starts after the requested mobile spacing");
+console.log(checks.join("\n"));console.log(`PASS - ${checks.length} Sprint 45 homepage media contracts verified.`);

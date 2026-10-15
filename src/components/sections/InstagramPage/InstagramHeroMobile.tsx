@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -23,18 +23,12 @@ const InstagramHeroMobile = () => {
   const imageRef = useRef<HTMLImageElement>(null); // New ref for the actual image
   const secondaryLinksRef = useRef<HTMLDivElement>(null);
 
-  const [hasMounted, setHasMounted] = useState(false);
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   useGSAP(
     () => {
       if (
-        !hasMounted ||
         !labelRef.current ||
         !nameRef.current || // Added this check
         !buttonsRef.current
@@ -98,7 +92,7 @@ const InstagramHeroMobile = () => {
         splitLabel.revert();
       };
     },
-    { scope: containerRef, dependencies: [hasMounted, isFirstVisit] },
+    { scope: containerRef, dependencies: [isFirstVisit] },
   );
 
   const exploreLinks = [
@@ -120,9 +114,10 @@ const InstagramHeroMobile = () => {
           ref={visualWrapperRef}
           className="absolute inset-0 z-0 overflow-hidden"
         >
+          {/* eslint-disable-next-line @next/next/no-img-element -- animated full-bleed hero uses its source asset directly */}
           <img
             ref={imageRef}
-            src="/uploads/portfolio/suzanna-alexis/f7817736-a4e2-46a9-8f97-f98274e49d12.webp"
+            src="/vm_img/About/11-bridal-portrait-veil-bouquet-foreground-vasilis-moumkas.jpg"
             alt="Hero Background"
             className="w-full h-full object-cover"
           />
@@ -147,10 +142,7 @@ const InstagramHeroMobile = () => {
               >
                 (Where real moments become art)
               </span>
-              <AnimatedBorder
-                className="mt-2 bg-soft-yellow/40 w-full"
-                delay={mainEntranceDelay + 0.3}
-              />
+
             </div>
 
             {/* 3. Quick Links */}

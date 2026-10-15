@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import SeoImage from "@/components/ui/SeoImage";
 import RevealAnimation from "@/components/animations/RevealAnimation";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
-import { HOMEPAGE_BLACK_FOOTER } from "@/app/(site)/data/Pages-Photoset/Homepage";
+import {HOMEPAGE_BLACK_FOOTER} from "@/app/(site)/data/Pages-Photoset/Homepage";
 
 const seoKeywords = [
   "Family",
@@ -16,19 +16,19 @@ const seoKeywords = [
   "Photographer",
 ];
 
-const HomeMarqueeImages = () => {
+const HomeMarqueeImages = ({images=HOMEPAGE_BLACK_FOOTER.slice(0,12)}:{images?:string[]}) => {
   const gapClass = "gap-4 md:gap-6";
   const [shuffledImages, setShuffledImages] = useState<string[]>([]);
 
   useEffect(() => {
     // Unique shuffle logic
-    const uniquePool = Array.from(new Set(HOMEPAGE_BLACK_FOOTER));
+    const uniquePool = Array.from(new Set(images));
     const shuffle = () => {
       return [...uniquePool].sort(() => 0.5 - Math.random()).slice(0, 12);
     };
     const frame=requestAnimationFrame(()=>setShuffledImages(shuffle()));
     return()=>cancelAnimationFrame(frame);
-  }, []);
+  }, [images]);
 
   return (
     <div className="bg-off-white px-0 lg:px-5 pb-10 lg:pb-16 pt-12 md:pt-20 text-ink-black">

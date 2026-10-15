@@ -14,11 +14,11 @@ export default async function HomePage() {
     <>
       <HomeHero content={settings.hero}/>
       <HomeCurtainTransition
-        featured={<AboutSplitSectionMain cards={settings.featuredCards}/>}
+        featured={<AboutSplitSectionMain cards={settings.featuredCards} editorial={settings.featuredEditorial}/>}
         video={<HomeProjectVideoSection content={settings.story}/>}
       />
       <div className="relative z-[70] bg-off-white">
-        <HomeMarqueeImages/>
+        <HomeMarqueeImages images={settings.marqueeImages}/>
         <HomeProjectsGrid content={settings.portfolio}/>
         <HomeTestimonialsOnScroll content={settings.testimonials}/>
       </div>

@@ -112,7 +112,7 @@ export default function HomeHeroDesktop({content}:{content:HomepageSettings["her
           </div>
         </div>
       </section>
-      <section className="intro relative h-svh w-full flex items-center justify-center bg-off-white z-50">
+      <section className="intro relative w-full bg-off-white z-50">
         <div className="w-full px-8">
           <ImageComponent isDesktop={true} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
         </div>

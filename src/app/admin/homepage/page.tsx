@@ -2,6 +2,8 @@ import type {ReactNode} from "react";
 import Link from "next/link";
 import {AdminPageHeader} from "@/components/admin/AdminPageHeader";
 import {getHomepageSettings} from "@/lib/homepage-settings";
+import {listPortfolioEmailImages} from "@/lib/portfolio";
+import {WebsiteImageSelect} from "@/components/admin/WebsiteImageSelect";
 import {saveHomepageSettingsAction} from "./actions";
 
 const input="mt-2 w-full border border-ink-black/20 bg-white px-4 py-3 text-sm normal-case";
@@ -14,7 +16,7 @@ const cardLabels=["Centered first row","Right second row","Left third row"];
 const projectLabels=["Left project card","Staggered right project card"];
 
 export default async function Page({searchParams}:{searchParams:Promise<{saved?:string}>}){
-  const[settings,query]=await Promise.all([getHomepageSettings(),searchParams]);
+  const[settings,query,images]=await Promise.all([getHomepageSettings(),searchParams,listPortfolioEmailImages()]);
 
   return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
     <AdminPageHeader eyebrow="Website content" title="Homepage editor" description="Edit the exact content used by the current homepage sections. Layout, card positions and animations remain protected." action={<Link href="/" target="_blank" className="border border-ink-black px-4 py-3 text-[11px] uppercase">Preview homepage ↗</Link>}/>
@@ -30,8 +32,13 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
         {Object.entries(settings.hero).map(([key,val])=><Field key={key} name={`hero.${key}`} title={key.replaceAll(/([A-Z])/g," $1")} value={val}/>)}</Panel>
 
       <Panel title="Featured metro cards" copy="Three editable cards in center, right and left rows">
+        <Field name="featured.eyebrow" title="Section eyebrow" value={settings.featuredEditorial.eyebrow}/>
+        <Field name="featured.title" title="Section title" value={settings.featuredEditorial.title}/>
+        <Field name="featured.subtitle" title="Section subheading" value={settings.featuredEditorial.subtitle} area wide/>
         {settings.featuredCards.map((item,index)=><fieldset key={index} className="grid gap-3 border border-ink-black/10 p-4 md:col-span-2 md:grid-cols-2">
           <legend className="px-2 uppercase">{cardLabels[index]}</legend>
+          <Field name={`featured.${index}.title`} title="Editorial title above card" value={settings.featuredEditorial.items[index].title}/>
+          <Field name={`featured.${index}.subtitle`} title="Editorial subheading above card" value={settings.featuredEditorial.items[index].subtitle} area/>
           <Field name={`card.${index}.title`} title="Name" value={item.title}/>
           <Field name={`card.${index}.subtitle`} title="Location / metadata" value={item.subtitle}/>
           <Field name={`card.${index}.href`} title="Card URL" value={item.href} wide/>
@@ -60,6 +67,10 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`portfolio.${index}.image`} title="Project image path" value={item.image} wide/>
           <Field name={`portfolio.${index}.alt`} title="Image alt text" value={item.alt} wide/>
         </fieldset>)}
+      </Panel>
+
+      <Panel title="Homepage marquee" copy="Twelve images selected from the portfolio library">
+        {settings.marqueeImages.map((image,index)=><WebsiteImageSelect key={`${index}-${image}`} name={`marquee.${index}`} label={`Marquee image ${index+1}`} value={image} images={images}/>)}
       </Panel>
 
       <Panel title="Testimonials carousel" copy="Names, locations, quotes and portraits">

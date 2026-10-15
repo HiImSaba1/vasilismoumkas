@@ -145,7 +145,7 @@ export default function OfferLayout({ initialData, imageSeed = 0,content }: Offe
         images={content.collectionImages}
       />
       <BaptismOfferGallery lang={lang} content={content.gallery}/>
-      <HomeProjectsGrid compact content={{title:content.projects.title[lang],buttonLabel:content.projects.buttonLabel[lang],buttonHref:content.projects.buttonHref,items:content.projects.items}}/>
+      <HomeProjectsGrid content={{title:content.projects.title[lang],buttonLabel:content.projects.buttonLabel[lang],buttonHref:content.projects.buttonHref,items:content.projects.items}}/>
       <OfferFaqSection lang={lang} type={eventType} content={content.faq[lang]} />
       <OfferOutro lang={lang} isBaptism={isBaptism} imageOffset={imageSeed}/>
       <Footer isBaptism={isBaptism} imagePool={content.gallery.images}/>

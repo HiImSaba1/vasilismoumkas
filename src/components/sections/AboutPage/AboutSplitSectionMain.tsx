@@ -1,84 +1,36 @@
 "use client";
 
-import React from "react";
+import RevealAnimation from "@/components/animations/RevealAnimation";
+import AnimatedBorder from "@/components/animations/AnimatedBorder";
+import ProjectCard from "@/components/sections/Projects/ProjectCard";
 import Link from "next/link";
-import ParallaxImage from "@/components/animations/ParallaxImage";
 import type {HomepageSettings} from "@/lib/homepage-settings";
 
-export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["featuredCards"]}) {
-  const galleryItems = [
-    {
-      id: 1,
-      src: cards[0].image,
-      description: cards[0].alt,
-      location: cards[0].subtitle,
-      couple: cards[0].title,
-      href: cards[0].href,
-      wrapperClasses: "flex w-full justify-center py-4 md:row-start-1 md:grid md:grid-cols-[20%_60%_20%] md:py-0",
-      cardClasses: "mx-auto h-auto w-[82%] max-w-[290px] aspect-[4/5] md:col-start-2 md:h-full md:w-full md:max-w-none md:aspect-auto",
-      sizes: "(max-width: 768px) 82vw, 60vw",
-    },
-   {
-      id: 2,
-      src: cards[1].image,
-      description: cards[1].alt,
-      location: cards[1].subtitle,
-      couple: cards[1].title,
-      href: cards[1].href,
-      wrapperClasses: "flex w-full justify-end py-6 md:row-start-2 md:grid md:grid-cols-[30%_30%_40%] md:py-0",
-      cardClasses: "ml-auto h-auto w-[90%] max-w-[380px] aspect-[4/5] md:col-start-3 md:h-full md:w-full md:max-w-none md:aspect-auto",
-      sizes: "(max-width: 768px) 90vw, 40vw",
-    },
-   
-    {
-      id: 3,
-      src: cards[2].image,
-      description: cards[2].alt,
-      location: cards[2].subtitle,
-      couple: cards[2].title,
-      href: cards[2].href,
-      wrapperClasses: "flex w-full justify-start py-12 md:row-start-3 md:grid md:grid-cols-[30%_40%_30%] md:py-0",
-      cardClasses: "mr-auto h-auto w-[68%] max-w-[270px] aspect-[3/4] md:col-start-1 md:h-full md:w-full md:max-w-none md:aspect-auto",
-      sizes: "(max-width: 768px) 68vw, 30vw",
-    },
-  ];
+const fallbackEditorial:HomepageSettings["featuredEditorial"]={eyebrow:"Selected stories",title:"Love, light & legacy",subtitle:"Three celebrations shaped by place, emotion and the quiet beauty found between the defining moments.",items:[{title:"Documenting love",subtitle:"Honest gestures and modern romance, preserved with an editorial sensitivity."},{title:"Following light",subtitle:"Celebrations shaped by landscape, atmosphere and the unmistakable light of Greece."},{title:"Creating legacy",subtitle:"Timeless photographs that hold the feeling of the day long after it has passed."}]};
 
-  return (
-    <section
-      className="relative flex h-auto w-full flex-col justify-center overflow-hidden bg-off-white px-2 pb-[15%] pt-4 md:h-full"
-    >
-      <div className="relative mx-auto flex w-full max-w-[1536px] flex-col space-y-2 md:grid md:h-full md:grid-cols-1 md:grid-rows-3 md:space-y-0">
-        {galleryItems.map((item) => (
-          <div key={item.id} className={item.wrapperClasses}>
-            <div className={`metro-card flex flex-col ${item.cardClasses}`}>
-              <Link
-                href={item.href}
-                className="relative block min-h-0 w-full flex-1 cursor-pointer overflow-hidden"
-              >
-                <div className="relative w-full h-full overflow-hidden">
-                  <ParallaxImage
-                    src={item.src}
-                    description={item.description}
-                    location={item.location}
-                    sizes={item.sizes}
-                    className="h-full w-full"
-                  />
-                </div>
-              </Link>
+export default function AboutSplitSectionMain({cards,editorial=fallbackEditorial}:{cards:HomepageSettings["featuredCards"];editorial?:HomepageSettings["featuredEditorial"]}) {
+  return <section className="relative min-h-full w-full bg-off-white px-4 pb-[30px] pt-[30px] md:pb-[9vh] lg:px-8">
+    <div className="absolute left-0 top-0 w-full px-4 lg:px-8"><AnimatedBorder origin="left" duration={1.8} className="bg-ink-black/70"/></div>
+    <header className="mx-auto flex w-full max-w-[1280px] flex-col gap-5 py-18 md:max-w-4xl md:items-center md:text-center">
+      <RevealAnimation><span className="block text-[16px] uppercase tracking-[0.18em] text-ink-black/55">{editorial.eyebrow}</span></RevealAnimation>
+      <RevealAnimation><span className="block text-[clamp(2.2rem,6vw,6.5rem)] uppercase leading-[0.88] tracking-[-0.055em] text-ink-black">{editorial.title}</span></RevealAnimation>
+      <RevealAnimation><p className="max-w-2xl text-md leading-relaxed text-ink-black/65 md:text-xl">{editorial.subtitle}</p></RevealAnimation>
+    </header>
 
-              {/* Couple Name & Place Below Card */}
-              <div className="mt-4 flex flex-col items-center justify-between px-4 text-ink-black md:flex-row md:px-8">
-                <span className="text-[16px] md:text-[19px] font-medium uppercase tracking-wider">
-                  {item.couple}
-                </span>
-                <span className="text-[13px] md:text-[14px] opacity-75 tracking-wide uppercase">
-                  {item.location}
-                </span>
-              </div>
-            </div>
+    <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-x-8 gap-y-20 md:grid-cols-2 md:grid-rows-2 md:gap-x-14 md:gap-y-0">
+      {cards.map((card,index)=>{
+        const copy=editorial.items[index];
+        const placement=index===0?"md:col-start-1 md:row-start-1":index===1?"md:col-start-2 md:row-start-1 md:pt-[30vh]":"md:col-start-1 md:row-start-2";
+        return <article key={card.href} className={placement}>
+          <div className="flex flex-col justify-end pb-8 md:pb-10">
+            <RevealAnimation><span className="text-[14px] uppercase tracking-[0.2em] text-ink-black/45">0{index+1}</span></RevealAnimation>
+            <RevealAnimation><span className="mt-2 block max-w-xl text-[clamp(1.35rem,2.2vw,2.65rem)] uppercase leading-[0.98] tracking-[-0.035em] text-ink-black">{copy.title}</span></RevealAnimation>
+            <RevealAnimation><p className="my-4 max-w-md text-sm leading-relaxed text-ink-black/60 md:text-xl">{copy.subtitle}</p></RevealAnimation>
+            <RevealAnimation><Link href={card.href} className="mt-5 inline-flex w-fit border-b border-ink-black/45 pb-1 text-[16px] uppercase tracking-[0.16em] text-ink-black transition-opacity hover:opacity-55">View story &#8599;</Link></RevealAnimation>
           </div>
-        ))}
-      </div>
-    </section>
-  );
+          <ProjectCard project={{title:card.title,location:card.subtitle,thumbnail:card.image,href:card.href,alt:card.alt}} index={index} hoverOverlay={false} portrait/>
+        </article>;
+      })}
+    </div>
+  </section>;
 }

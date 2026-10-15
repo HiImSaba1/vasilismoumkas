@@ -1,12 +1,13 @@
 import type { Project } from "@/app/(site)/data/ProjectsData";
 import { savePortfolioAction } from "./actions";
 import { PortfolioGalleryInput } from "./PortfolioGalleryInput";
+import {PortfolioImageReorder} from "./PortfolioImageReorder";
 
 export function PortfolioForm({ project }: { project?: Project }) {
   return <form action={savePortfolioAction} className="grid gap-5">
     <input type="hidden" name="originalSlug" value={project?.slug ?? ""}/>
     <input type="hidden" name="existingHeader" value={project?.thumbnail ?? ""}/>
-    <input type="hidden" name="existingPhotos" value={JSON.stringify(project?.photoset ?? [])}/>
+    {!project&&<input type="hidden" name="existingPhotos" value="[]"/>}
 
     <div className="grid gap-4 md:grid-cols-2">
       <Field name="title" label="Project name" value={project?.title}/>
@@ -42,16 +43,8 @@ export function PortfolioForm({ project }: { project?: Project }) {
           </div>
           <p className="break-all border-t border-soft-yellow px-2 py-2 text-[10px] leading-snug">{imageTitle(project.thumbnail, `${project.title} · title image`)}</p>
         </div>}
-        {project.photoset.map((photo) => <label key={photo.src} className="border border-ink-black/15">
-          <div className="relative">
-            {/* Admin-only preview deliberately shows the original local asset. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.src} alt={photo.alt} className="aspect-square w-full object-cover"/>
-            <span className="absolute inset-x-0 bottom-0 bg-black/75 p-2 text-[12px]  uppercase text-white"><input name="removePhoto" value={photo.src} type="checkbox" className="mr-2"/>Remove</span>
-          </div>
-          <p className="break-all border-t border-ink-black/10 px-2 py-2 text-[10px] leading-snug">{imageTitle(photo.src, photo.alt)}</p>
-        </label>)}
       </div>
+      <PortfolioImageReorder photos={project.photoset} title={project.title}/>
     </section>}
 
     <button className="bg-ink-black px-5 py-4 text-sm  uppercase text-white">Save portfolio project</button>

@@ -74,8 +74,8 @@ const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = f
             ...animationProps,
             scrollTrigger: {
               trigger: containerRef.current,
-              start: "top 70%",
-              end: "top 0%",
+              start: "top 85%",
+              end: "top 15%",
               scrub: once ? false : true,
               toggleActions: once ? "play none none none" : "play none none reverse",
               once,

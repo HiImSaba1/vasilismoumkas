@@ -15,7 +15,7 @@ if (typeof window !== "undefined") {
 
 type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string};
 
-export default function ProjectCard({ project, index }: { project: ProjectCardProject; index: number }) {
+export default function ProjectCard({ project, index, hoverOverlay=true, portrait=false }: { project: ProjectCardProject; index: number; hoverOverlay?: boolean; portrait?: boolean }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const borderRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export default function ProjectCard({ project, index }: { project: ProjectCardPr
 
   useGSAP(
     () => {
-      if (!titleRef.current || !borderRef.current || !cardRef.current) return;
+      if (!hoverOverlay || !titleRef.current || !borderRef.current || !cardRef.current) return;
 
       const initSplit = () => {
         if (titleRef.current?.querySelectorAll(".word-child").length) return;
@@ -110,10 +110,10 @@ export default function ProjectCard({ project, index }: { project: ProjectCardPr
         document.fonts.ready.then(initSplit);
       }
     },
-    { scope: cardRef }
+    { scope: cardRef, dependencies:[hoverOverlay] }
   );
 
-  const initialClip = isMobile
+  const initialClip = isMobile || !hoverOverlay
     ? "polygon(0 0, 100% 0, 100% 100%, 0 100%)"
     : "polygon(0 0, 100% 0, 100% 0, 0 0)";
   const animateClip = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
@@ -121,10 +121,10 @@ export default function ProjectCard({ project, index }: { project: ProjectCardPr
   const projectLink = project.href??`/portfolio/project/${project.slug}`;
 
   return (
-    <div ref={cardRef} className="flex flex-col group cursor-pointer relative">
+    <div ref={cardRef} className={`relative flex cursor-pointer flex-col ${hoverOverlay?"group":""}`}>
       <Link
         href={projectLink}
-        className="relative mb-4 block overflow-hidden md:aspect-square xl:aspect-3/4"
+        className={`relative mb-4 block overflow-hidden ${portrait?"md:aspect-[4/5]":"md:aspect-square xl:aspect-3/4"}`}
       >
         <motion.div
           className="relative w-full md:h-full"
@@ -139,8 +139,8 @@ export default function ProjectCard({ project, index }: { project: ProjectCardPr
           {/* Mobile keeps the source image's real aspect ratio. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={project.thumbnail} alt={project.alt??project.title} loading={index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
-          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} className="hidden h-full w-full transition-transform duration-900 ease-out group-hover:scale-105 md:block"/>
-          <motion.div className="absolute inset-0 z-10 hidden flex-col items-center justify-center bg-ink-black/40 p-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:flex">
+          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} className={`hidden h-full w-full md:block ${hoverOverlay?"transition-transform duration-900 ease-out group-hover:scale-105":""}`}/>
+          {hoverOverlay&&<motion.div className="absolute inset-0 z-10 hidden flex-col items-center justify-center bg-ink-black/40 p-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:flex">
             <span
               ref={titleRef}
               className="text-center text-soft-yellow text-3xl md:text-4xl uppercase tracking-tight leading-none px-4"
@@ -154,7 +154,7 @@ export default function ProjectCard({ project, index }: { project: ProjectCardPr
             <span className="card-hover-cta mt-6 border border-soft-yellow/70 px-5 py-3 text-[11px] uppercase tracking-[0.16em] text-soft-yellow opacity-0">
               View Project
             </span>
-          </motion.div>
+          </motion.div>}
         </motion.div>
       </Link>
 
