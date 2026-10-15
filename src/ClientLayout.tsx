@@ -9,6 +9,8 @@ import PageTransitionProvider from "@/providers/PageTransitionProvider";
 import Navbar from "@/components/core/Navbar";
 import Footer from "@/components/core/Footer";
 import CookieBanner from "./components/core/CookieBanner";
+import {WebsiteSettingsProvider} from "@/providers/WebsiteSettingsContext";
+import type {WebsiteSettings} from "@/lib/website-settings";
 
 function ScrollReset() {
   const pathname = usePathname();
@@ -27,9 +29,10 @@ function ScrollReset() {
 }
 
 export default function ClientLayout({
-  children,
+  children,websiteSettings,
 }: {
   children: React.ReactNode;
+  websiteSettings:WebsiteSettings;
 }) {
   const pathname = usePathname();
 
@@ -55,7 +58,7 @@ export default function ClientLayout({
   );
 
   return (
-    <InitialLoadProvider>
+    <WebsiteSettingsProvider value={websiteSettings}><InitialLoadProvider>
         <PageTransitionProvider>
           <ReactLenis root options={lenisOptions}>
             <ScrollReset />
@@ -73,6 +76,6 @@ export default function ClientLayout({
             <CookieBanner />
           </ReactLenis>
         </PageTransitionProvider>
-    </InitialLoadProvider>
+    </InitialLoadProvider></WebsiteSettingsProvider>
   );
 }

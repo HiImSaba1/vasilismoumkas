@@ -14,11 +14,13 @@ import RevealButton from "@/components/ui/RevealButton";
 import { HOMEPAGE_WHITE_FOOTER } from "@/app/(site)/data/Pages-Photoset/Homepage";
 import { OFFER_BAPTISM_POOL } from "@/app/(site)/data/Pages-Photoset/Servicespage";
 import { weddingProposalSmallImages,type ProposalImage } from "@/app/(site)/data/proposal-image-sequence";
+import {useOptionalWebsiteSettings} from "@/providers/WebsiteSettingsContext";
 gsap.registerPlugin(SplitText, ScrollTrigger);
 interface FooterProps {
   isBaptism?: boolean;
   proposalMode?: boolean;
   hideMarquee?: boolean;
+  imagePool?:ProposalImage[];
 }
 const CustomLink = ({
   href,
@@ -95,7 +97,8 @@ const SectionLabel=({children,animationKey}:{children:React.ReactNode;animationK
 
 type SplitElement=HTMLElement&{_gsapSplitText?:SplitText};
 
-const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false }: FooterProps) => {
+const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePool }: FooterProps) => {
+  const websiteSettings=useOptionalWebsiteSettings();
   const currentYear = new Date().getFullYear();
   const footerRef = useRef(null);
   const pathname = usePathname();
@@ -107,6 +110,8 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false }: Foot
 
   useEffect(() => {
     if(hideMarquee){const timer=window.setTimeout(()=>setRandomMarquee([]),0);return()=>window.clearTimeout(timer)}
+    const configuredPool=imagePool??websiteSettings?.footer.images??[];
+    if(configuredPool.length){const timer=window.setTimeout(()=>setRandomMarquee(configuredPool),0);return()=>window.clearTimeout(timer)}
     if(proposalMode){const timer=window.setTimeout(()=>setRandomMarquee(weddingProposalSmallImages),0);return()=>window.clearTimeout(timer)}
     const activePool: string[] = isBaptism
       ? OFFER_BAPTISM_POOL
@@ -123,7 +128,7 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false }: Foot
       const timer=window.setTimeout(()=>setRandomMarquee(shuffled.map(src=>({src,alt:`Vasilis Moumkas ${isBaptism?"baptism":"wedding"} photography in Greece and Italy`}))),0);
       return()=>window.clearTimeout(timer);
     }
-  }, [pathname, isBaptism,proposalMode,hideMarquee]);
+  }, [pathname, isBaptism,proposalMode,hideMarquee,imagePool,websiteSettings?.footer.images]);
 
   useGSAP(
     () => {

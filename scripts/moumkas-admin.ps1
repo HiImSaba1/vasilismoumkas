@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet("Sprint01Verify", "Sprint02Verify", "Sprint03BrowserPrepare", "Sprint03Verify", "Sprint04Verify", "Sprint05BrowserPrepare", "Sprint05AVerify", "Sprint05BVerify", "Sprint05CVerify", "Sprint05DVerify", "Sprint06Verify", "Sprint07Verify", "Sprint08Verify", "Sprint09Verify", "Sprint10Verify", "Sprint11Verify", "Sprint12Verify", "Sprint13Verify", "Sprint14Verify", "Sprint15Verify", "Sprint16Verify", "Sprint17Verify", "Sprint18Verify", "Sprint19Verify", "Sprint20Verify", "Sprint21Verify", "Sprint22Verify", "Sprint23Verify", "Sprint24Verify", "Sprint25Verify", "Sprint26Verify", "Sprint27Verify", "Sprint28Verify", "Sprint29Verify", "Sprint30Verify", "Sprint31Verify", "Sprint32Verify", "Sprint33Verify", "Sprint34Verify", "Sprint35Verify", "Sprint36Verify", "Sprint37Verify", "Sprint38Verify", "Sprint39Verify", "Sprint40Verify", "Sprint41Verify", "Sprint42Verify", "Sprint43Verify", "SeedInvoiceDemo", "RemoveInvoiceDemo", "SeedCalendarDemo", "RemoveCalendarDemo")]
+    [ValidateSet("Sprint01Verify", "Sprint02Verify", "Sprint03BrowserPrepare", "Sprint03Verify", "Sprint04Verify", "Sprint05BrowserPrepare", "Sprint05AVerify", "Sprint05BVerify", "Sprint05CVerify", "Sprint05DVerify", "Sprint06Verify", "Sprint07Verify", "Sprint08Verify", "Sprint09Verify", "Sprint10Verify", "Sprint11Verify", "Sprint12Verify", "Sprint13Verify", "Sprint14Verify", "Sprint15Verify", "Sprint16Verify", "Sprint17Verify", "Sprint18Verify", "Sprint19Verify", "Sprint20Verify", "Sprint21Verify", "Sprint22Verify", "Sprint23Verify", "Sprint24Verify", "Sprint25Verify", "Sprint26Verify", "Sprint27Verify", "Sprint28Verify", "Sprint29Verify", "Sprint30Verify", "Sprint31Verify", "Sprint32Verify", "Sprint33Verify", "Sprint34Verify", "Sprint35Verify", "Sprint36Verify", "Sprint37Verify", "Sprint38Verify", "Sprint39Verify", "Sprint40Verify", "Sprint41Verify", "Sprint42Verify", "Sprint43Verify", "Sprint44Verify", "SeedInvoiceDemo", "RemoveInvoiceDemo", "SeedCalendarDemo", "RemoveCalendarDemo")]
     [string]$Action = "Sprint01Verify"
 )
 
@@ -71,6 +71,7 @@ $Sprint40ResultFile = Join-Path $ArtifactDirectory "sprint-40-results.txt"
 $Sprint41ResultFile = Join-Path $ArtifactDirectory "sprint-41-results.txt"
 $Sprint42ResultFile = Join-Path $ArtifactDirectory "sprint-42-results.txt"
 $Sprint43ResultFile = Join-Path $ArtifactDirectory "sprint-43-results.txt"
+$Sprint44ResultFile = Join-Path $ArtifactDirectory "sprint-44-results.txt"
 $script:ActiveLogFile = $null
 
 Set-Location -LiteralPath $ProjectRoot
@@ -1122,6 +1123,23 @@ function Invoke-Sprint43Verification {
     } catch { Write-RunnerLine ""; Write-RunnerLine "FAIL - Review the Sprint 43 result file."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; throw } finally { $script:ActiveLogFile=$null; Write-Host "Verification output saved to: $Sprint43ResultFile" -ForegroundColor Yellow }
 }
 
+function Invoke-Sprint44Verification {
+    New-Item -ItemType Directory -Force -Path $ArtifactDirectory | Out-Null
+    [System.IO.File]::WriteAllText($Sprint44ResultFile, "Moumkas Admin Sprint 44 verification$([Environment]::NewLine)", $Utf8NoBom)
+    $script:ActiveLogFile=$Sprint44ResultFile
+    try {
+        Write-RunnerLine "Started: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; Write-RunnerLine "Project: $ProjectRoot"
+        Invoke-Step "SPRINT 40 REGRESSION" { & node scripts/verify-sprint-40-contracts.mjs }
+        Invoke-Step "SPRINT 41 HOMEPAGE COMPOSITION CONTRACTS" { & node scripts/verify-sprint-41-contracts.mjs }
+        Invoke-Step "SPRINT 42 HOMEPAGE ADMIN CONTRACTS" { & node scripts/verify-sprint-42-contracts.mjs }
+        Invoke-Step "SPRINT 43 LEAD OFFER NAVIGATION CONTRACTS" { & node scripts/verify-sprint-43-contracts.mjs }
+        Invoke-Step "SPRINT 44 WEBSITE CONTENT CONTRACTS" { & node scripts/verify-sprint-44-contracts.mjs }
+        Invoke-Step "SCOPED ESLINT" { & npx eslint "src/lib/website-settings.ts" "src/providers/WebsiteSettingsContext.tsx" "src/components/admin/WebsiteImageSelect.tsx" "src/app/admin/website/actions.ts" "src/app/admin/website/page.tsx" "src/app/admin/AdminChrome.tsx" "src/components/core/Footer.tsx" "src/app/(site)/contact/page.tsx" "src/components/sections/HomePage/HomeHeroMobile.tsx" "src/app/offer/[slug]/page.tsx" "src/components/sections/OfferPage/OfferLayout.tsx" "src/components/sections/OfferPage/OfferHero.tsx" "src/components/sections/OfferPage/OfferChess.tsx" "src/components/sections/OfferPage/BaptismOfferGallery.tsx" "src/components/sections/OfferPage/OfferFaq.tsx" "src/ClientLayout.tsx" "src/app/(site)/layout.tsx" "scripts/verify-sprint-44-contracts.mjs" }
+        Invoke-Step "TYPESCRIPT" { & npx tsc --noEmit }
+        Write-RunnerLine ""; Write-RunnerLine "PASS - Sprint 44 adds managed wedding and baptism offer content, footer and Contact imagery, and the taller mobile homepage hero."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"
+    } catch { Write-RunnerLine ""; Write-RunnerLine "FAIL - Review the Sprint 44 result file."; Write-RunnerLine "Finished: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss K')"; throw } finally { $script:ActiveLogFile=$null; Write-Host "Verification output saved to: $Sprint44ResultFile" -ForegroundColor Yellow }
+}
+
 if ($Action -eq "Sprint01Verify") { Invoke-Sprint01Verification }
 if ($Action -eq "Sprint02Verify") { Invoke-Sprint02Verification }
 if ($Action -eq "Sprint03BrowserPrepare") { Invoke-Sprint03BrowserPreparation }
@@ -1170,6 +1188,7 @@ if ($Action -eq "Sprint40Verify") { Invoke-Sprint40Verification }
 if ($Action -eq "Sprint41Verify") { Invoke-Sprint41Verification }
 if ($Action -eq "Sprint42Verify") { Invoke-Sprint42Verification }
 if ($Action -eq "Sprint43Verify") { Invoke-Sprint43Verification }
+if ($Action -eq "Sprint44Verify") { Invoke-Sprint44Verification }
 if ($Action -eq "SeedInvoiceDemo") { & node --env-file=.env.development.local scripts/seed-invoice-payment-demo.mjs --confirm-local-invoice-demo; if ($LASTEXITCODE -ne 0) { throw "Local invoice demo seed failed with exit code $LASTEXITCODE." } }
 if ($Action -eq "RemoveInvoiceDemo") { & node --env-file=.env.development.local scripts/seed-invoice-payment-demo.mjs --confirm-local-invoice-demo --remove; if ($LASTEXITCODE -ne 0) { throw "Local invoice demo removal failed with exit code $LASTEXITCODE." } }
 if ($Action -eq "SeedCalendarDemo") { & node --env-file=.env.development.local scripts/seed-calendar-demo.mjs --confirm-local-calendar-demo; if ($LASTEXITCODE -ne 0) { throw "Local calendar demo seed failed with exit code $LASTEXITCODE." } }

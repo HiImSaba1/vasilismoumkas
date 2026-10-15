@@ -6,11 +6,8 @@ import { getOffer } from "@/lib/crm-records";
 import OfferResponse from "@/components/sections/OfferPage/OfferResponse";
 import { GreekUppercaseNormalizer } from "@/components/GreekUppercaseNormalizer";
 import { randomInt } from "node:crypto";
-
-const IMAGES = {
-  wedding: "/vm_img/Offer/vasilis_moumkas_offer_3.webp",
-  baptism: "/vm_img/Projects/Zoi_baptism/vasilis_moumkas_zoi_baptism_13.webp"
-};
+import {getWebsiteSettings} from "@/lib/website-settings";
+import {WebsiteSettingsProvider} from "@/providers/WebsiteSettingsContext";
 
 async function getOfferData(slug: string) {
   return getOffer(slug);
@@ -23,7 +20,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const decodedSlug = decodeURIComponent(slug);
-  const offerData = await getOfferData(decodedSlug);
+  const [offerData,websiteSettings] = await Promise.all([getOfferData(decodedSlug),getWebsiteSettings()]);
 
   if (!offerData || offerData.expired) return { title: "Offer Not Available" };
 
@@ -31,8 +28,7 @@ export async function generateMetadata({
   const naming = offerData.n || "Client";
   const isBaptism = offerData.type === "baptism";
 
-  // Επιλογή εικόνας από τα standard paths
-  const ogImage = isBaptism ? IMAGES.baptism : IMAGES.wedding;
+  const ogImage = websiteSettings.offers[isBaptism ? "baptism" : "wedding"].heroImage.src;
 
   const title = isBaptism 
     ? (isGreek ? `Προσφορά Φωτογράφισης Βάπτισης για ${naming} | Vasilis Moumkas` : `Baptism Photography Offer for ${naming} | Vasilis Moumkas`)
@@ -83,5 +79,6 @@ export default async function DynamicOfferPage({
       : ["Essential", "Most Popular", "Full Wedding Experience"];
   const status=typeof offerData._offerStatus==="string"?offerData._offerStatus:"sent";
   const imageSeed=randomInt(0,2_147_483_647);
-  return <GreekUppercaseNormalizer active={language==="gr"}><OfferLayout initialData={offerData} imageSeed={imageSeed}/><OfferResponse slug={decodedSlug} lang={language} packages={packages} status={status}/></GreekUppercaseNormalizer>;
+  const websiteSettings=await getWebsiteSettings();
+  return <WebsiteSettingsProvider value={websiteSettings}><GreekUppercaseNormalizer active={language==="gr"}><OfferLayout initialData={offerData} imageSeed={imageSeed} content={websiteSettings.offers[offerData.type==="baptism"?"baptism":"wedding"]}/><OfferResponse slug={decodedSlug} lang={language} packages={packages} status={status}/></GreekUppercaseNormalizer></WebsiteSettingsProvider>;
 }

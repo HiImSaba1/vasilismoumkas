@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import { baptismProposalMainImages,weddingProposalMainImages } from "@/app/(site)/data/proposal-image-sequence";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
+import type {OfferWebsiteContent} from "@/lib/website-settings";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -22,6 +23,7 @@ interface OfferHeroProps {
   lang: "en" | "gr";
   type: "wedding" | "baptism";
   imageIndex?: number;
+  content:OfferWebsiteContent;
 }
 
 const translations = {
@@ -60,6 +62,7 @@ const OfferHero = ({
   date,
   location,
   planner,
+  content,
 }: OfferHeroProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
@@ -68,14 +71,14 @@ const OfferHero = ({
   const labelRef = useRef<HTMLSpanElement>(null);
   const visualWrapperRef = useRef<HTMLDivElement>(null);
 
-  const selectedImage=type==="baptism"?baptismProposalMainImages[0]:weddingProposalMainImages[0];
+  const selectedImage=content.heroImage??(type==="baptism"?baptismProposalMainImages[0]:weddingProposalMainImages[0]);
   const staticImg = selectedImage.src;
 
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
 
   const localizedContent = translations[lang] || translations.en;
-  const t = localizedContent[type] || localizedContent.wedding;
+  const t = {...(localizedContent[type] || localizedContent.wedding),label:content.heroLabel[lang],intro:content.heroIntro[lang]};
 
   useGSAP(
     () => {

@@ -9,6 +9,7 @@ import OfferOutro from "./OfferOutro";
 import Footer from "@/components/core/Footer";
 import { GreekUppercaseNormalizer } from "@/components/GreekUppercaseNormalizer";
 import { BaptismOfferGallery } from "./BaptismOfferGallery";
+import type {OfferWebsiteContent} from "@/lib/website-settings";
 
 import {
   collectionConstants,
@@ -18,6 +19,7 @@ import {
 interface OfferLayoutProps {
   initialData: any;
   imageSeed?: number;
+  content:OfferWebsiteContent;
 }
 
 const defaultCollections = {
@@ -63,7 +65,7 @@ const formatCollectionData = (
   return formatted;
 };
 
-export default function OfferLayout({ initialData, imageSeed = 0 }: OfferLayoutProps) {
+export default function OfferLayout({ initialData, imageSeed = 0,content }: OfferLayoutProps) {
   const data = initialData;
 
   const lang: "en" | "gr" = data?.lang === "gr" ? "gr" : "en";
@@ -131,6 +133,7 @@ export default function OfferLayout({ initialData, imageSeed = 0 }: OfferLayoutP
         location={data.loc}
         planner={data.pl}
         imageIndex={imageSeed}
+        content={content}
       />
       <OfferChess
         lang={lang}
@@ -139,11 +142,13 @@ export default function OfferLayout({ initialData, imageSeed = 0 }: OfferLayoutP
         collection2={c2}
         collection3={c3}
         imageOffset={imageSeed}
+        images={content.collectionImages}
       />
-      {isBaptism?<BaptismOfferGallery lang={lang}/>:<HomeProjectsGrid compact />}
-      <OfferFaqSection lang={lang} type={eventType} />
+      <BaptismOfferGallery lang={lang} content={content.gallery}/>
+      <HomeProjectsGrid compact content={{title:content.projects.title[lang],buttonLabel:content.projects.buttonLabel[lang],buttonHref:content.projects.buttonHref,items:content.projects.items}}/>
+      <OfferFaqSection lang={lang} type={eventType} content={content.faq[lang]} />
       <OfferOutro lang={lang} isBaptism={isBaptism} imageOffset={imageSeed}/>
-      <Footer isBaptism={isBaptism} proposalMode={!isBaptism} hideMarquee={isBaptism}/>
+      <Footer isBaptism={isBaptism} imagePool={content.gallery.images}/>
     </main></GreekUppercaseNormalizer>
   );
 }

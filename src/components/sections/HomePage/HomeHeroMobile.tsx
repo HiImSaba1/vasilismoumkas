@@ -47,7 +47,7 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
   return (
     <section
       ref={containerRef}
-      className="h-dvh w-full flex flex-col px-4 pt-[28%] pb-6 overflow-hidden bg-off-white"
+      className="min-h-dvh w-full flex flex-col px-4 pt-[28%] pb-6 overflow-hidden bg-off-white"
     >
       <div className="flex justify-between w-full mb-2 overflow-hidden text-[13px] uppercase shrink-0">
         <div className="overflow-hidden">
@@ -61,7 +61,7 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
         </div>
       </div>
 
-      <div className="relative w-full grow overflow-hidden mb-2">
+      <div className="relative h-[70vh] min-h-[70vh] w-full overflow-hidden mb-2">
         <ImageComponent isDesktop={false} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
       </div>
 

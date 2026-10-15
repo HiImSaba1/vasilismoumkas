@@ -13,6 +13,7 @@ import {
   baptismConstants,
 } from "@/app/(site)/data/OfferData";
 import { baptismProposalMainImages,weddingProposalMainImages } from "@/app/(site)/data/proposal-image-sequence";
+import type {ProposalImage} from "@/app/(site)/data/proposal-image-sequence";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -24,9 +25,10 @@ interface ChessRowProps {
   total: number;
   lang: "en" | "gr";
   eventType: "wedding" | "baptism";
+  images:ProposalImage[];
 }
 
-const ChessRow = ({ item, idx, total, lang, eventType }: ChessRowProps) => {
+const ChessRow = ({ item, idx, total, lang, eventType,images }: ChessRowProps) => {
   const rowRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -54,7 +56,7 @@ const ChessRow = ({ item, idx, total, lang, eventType }: ChessRowProps) => {
       : "https://calendly.com/vasilis-moumkas/online";
 
   // Dynamic image path string resolution
-  const selectedImage=eventType==="baptism"?baptismProposalMainImages[idx+1]:weddingProposalMainImages[idx+1];
+  const selectedImage=images[idx]??(eventType==="baptism"?baptismProposalMainImages[idx+1]:weddingProposalMainImages[idx+1]);
   const imageSrc=selectedImage?.src??"";
 
   useGSAP(
@@ -280,6 +282,7 @@ interface OfferChessProps {
   lang?: "en" | "gr";
   eventType?: "wedding" | "baptism";
   imageOffset?: number;
+  images?:ProposalImage[];
 }
 
 export default function OfferChess({
@@ -288,6 +291,7 @@ export default function OfferChess({
   collection3,
   lang = "en",
   eventType = "wedding",
+  images=[],
 }: OfferChessProps) {
   const collections = [collection1, collection2, collection3].filter(
     (item) => item && (item.ph || item.p),
@@ -315,6 +319,7 @@ export default function OfferChess({
             total={collections.length}
             lang={lang}
             eventType={eventType}
+            images={images}
           />
         ))
       )}

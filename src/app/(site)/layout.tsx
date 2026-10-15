@@ -1,9 +1,11 @@
 import ClientLayout from "@/ClientLayout";
+import {getWebsiteSettings} from "@/lib/website-settings";
 
-export default function SiteLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <ClientLayout>{children}</ClientLayout>;
+  const websiteSettings=await getWebsiteSettings();
+  return <ClientLayout websiteSettings={websiteSettings}>{children}</ClientLayout>;
 }

@@ -5,8 +5,10 @@ import SeoImage from "@/components/ui/SeoImage";
 import ContactForm from "@/components/sections/ContactForm";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import {useWebsiteSettings} from "@/providers/WebsiteSettingsContext";
 
 export default function ContactPage() {
+  const{contact}=useWebsiteSettings();
   const container = useRef(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const imageWrapperRef = useRef(null);
@@ -75,7 +77,7 @@ export default function ContactPage() {
               ease: "power2.inOut",
             });
           })
-          .catch((error) => {
+          .catch(() => {
             // Auto-play was prevented or interrupted
             console.log("Playback interrupted");
           });
@@ -118,8 +120,9 @@ export default function ContactPage() {
         <div className="absolute inset-0 bg-ink-black/20 z-0" />
         <div ref={imageWrapperRef} className="bg-image absolute inset-0 z-10">
           <SeoImage
-            src="/vm_img/Preloader/vasilis_moumkas_services_hero_2.webp"
-            description="luxury-services-hero"
+            src={contact.image.src}
+            alt={contact.image.alt}
+            description="luxury-contact-image"
             location="greece"
             fill
             className="object-cover"

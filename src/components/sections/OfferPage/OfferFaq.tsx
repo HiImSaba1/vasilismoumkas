@@ -190,11 +190,13 @@ const translations = {
 interface OfferFaqSectionProps {
   lang?: "en" | "gr";
   type?: "wedding" | "baptism";
+  content?:{title:string;intro:string;items:{question:string;answer:string;date:string}[]};
 }
 
 const OfferFaqSection = ({
   lang = "en",
   type = "wedding",
+  content,
 }: OfferFaqSectionProps) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -202,13 +204,13 @@ const OfferFaqSection = ({
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
   const currentSource = type === "baptism" ? faqBaptismOfferData : faqOfferData;
-  const data = currentSource[lang];
+  const data = content?.items??currentSource[lang];
 
   const half = Math.ceil(data.length / 2);
   const leftCol = data.slice(0, half);
   const rightCol = data.slice(half);
 
-  const t = translations[lang][type];
+  const t = content?{title:content.title,para:content.intro}:translations[lang][type];
 
   useGSAP(
     () => {
