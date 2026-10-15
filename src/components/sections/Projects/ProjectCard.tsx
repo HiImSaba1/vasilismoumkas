@@ -7,14 +7,15 @@ import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
 import ParallaxImage from "@/components/animations/ParallaxImage";
-import { Project } from "@/app/(site)/data/ProjectsData";
-import CTAButton from "@/components/ui/CTAButton";
+import type { Project } from "@/app/(site)/data/ProjectsData";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-export default function ProjectCard({ project, index }: { project: Project; index: number }) {
+type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string};
+
+export default function ProjectCard({ project, index }: { project: ProjectCardProject; index: number }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const borderRef = useRef<HTMLDivElement>(null);
@@ -84,6 +85,9 @@ export default function ProjectCard({ project, index }: { project: Project; inde
               }
             );
           }
+
+          const cta=cardRef.current?.querySelector(".card-hover-cta");
+          if(cta)gsap.fromTo(cta,{y:18,opacity:0},{y:0,opacity:1,duration:0.65,delay:0.15,ease:"power3.out",overwrite:true});
         };
 
         const onLeave = () => {
@@ -92,6 +96,8 @@ export default function ProjectCard({ project, index }: { project: Project; inde
             duration: 0.5,
             ease: "power3.in",
           });
+          const cta=cardRef.current?.querySelector(".card-hover-cta");
+          if(cta)gsap.to(cta,{y:12,opacity:0,duration:0.35,ease:"power3.in",overwrite:true});
         };
 
         cardRef.current?.addEventListener("mouseenter", onEnter);
@@ -112,7 +118,7 @@ export default function ProjectCard({ project, index }: { project: Project; inde
     : "polygon(0 0, 100% 0, 100% 0, 0 0)";
   const animateClip = "polygon(0 0, 100% 0, 100% 100%, 0 100%)";
 
-  const projectLink = `/portfolio/project/${project.slug}`;
+  const projectLink = project.href??`/portfolio/project/${project.slug}`;
 
   return (
     <div ref={cardRef} className="flex flex-col group cursor-pointer relative">
@@ -132,8 +138,8 @@ export default function ProjectCard({ project, index }: { project: Project; inde
         >
           {/* Mobile keeps the source image's real aspect ratio. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.thumbnail} alt={project.title} loading={index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
-          <ParallaxImage src={project.thumbnail} alt={project.title} className="hidden h-full w-full transition-transform duration-900 ease-out group-hover:scale-105 md:block"/>
+          <img src={project.thumbnail} alt={project.alt??project.title} loading={index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
+          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} className="hidden h-full w-full transition-transform duration-900 ease-out group-hover:scale-105 md:block"/>
           <motion.div className="absolute inset-0 z-10 hidden flex-col items-center justify-center bg-ink-black/40 p-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:flex">
             <span
               ref={titleRef}
@@ -145,22 +151,22 @@ export default function ProjectCard({ project, index }: { project: Project; inde
               ref={borderRef}
               className="h-px mt-4 w-2/3 scale-x-0 bg-soft-yellow"
             />
+            <span className="card-hover-cta mt-6 border border-soft-yellow/70 px-5 py-3 text-[11px] uppercase tracking-[0.16em] text-soft-yellow opacity-0">
+              View Project
+            </span>
           </motion.div>
         </motion.div>
       </Link>
 
-      <div className="flex flex-col items-center justify-between px-1 text-center text-ink-black md:flex-row md:text-left">
-        <span className="text-[16px] font-medium uppercase tracking-wider md:text-xl md:leading-none">
+      <div className="flex flex-col items-center justify-between px-1 text-center text-ink-black md:hidden">
+        <span className="text-[16px] font-medium uppercase tracking-wider">
           <Link href={projectLink} className="hover:opacity-60 transition-opacity">
             {project.title}
           </Link>
         </span>
-        <span className="mt-1 text-[13px] uppercase tracking-wide opacity-75 md:hidden">
+        <span className="mt-1 text-[13px] uppercase tracking-wide opacity-75">
           {project.location}
         </span>
-        <div className="hidden items-center md:flex">
-          <CTAButton href={projectLink}>View Project</CTAButton>
-        </div>
       </div>
     </div>
   );

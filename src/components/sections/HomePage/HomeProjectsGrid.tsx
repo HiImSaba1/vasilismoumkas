@@ -27,7 +27,7 @@ const HomeProjectsGrid = ({ isBaptism = false, compact = false,content }: HomePr
   );
 
   // Never cross event categories: a baptism offer must not fall back to wedding work.
-  const displayedProjects = filteredProjects.slice(0, 3);
+  const displayedProjects = content?.items.map(item=>({title:item.title,location:item.location,thumbnail:item.image,href:item.href,alt:item.alt}))??filteredProjects.slice(0, 2);
 
   return (
     <section className={`${compact ? "min-h-0" : "min-h-dvh"} w-full px-4 lg:px-8 py-6 bg-off-white relative`}>
@@ -62,9 +62,11 @@ const HomeProjectsGrid = ({ isBaptism = false, compact = false,content }: HomePr
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-12">
+      <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:gap-x-14">
         {displayedProjects.map((project, index) => (
-          <ProjectCard key={project.id} project={project} index={index} />
+          <div key={"href" in project?project.href:project.id} className={index===1?"md:mt-[clamp(10rem,24vw,22rem)]":""}>
+            <ProjectCard project={project} index={index}/>
+          </div>
         ))}
       </div>
     </section>

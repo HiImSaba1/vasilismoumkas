@@ -26,17 +26,18 @@ const HomeMarqueeImages = () => {
     const shuffle = () => {
       return [...uniquePool].sort(() => 0.5 - Math.random()).slice(0, 12);
     };
-    setShuffledImages(shuffle());
+    const frame=requestAnimationFrame(()=>setShuffledImages(shuffle()));
+    return()=>cancelAnimationFrame(frame);
   }, []);
 
   return (
-    <div className="bg-ink-black px-0 lg:px-5 pb-10 lg:pb-16 pt-12 md:pt-20">
+    <div className="bg-off-white px-0 lg:px-5 pb-10 lg:pb-16 pt-12 md:pt-20 text-ink-black">
       <div className="flex flex-col pt-4 md:pt-16 gap-8 md:gap-12 relative">
         <div className="absolute top-0 left-0 w-full">
           <AnimatedBorder
             origin="left"
             duration={2}
-            className="bg-soft-yellow/40"
+            className="bg-ink-black/30"
           />
         </div>
 
@@ -72,12 +73,12 @@ const HomeMarqueeImages = () => {
           )}
         </div>
 
-        <div className="flex flex-col justify-between items-center text-center min-h-[20vh] lg:min-h-[30vh] pb-8 relative">
+        <div className="relative flex flex-col items-center gap-6 text-center md:gap-12">
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-16 w-full max-w-full px-4 pb-8 relative">
             {seoKeywords.map((keyword, idx) => (
               <span
                 key={idx}
-                className="text-soft-yellow text-sm uppercase tracking-widest font-medium"
+                className="text-ink-black text-sm uppercase tracking-widest font-medium"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
                 {keyword}
@@ -88,15 +89,15 @@ const HomeMarqueeImages = () => {
                 origin="center"
                 duration={1.8}
                 delay={0.4}
-                className="bg-soft-yellow/40"
+                className="bg-ink-black/30"
               />
             </div>
           </div>
 
-          <div className="max-w-4xl px-4 mt-12 md:mt-auto">
+          <div className="max-w-4xl px-4">
             <RevealAnimation>
               <p
-                className="text-soft-yellow text-md md:text-2xl lg:text-3xl uppercase tracking-tight leading-tight"
+                className="text-ink-black text-md md:text-2xl lg:text-3xl uppercase tracking-tight leading-[1.05]"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
                 Fashion Wedding Photographer Featured in Leading Editorials.

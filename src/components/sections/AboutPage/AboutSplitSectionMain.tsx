@@ -1,18 +1,11 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
-import SeoImage from "@/components/ui/SeoImage";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
+import ParallaxImage from "@/components/animations/ParallaxImage";
 import type {HomepageSettings} from "@/lib/homepage-settings";
 
-gsap.registerPlugin(ScrollTrigger);
-
 export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["featuredCards"]}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-
   const galleryItems = [
     {
       id: 1,
@@ -21,16 +14,9 @@ export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["f
       location: cards[0].subtitle,
       couple: cards[0].title,
       href: cards[0].href,
-      // Centered wrapper
-      wrapperClasses: "w-full flex justify-center py-12",
-      // Using responsive inline styles that cleanly override from mobile to desktop using clamp() correctly
-      cardStyle: {
-        width: "100%",
-        maxWidth: "clamp(320px, 85vw, 750px)",
-        aspectRatio: "1 / 1",
-      },
-      mobileClasses: "mx-auto !w-[82%] !max-w-[290px] md:!w-full md:!max-w-[clamp(320px,85vw,750px)]",
-      sizes: "(max-width: 768px) 90vw, 60vw",
+      wrapperClasses: "flex w-full justify-center py-4 md:row-start-1 md:grid md:grid-cols-[20%_60%_20%] md:py-0",
+      cardClasses: "mx-auto h-auto w-[82%] max-w-[290px] aspect-[4/5] md:col-start-2 md:h-full md:w-full md:max-w-none md:aspect-auto",
+      sizes: "(max-width: 768px) 82vw, 60vw",
     },
    {
       id: 2,
@@ -39,14 +25,9 @@ export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["f
       location: cards[1].subtitle,
       couple: cards[1].title,
       href: cards[1].href,
-      // Desktop positioning wrapper: Center Right (pushed to the right)
-      wrapperClasses: "w-full flex justify-end py-6 md:py-10  md:pr-[8%]",
-      cardStyle: {
-        minWidth: "clamp(420px, 45vw, 640px)",
-        height: "clamp(520px, 58vw, 760px)",
-      },
-      mobileClasses: "w-[90%] max-w-[380px] aspect-[4/5] ml-auto",
-      sizes: "(max-width: 768px) 90vw, 85vw",
+      wrapperClasses: "flex w-full justify-end py-6 md:row-start-2 md:grid md:grid-cols-[30%_30%_40%] md:py-0",
+      cardClasses: "ml-auto h-auto w-[90%] max-w-[380px] aspect-[4/5] md:col-start-3 md:h-full md:w-full md:max-w-none md:aspect-auto",
+      sizes: "(max-width: 768px) 90vw, 40vw",
     },
    
     {
@@ -56,76 +37,37 @@ export default function AboutSplitSectionMain({cards}:{cards:HomepageSettings["f
       location: cards[2].subtitle,
       couple: cards[2].title,
       href: cards[2].href,
-      // Desktop positioning wrapper: Bottom Left (pushed to the left)
-      wrapperClasses: "w-full flex justify-start py-12 md:py-20 md:pl-[8%]",
-      cardStyle: {
-        minWidth: "clamp(320px, 34vw, 480px)",
-        height: "clamp(420px, 44vw, 600px)",
-      },
-      mobileClasses: "!min-w-0 !w-[68%] !max-w-[270px] !h-auto aspect-[3/4] mr-auto md:!min-w-[clamp(320px,34vw,480px)] md:!w-auto md:!max-w-none md:!h-[clamp(420px,44vw,600px)]",
-      sizes: "(max-width: 768px) 80vw, 40vw",
+      wrapperClasses: "flex w-full justify-start py-12 md:row-start-3 md:grid md:grid-cols-[30%_40%_30%] md:py-0",
+      cardClasses: "mr-auto h-auto w-[68%] max-w-[270px] aspect-[3/4] md:col-start-1 md:h-full md:w-full md:max-w-none md:aspect-auto",
+      sizes: "(max-width: 768px) 68vw, 30vw",
     },
   ];
 
-  useGSAP(
-    () => {
-      const cards = gsap.utils.toArray<HTMLElement>(".metro-card");
-
-      cards.forEach((card) => {
-        gsap.fromTo(
-          card,
-          { clipPath: "inset(20% 0% 20% 0%)", opacity: 0, y: 60 },
-          {
-            clipPath: "inset(0% 0% 0% 0%)",
-            opacity: 1,
-            y: 0,
-            duration: 1.2,
-            ease: "power3.out",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 85%",
-              toggleActions: "play none none reverse",
-            },
-          },
-        );
-      });
-    },
-    { scope: containerRef },
-  );
-
   return (
     <section
-      ref={containerRef}
-      className="relative w-full h-auto bg-off-white py-4 px-2 overflow-hidden flex flex-col justify-center"
+      className="relative flex h-auto w-full flex-col justify-center overflow-hidden bg-off-white px-2 pb-[15%] pt-4 md:h-full"
     >
-      <div className="relative w-full max-w-[1536px] mx-auto flex flex-col space-y-2 md:space-y-2">
+      <div className="relative mx-auto flex w-full max-w-[1536px] flex-col space-y-2 md:grid md:h-full md:grid-cols-1 md:grid-rows-3 md:space-y-0">
         {galleryItems.map((item) => (
           <div key={item.id} className={item.wrapperClasses}>
-            <div
-              className={`metro-card flex flex-col group ${item.mobileClasses}`}
-              style={item.cardStyle}
-            >
+            <div className={`metro-card flex flex-col ${item.cardClasses}`}>
               <Link
                 href={item.href}
-                className="relative w-full h-full overflow-hidden block cursor-pointer shadow-sm"
+                className="relative block min-h-0 w-full flex-1 cursor-pointer overflow-hidden"
               >
-                {/* Dark Overlay & Zoom on Hover */}
-                <div className="absolute inset-0 bg-ink-black/0 group-hover:bg-ink-black/30 transition-colors duration-500 z-10 pointer-events-none" />
-
                 <div className="relative w-full h-full overflow-hidden">
-                  <SeoImage
+                  <ParallaxImage
                     src={item.src}
                     description={item.description}
                     location={item.location}
-                    fill
                     sizes={item.sizes}
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    className="h-full w-full"
                   />
                 </div>
               </Link>
 
               {/* Couple Name & Place Below Card */}
-              <div className="mt-4 flex flex-col md:flex-row justify-between items-center text-ink-black">
+              <div className="mt-4 flex flex-col items-center justify-between px-4 text-ink-black md:flex-row md:px-8">
                 <span className="text-[16px] md:text-[19px] font-medium uppercase tracking-wider">
                   {item.couple}
                 </span>

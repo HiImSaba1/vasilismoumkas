@@ -100,6 +100,7 @@ const ParallaxImage: FC<ParallaxImageProps> = ({
           alt={alt}
           fallbackSrc={fallbackSrc}
           className={fit==="contain"?"object-contain":"object-cover"}
+          style={{objectFit:fit}}
           sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
         />
       </div>

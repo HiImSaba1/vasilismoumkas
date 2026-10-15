@@ -4,19 +4,22 @@ import {z} from "zod";
 import {getDatabase,isDatabaseConfigured} from "@/lib/database";
 import {homeServices} from "@/app/(site)/data/ServicesData";
 import {TestimonialsData} from "@/app/(site)/data/TestimonialsData";
+import {ProjectsData} from "@/app/(site)/data/ProjectsData";
 
 const localPath=z.string().trim().startsWith("/").max(700);
 const safeUrl=z.string().trim().max(1000).refine(value=>value.startsWith("/")||value.startsWith("https://"),"Use an internal /path or https:// URL");
 const card=z.object({title:z.string().trim().min(1).max(160),subtitle:z.string().trim().min(1).max(200),href:localPath,image:localPath,alt:z.string().trim().min(3).max(300)});
+const portfolioCard=z.object({title:z.string().trim().min(1).max(160),location:z.string().trim().min(1).max(200),href:safeUrl,image:localPath,alt:z.string().trim().min(3).max(300)});
 const service=z.object({title:z.string().trim().min(1).max(100),projectSlug:z.string().trim().min(1).max(190),description:z.string().trim().min(10).max(1200),keywords:z.array(z.string().trim().min(1).max(100)).min(1).max(8),image:localPath});
 const testimonial=z.object({couple:z.string().trim().min(1).max(160),location:z.string().trim().min(1).max(180),quote:z.string().trim().min(10).max(1600),image:localPath,alt:z.string().trim().min(3).max(300)});
+const defaultPortfolioCards=ProjectsData.filter(project=>project.category==="Wedding").slice(0,2).map(project=>({title:project.title,location:project.location,href:`/portfolio/project/${project.slug}`,image:project.thumbnail,alt:`${project.title} wedding photography in ${project.location}`}));
 
 export const homepageSettingsSchema=z.object({
   seo:z.object({title:z.string().trim().min(5).max(160),description:z.string().trim().min(20).max(500)}),
   hero:z.object({desktopImage:localPath,mobileImage:localPath,projectHref:localPath,imageAlt:z.string().trim().min(3).max(300),topLeft:z.string().trim().min(1).max(80),topCenter:z.string().trim().min(1).max(80),topRight:z.string().trim().min(1).max(80),bottomLeft:z.string().trim().min(1).max(120),bottomRight:z.string().trim().min(1).max(120)}),
   featuredCards:z.array(card).length(3),
   services:z.object({eyebrow:z.string().trim().min(1).max(100),intro:z.string().trim().min(10).max(800),items:z.array(service).length(3)}),
-  portfolio:z.object({title:z.string().trim().min(2).max(160),buttonLabel:z.string().trim().min(1).max(100),buttonHref:localPath}),
+  portfolio:z.object({title:z.string().trim().min(2).max(160),buttonLabel:z.string().trim().min(1).max(100),buttonHref:localPath,items:z.array(portfolioCard).length(2).default(defaultPortfolioCards)}),
   story:z.object({eyebrow:z.string().trim().min(2).max(400),title:z.string().trim().min(10).max(1800),buttonLabel:z.string().trim().min(1).max(100),buttonHref:localPath,videoUrl:safeUrl}),
   testimonials:z.object({title:z.string().trim().min(2).max(120),items:z.array(testimonial).min(1).max(12)}),
 });
@@ -32,7 +35,7 @@ export const defaultHomepageSettings:HomepageSettings={
     {title:"Eva & George",subtitle:"Greece",href:"/portfolio/project/eva-george",image:"/uploads/portfolio/eva-george/6276177f-1335-488b-8546-ffe92398f7c6.webp",alt:"Eva and George wedding photography in Greece"},
   ],
   services:{eyebrow:"Expertise",intro:"Capturing the art of human connection through a lens of sophistication transforming moments into a permanent visual legacy.",items:homeServices.map(item=>({title:item.title,projectSlug:item.projectSlug,description:item.description,keywords:item.keywords,image:item.image}))},
-  portfolio:{title:"Best of Wedding Portfolio works",buttonLabel:"Full Portfolio",buttonHref:"/portfolio"},
+  portfolio:{title:"Best of Wedding Portfolio works",buttonLabel:"Full Portfolio",buttonHref:"/portfolio",items:defaultPortfolioCards},
   story:{eyebrow:"Luxury Fine Art Wedding Photography in Greece. For modern souls. Quiet. Emotional. Timeless",title:"For couples who value emotion, elegance, and authenticity. I am Vasilis Moumkas, a luxury destination wedding photographer based in Thessaloniki, Greece. I document refined celebrations across Santorini, Mykonos, Naxos, and Italy from Lake Como and Tuscany to the Amalfi Coast. I also specialise in intimate elopements across the Greek islands. With a calm, intuitive eye, I transform fleeting feelings into timeless artistry. Because these are not just photographs, they are your legacy.",buttonLabel:"Learn More",buttonHref:"/about",videoUrl:"https://player.vimeo.com/video/1159684670?h=ac91465937&autoplay=1&muted=1&loop=1&background=1&badge=0&autopause=0&quality=1080p"},
   testimonials:{title:"Couple Testimonials",items:TestimonialsData.map(item=>({couple:item.couple,location:item.location,quote:item.quote,image:item.profileImage,alt:`${item.couple} wedding testimonial portrait`}))},
 };

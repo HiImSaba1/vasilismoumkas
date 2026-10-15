@@ -133,7 +133,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
       <p
         ref={textRef}
         suppressHydrationWarning
-        className={`uppercase text-center opacity-0 whitespace-normal tracking-tight ${
+        className={`uppercase text-center opacity-0 whitespace-normal tracking-tighter ${
           isMobile 
             ? "text-[clamp(30px,8vw,40px)] py-6 px-2" 
             : "text-[clamp(48px,8vw,80px)] py-6"

@@ -41,24 +41,24 @@ const HomeProjectVideoSection = ({content}:{content:HomepageSettings["story"]}) 
   );
 
   return (
-    <section ref={containerRef} className="w-full overflow-hidden">
-      <div className="min-h-dvh md:min-h-[90vh] w-full flex flex-col items-center justify-between text-center px-6 py-18">
+    <section id="home-video-curtain" ref={containerRef} className="mx-auto w-full max-w-full overflow-hidden bg-off-white px-2 md:px-[5%]">
+      <div className="flex w-full flex-col items-center gap-12 py-16 text-center md:py-24">
         <RevealAnimation>
-          <p className="text-sm  md:text-sm max-w-sm md:max-w-md uppercase tracking-widest leading-[1.15] text-ink-black">
+          <p className="w-full text-sm md:text-md uppercase tracking-widest leading-[1.15] text-ink-black">
             {content.eyebrow}
           </p>
         </RevealAnimation>
         <RevealAnimation>
-          <h2 className="h2-responsive w-full md:max-w-180 block">
+          <span className="block w-full text-xl md:text-2xl leading-[1.2] tracking-tight text-ink-black">
             {content.title}
-          </h2>
+          </span>
         </RevealAnimation>
 
-        <div className="flex justify-center pb-16 md:pb-24">
+        <div className="flex justify-center">
           <CTAButton href={content.buttonHref}>{content.buttonLabel}</CTAButton>
         </div>
       </div>
-      <div className="w-full px-2 md:px-10 pb-14 md:pb-24">
+      <div className="w-full pb-14 md:pb-24">
         <div
           ref={videoWrapperRef}
           className="relative w-full aspect-video overflow-hidden origin-top bg-off-white"

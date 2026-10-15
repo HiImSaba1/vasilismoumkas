@@ -1,0 +1,22 @@
+import{readFileSync}from"node:fs";
+import{resolve}from"node:path";
+const read=path=>readFileSync(resolve(process.cwd(),path),"utf8");
+const checks=[];
+const requireText=(source,pattern,label)=>{if(!pattern.test(source))throw new Error(`FAIL - ${label}`);checks.push(`PASS - ${label}`)};
+const settings=read("src/lib/homepage-settings.ts");
+const page=read("src/app/admin/homepage/page.tsx");
+const actions=read("src/app/admin/homepage/actions.ts");
+const grid=read("src/components/sections/HomePage/HomeProjectsGrid.tsx");
+const card=read("src/components/sections/Projects/ProjectCard.tsx");
+
+requireText(settings,/const portfolioCard=z\.object\(\{title:[\s\S]*location:[\s\S]*href:safeUrl,image:localPath,alt:/,"homepage settings validate editable project name, metadata, URL, image and alt text");
+requireText(settings,/items:z\.array\(portfolioCard\)\.length\(2\)\.default\(defaultPortfolioCards\)/,"existing homepage JSON receives two safe project-card defaults without a database migration");
+requireText(page,/const cardLabels=\["Centered first row","Right second row","Left third row"\][\s\S]*Featured metro cards/,"admin labels the three featured cards by their current layout position");
+requireText(page,/const projectLabels=\["Left project card","Staggered right project card"\][\s\S]*Projects grid/,"admin exposes exactly the two cards rendered by the projects grid");
+requireText(page,/portfolio\.\$\{index\}\.title[\s\S]*portfolio\.\$\{index\}\.location[\s\S]*portfolio\.\$\{index\}\.href[\s\S]*portfolio\.\$\{index\}\.image[\s\S]*portfolio\.\$\{index\}\.alt/,"each project card exposes title, metadata, URL, image and alt inputs");
+requireText(actions,/items:Array\.from\(\{length:2\}[\s\S]*portfolio\.\$\{index\}\.title[\s\S]*portfolio\.\$\{index\}\.alt/,"homepage save action persists exactly two project cards");
+requireText(grid,/content\?\.items\.map\(item=>\(\{title:item\.title,location:item\.location,thumbnail:item\.image,href:item\.href,alt:item\.alt\}\)\)/,"homepage projects grid renders the two saved admin card records");
+requireText(card,/project\.href\?\?`\/portfolio\/project\/\$\{project\.slug\}`[\s\S]*project\.alt\?\?project\.title/,"shared project card honors an admin URL and descriptive image alt while preserving portfolio fallbacks");
+if(/<Panel title="Services"/.test(page))throw new Error("FAIL - obsolete removed services editor remains visible");checks.push("PASS - obsolete service-card controls are hidden while their stored data remains preserved");
+console.log(checks.join("\n"));
+console.log(`PASS - ${checks.length} Sprint 42 homepage-admin contracts verified.`);
