@@ -25,5 +25,5 @@ export function GreekUppercaseNormalizer({active,children}:{active:boolean;child
     observer.observe(root,{subtree:true,childList:true,characterData:true});
     return()=>observer.disconnect();
   },[active]);
-  return <div ref={rootRef} lang={active?"el":"en"}>{children}</div>;
+  return <div ref={rootRef} lang={active?"el":"en"} data-admin-locale-isolated="true">{children}</div>;
 }
