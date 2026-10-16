@@ -6,7 +6,7 @@ import { SplitText } from "gsap/SplitText";
 import RevealAnimation from "@/components/animations/RevealAnimation";
 import { ProjectsData } from "@/app/(site)/data/ProjectsData";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
-import RevealButton from "@/components/ui/RevealButton";
+import CTAButton from "@/components/ui/CTAButton";
 import ProjectCard from "../Projects/ProjectCard";
 import type {HomepageSettings} from "@/lib/homepage-settings";
 
@@ -30,26 +30,23 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
 
   return (
     <section className="relative min-h-0 w-full bg-off-white px-4 py-6 lg:px-8">
-      <div className="flex flex-row items-center justify-between mt-10 md:mt-16 mb-6 pt-8 md:pt-12 relative w-full">
-        <div className="flex-1 pr-4 ">
+      <div className="relative mt-5 mb-6 flex w-full flex-col items-center gap-4 pt-4 text-center md:mt-16 md:flex-row md:items-center md:justify-between md:gap-0 md:pt-12 md:text-left">
+        <div className="w-full md:flex-1 md:pr-4">
           <RevealAnimation>
-            <span className="text-[14px] xs:text-[16px] md:text-lg lg:text-xl uppercase tracking-wide text-ink-black/80 leading-[1.1] block">
+            <span className="block w-full text-center text-[14px] uppercase leading-[1.1] tracking-wide text-ink-black/80 xs:text-[16px] md:text-left md:text-lg lg:text-xl">
               {content?.title??<>Best of {isBaptism ? "Baptism" : "Wedding"} <br className="hidden xs:block" />Portfolio works</>}
             </span>
           </RevealAnimation>
-          {content?.subtitle&&<RevealAnimation><p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-black/60 md:text-base">{content.subtitle}</p></RevealAnimation>}
+          {content?.subtitle&&<RevealAnimation><p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-ink-black/60 md:mx-0 md:text-base">{content.subtitle}</p></RevealAnimation>}
         </div>
         <div className="shrink-0">
           <RevealAnimation>
-            <RevealButton
+            <CTAButton
               href={content?.buttonHref??"/portfolio"}
               className="px-4 py-2 "
             >
-              <div className="flex items-center gap-2">
-                <span className="text-md xs:text-xl">{content?.buttonLabel??"Full Portfolio"}</span>
-                <span className="text-sm md:text-2xl translate-y-px">→</span>
-              </div>
-            </RevealButton>
+              <span className="text-md xs:text-xl">Portfolio</span>
+            </CTAButton>
           </RevealAnimation>
         </div>
       </div>

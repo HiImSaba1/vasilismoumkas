@@ -138,8 +138,8 @@ export default function ProjectCard({ project, index, hoverOverlay=true, portrai
         >
           {/* Mobile keeps the source image's real aspect ratio. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.thumbnail} alt={project.alt??project.title} loading={index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
-          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} className={`hidden h-full w-full md:block ${hoverOverlay?"transition-transform duration-900 ease-out group-hover:scale-105":""}`}/>
+          <img src={project.thumbnail} alt={project.alt??project.title} loading={!hoverOverlay||index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
+          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} priority={!hoverOverlay||index<2} className={`hidden h-full w-full md:block ${hoverOverlay?"transition-transform duration-900 ease-out group-hover:scale-105":""}`}/>
           {hoverOverlay&&<motion.div className="absolute inset-0 z-10 hidden flex-col items-center justify-center bg-ink-black/40 p-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:flex">
             <span
               ref={titleRef}

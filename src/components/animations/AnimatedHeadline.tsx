@@ -123,19 +123,12 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
 
   return (
     <div ref={containerRef} className="w-full relative overflow-hidden">
-      <AnimatedBorder 
-        origin="left" 
-        duration={1.2} 
-        delay={animationDelay - 0.2} 
-        className="bg-ink-black" 
-      />
-      
-      <h1
+      <span
         ref={textRef}
         suppressHydrationWarning
-        className={`uppercase text-center opacity-0 whitespace-normal tracking-tighter ${
+        className={`block w-full uppercase text-center opacity-0 whitespace-normal tracking-tighter ${
           isMobile 
-            ? "text-[clamp(30px,8vw,40px)] py-6 px-2" 
+            ? "text-[clamp(32px,6.4vw,40px)] pb-4 px-1"
             : "text-[clamp(48px,8vw,80px)] py-6"
         }`}
         style={{ 
@@ -147,9 +140,9 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
       >
         {isMobile ? (
           <>
-            <span data-key="part1">LUXURY</span> <span data-key="part2">WEDDING</span> <br /> 
-            <span data-key="part3">PHOTOGRAPHER</span> <br /> 
-            <span data-key="part4">IN</span> <span data-key="part5">GREECE</span>
+            <span className="whitespace-nowrap"><span data-key="part1">LUXURY</span> <span data-key="part2">WEDDING</span></span><br />
+            <span className="whitespace-nowrap" data-key="part3">PHOTOGRAPHER</span><br />
+            <span className="whitespace-nowrap"><span data-key="part4">IN</span> <span data-key="part5">GREECE</span></span>
           </>
         ) : (
           <>
@@ -157,7 +150,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
             <span data-key="part3">PHOTOGRAPHER</span> <span data-key="part4">IN</span> <span data-key="part5">GREECE</span>
           </>
         )}
-      </h1>
+      </span>
 
       <AnimatedBorder 
         origin="right" 

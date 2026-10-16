@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import React from "react";
 
 function cn(...classes: (string | false | null | undefined)[]) {
@@ -16,6 +15,7 @@ interface CTAButtonProps {
   disabled?: boolean;
   onClick?: () => void;
   target?: string; // Added target prop
+  "aria-label"?: string;
 }
 
 const CTAButton: React.FC<CTAButtonProps> = ({ 
@@ -25,7 +25,8 @@ const CTAButton: React.FC<CTAButtonProps> = ({
   asButton, 
   disabled,
   onClick,
-  target // Destructure target
+  target,
+  "aria-label": ariaLabel,
 }) => {
 
   const revealEase = "ease-[0.19,1,0.22,1]";
@@ -66,14 +67,13 @@ const CTAButton: React.FC<CTAButtonProps> = ({
         "group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-[#f8f5f2]"
       )}>
         {children}
-        <ArrowRight className="w-3 h-3 md:w-4 md:h-4" />
       </span>
     </>
   );
 
   if (asButton) {
     return (
-      <button type="submit" disabled={disabled} onClick={onClick} className={styles}>
+      <button type="submit" disabled={disabled} onClick={onClick} className={styles} aria-label={ariaLabel}>
         {content}
       </button>
     );
@@ -88,6 +88,7 @@ const CTAButton: React.FC<CTAButtonProps> = ({
       className={styles}
       target={target}
       rel={isExternal ? "noopener noreferrer" : undefined}
+      aria-label={ariaLabel}
     >
       {content}
     </Link>

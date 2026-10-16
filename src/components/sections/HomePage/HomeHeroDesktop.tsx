@@ -5,7 +5,6 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import SplitText from "gsap/dist/SplitText";
 import SeoImage from "@/components/ui/SeoImage";
-import { ArrowDown } from "lucide-react";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
 import ImageComponent from "../ImageComponent";
 import AnimatedHeadline from "@/components/animations/AnimatedHeadline";
@@ -24,7 +23,6 @@ const TopSubtext = ({content}:{content:HomepageSettings["hero"]}) => (
 const BottomIndicators = ({content}:{content:HomepageSettings["hero"]}) => (
   <div className="flex items-end justify-between w-full pt-6">
     <div className="flex items-center gap-2 indicator-icon w-1/3">
-      <ArrowDown className="w-5 h-5" />
       <p className="indicator-text-p text-[18px] lowercase tracking-tight">
         {content.bottomLeft}
       </p>
@@ -43,7 +41,6 @@ const BottomIndicators = ({content}:{content:HomepageSettings["hero"]}) => (
     </div>
     <div className="flex items-center justify-end gap-2 w-1/3 indicator-icon">
       <p className="indicator-text-p text-[18px] ">{content.bottomRight}</p>
-      <ArrowDown className="w-5 h-5" />
     </div>
   </div>
 );

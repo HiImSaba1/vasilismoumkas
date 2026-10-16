@@ -10,7 +10,7 @@ import { SplitText } from "gsap/SplitText";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
-import RevealButton from "@/components/ui/RevealButton";
+import CTAButton from "@/components/ui/CTAButton";
 import { HOMEPAGE_WHITE_FOOTER } from "@/app/(site)/data/Pages-Photoset/Homepage";
 
 if (typeof window !== "undefined") {
@@ -126,7 +126,7 @@ const InstagramFooter = () => {
       className="w-full px-4 md:px-10 lg:px-8 py-12 bg-off-white"
     >
       <AnimatedBorder
-        className="mb-10 bg-ink-black"
+        className="mb-5 bg-ink-black"
         origin="right"
         duration={1.5}
       />
@@ -134,9 +134,9 @@ const InstagramFooter = () => {
       <div className="w-full">
         {/* Top Section: CTA and Marquee */}
         <div className="flex flex-col md:flex-row items-stretch mb-6 gap-10 md:gap-0">
-          <div className="w-full md:w-[40%] flex flex-col justify-between py-2">
+          <div className="flex w-full flex-col items-center justify-between py-2 text-center md:w-[40%] md:items-stretch md:text-left">
             <div className="mb-2">
-              <div className="flex gap-2 text-[12px] uppercase tracking-[0.3em] font-bold opacity-90 gsap-reveal-text">
+              <div className="flex justify-center gap-2 text-[12px] uppercase tracking-[0.3em] font-bold opacity-90 gsap-reveal-text md:justify-start">
                 <span>/</span>
                 <span>CONTACT</span>
               </div>
@@ -145,18 +145,13 @@ const InstagramFooter = () => {
               <h3 className="text-[10vw] md:text-[5.5vw] max-w-md tracking-tighter leading-[0.85] uppercase gsap-reveal-text">
                 Looking for a Luxury Wedding Photographer in Greece or Italy?
               </h3>
-              <div className="pt-2">
-                <RevealButton
+              <div className="flex justify-center pt-2 md:justify-start">
+                <CTAButton
                   href="tel:+306972218775"
-                  className="px-6! md:px-8! py-3! w-fit border border-ink-black"
+                  className="w-fit"
                 >
-                  <span
-                    className="text-xl md:text-2xl"
-                    style={{ fontFamily: "var(--font-karena)" }}
-                  >
-                    call me directly
-                  </span>
-                </RevealButton>
+                  Call me directly
+                </CTAButton>
               </div>
             </div>
           </div>

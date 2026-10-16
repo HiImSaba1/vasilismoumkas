@@ -4,7 +4,6 @@ import React, { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import SeoImage from "@/components/ui/SeoImage";
-import { ArrowDown } from "lucide-react";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
 import ImageComponent from "../ImageComponent";
 import AnimatedHeadline from "@/components/animations/AnimatedHeadline";
@@ -47,7 +46,7 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
   return (
     <section
       ref={containerRef}
-      className="min-h-dvh w-full flex flex-col px-4 pt-[28%] pb-6 overflow-hidden bg-off-white"
+      className="min-h-dvh w-full flex flex-col px-4 pt-[28%] pb-2 overflow-hidden bg-off-white"
     >
       <div className="flex justify-between w-full mb-2 overflow-hidden text-[13px] uppercase shrink-0">
         <div className="overflow-hidden">
@@ -61,17 +60,16 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
         </div>
       </div>
 
-      <div className="relative h-[70vh] min-h-[70vh] w-full overflow-hidden mb-2">
+      <div className="relative h-[50vh] min-h-[58vh] w-full overflow-hidden ">
         <ImageComponent isDesktop={false} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
       </div>
 
-      <div className="shrink-0 mb-4">
+      <div className="shrink-0 mb-2">
         <AnimatedHeadline animationDelay={headlineDelay} isMobile={true} />
       </div>
 
-      <div className="flex items-center justify-between mt-auto pt-2 border-t border-black/5 shrink-0">
+      <div className="flex items-center justify-between mt-2 border-t border-black/5 shrink-0">
         <div className="mobile-indicator flex flex-col gap-1 w-1/3">
-          <ArrowDown className="w-5 h-5" />
           <p className="text-[14px] uppercase leading-tight tracking-wide">
             {content.bottomLeft}
           </p>
@@ -87,7 +85,6 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
           />{" "}
         </div>
         <div className="mobile-indicator flex flex-col items-end text-right gap-1 w-1/3">
-          <ArrowDown className="w-5 h-5" />
           <p className="text-[14px] uppercase leading-tight tracking-wide">
             {content.bottomRight}
           </p>
