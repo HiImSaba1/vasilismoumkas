@@ -1,13 +1,15 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Services | Vasilis Moumkas Photography",
+  title: "Services",
+  alternates:{canonical:"/services"},
   description:
     "Bespoke wedding photography services for luxury destination weddings in Greece, Italy, and worldwide. Specialist in Athens, Naxos, Thessaloniki, Chalkidiki and Santorini.",
   openGraph: {
     title: "Cinematic Services | Vasilis Moumkas Photography",
     description:
       "Bespoke photography collections for luxury weddings and destination events across Greece and the Mediterranean.",
+    url:"/services",
     images: [
       {
         url: "/vm_img/Homepage/Metadata/og-services.jpg",
@@ -17,6 +19,7 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter:{card:"summary_large_image",title:"Cinematic Services | Vasilis Moumkas Photography",description:"Bespoke photography collections for luxury weddings and destination events across Greece and the Mediterranean.",images:["/vm_img/Homepage/Metadata/og-services.jpg"]},
 };
 
 export default function ServicesLayout({

@@ -11,6 +11,7 @@ export function PortfolioImageReorder({photos,title}:{photos:Photo[];title:strin
     setItems(current=>{const next=[...current];const[item]=next.splice(from,1);if(!item)return current;next.splice(to,0,item);return next});
   };
   const drop=(event:DragEvent<HTMLDivElement>,to:number)=>{event.preventDefault();if(dragged!==null)move(dragged,to);setDragged(null)};
+  const updateAlt=(index:number,alt:string)=>setItems(current=>current.map((photo,itemIndex)=>itemIndex===index?{...photo,alt}:photo));
 
   return <section className="grid gap-3">
     <input type="hidden" name="existingPhotos" value={JSON.stringify(items)}/>
@@ -29,6 +30,9 @@ export function PortfolioImageReorder({photos,title}:{photos:Photo[];title:strin
           <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} aria-label={`Move image ${index+1} earlier`} className="border border-ink-black/15 py-2 text-xs disabled:opacity-25">←</button>
           <button type="button" onClick={()=>move(index,index+1)} disabled={index===items.length-1} aria-label={`Move image ${index+1} later`} className="border border-ink-black/15 py-2 text-xs disabled:opacity-25">→</button>
         </div>
+        <label className="mt-1 grid gap-1 px-1 py-2 text-[10px] uppercase tracking-[0.08em]">Alt text
+          <textarea value={photo.alt} onChange={event=>updateAlt(index,event.target.value)} rows={3} maxLength={300} className="border border-ink-black/15 bg-white p-2 text-xs normal-case tracking-normal" aria-label={`Alt text for image ${index+1}`}/>
+        </label>
         <label className="mt-1 flex items-center gap-2 bg-black/75 p-2 text-[10px] uppercase text-white"><input name="removePhoto" value={photo.src} type="checkbox"/>Remove</label>
         <p className="break-all px-1 py-2 text-[10px] leading-snug">{imageTitle(photo.src,photo.alt||`${title} image ${index+1}`)}</p>
       </div>)}

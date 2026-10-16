@@ -27,7 +27,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
   isMobile = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
+  const textRef = useRef<HTMLHeadingElement>(null);
   const sequenceIndex = useRef(0);
   const activeSplits = useRef<Map<HTMLElement, SplitText>>(new Map());
 
@@ -130,7 +130,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
         className="bg-ink-black" 
       />
       
-      <p
+      <h1
         ref={textRef}
         suppressHydrationWarning
         className={`uppercase text-center opacity-0 whitespace-normal tracking-tighter ${
@@ -157,7 +157,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
             <span data-key="part3">PHOTOGRAPHER</span> <span data-key="part4">IN</span> <span data-key="part5">GREECE</span>
           </>
         )}
-      </p>
+      </h1>
 
       <AnimatedBorder 
         origin="right" 

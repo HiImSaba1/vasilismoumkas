@@ -48,11 +48,9 @@ const HomeProjectVideoSection = ({content}:{content:HomepageSettings["story"]}) 
             {content.eyebrow}
           </p>
         </RevealAnimation>
-        <RevealAnimation>
-          <span className="block w-full text-md md:text-xl leading-[1.2] tracking-tight text-ink-black">
-            {content.title}
-          </span>
-        </RevealAnimation>
+        <div className="grid w-full gap-4">
+          {content.title.split(/\n\s*\n/).map((paragraph,index)=><RevealAnimation key={index}><p className="mx-auto w-full max-w-6xl text-md leading-[1.2] tracking-tight text-ink-black md:text-xl">{paragraph}</p></RevealAnimation>)}
+        </div>
 
         <div className="flex justify-center">
           <CTAButton href={content.buttonHref}>{content.buttonLabel}</CTAButton>

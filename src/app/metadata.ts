@@ -57,9 +57,6 @@ export const metadata: Metadata = {
     description: "Vasilis Moumkas is a luxury destination wedding photographer based in Thessaloniki, Greece. Cinematic fine-art wedding photography in Santorini, Mykonos, Naxos, Lake Como, Tuscany & Amalfi Coast.",
     images: ["/vm_img/Metadata/og-main.jpg"],
   },
-  alternates: {
-    canonical: "https://vasilismoumkas.com",
-  },
   robots: {
     index: true,
     follow: true,

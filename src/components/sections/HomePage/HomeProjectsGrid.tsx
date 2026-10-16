@@ -37,6 +37,7 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
               {content?.title??<>Best of {isBaptism ? "Baptism" : "Wedding"} <br className="hidden xs:block" />Portfolio works</>}
             </span>
           </RevealAnimation>
+          {content?.subtitle&&<RevealAnimation><p className="mt-3 max-w-2xl text-sm leading-relaxed text-ink-black/60 md:text-base">{content.subtitle}</p></RevealAnimation>}
         </div>
         <div className="shrink-0">
           <RevealAnimation>

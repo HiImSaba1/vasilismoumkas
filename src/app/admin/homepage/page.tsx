@@ -2,9 +2,9 @@ import type {ReactNode} from "react";
 import Link from "next/link";
 import {AdminPageHeader} from "@/components/admin/AdminPageHeader";
 import {getHomepageSettings} from "@/lib/homepage-settings";
-import {listPortfolioEmailImages} from "@/lib/portfolio";
+import {listWebsiteImages} from "@/lib/website-media";
 import {WebsiteImageSelect} from "@/components/admin/WebsiteImageSelect";
-import {saveHomepageSettingsAction} from "./actions";
+import {saveHomepageSettingsAction,uploadHomepageMediaAction} from "./actions";
 
 const input="mt-2 w-full border border-ink-black/20 bg-white px-4 py-3 text-sm normal-case";
 const label="text-[11px] uppercase tracking-[0.12em] text-ink-black/65";
@@ -12,15 +12,18 @@ const label="text-[11px] uppercase tracking-[0.12em] text-ink-black/65";
 const Panel=({title,copy,children}:{title:string;copy:string;children:ReactNode})=><details className="border border-ink-black/15 bg-white" open><summary className="cursor-pointer px-5 py-4"><span className="text-xl uppercase">{title}</span><span className="ml-3 text-sm normal-case text-ink-black/50">{copy}</span></summary><div className="grid gap-4 border-t border-ink-black/10 p-5 md:grid-cols-2">{children}</div></details>;
 const Field=({name,title,value,area=false,wide=false}:{name:string;title:string;value:string;area?:boolean;wide?:boolean})=><label className={`${label} ${wide?"md:col-span-2":""}`}>{title}{area?<textarea name={name} defaultValue={value} rows={4} className={input}/>:<input name={name} defaultValue={value} className={input}/>}</label>;
 
-const cardLabels=["Centered first row","Right second row","Left third row"];
+const cardLabels=["Left first story","Right second story","Left third story"];
 const projectLabels=["Left project card","Staggered right project card"];
 
-export default async function Page({searchParams}:{searchParams:Promise<{saved?:string}>}){
-  const[settings,query,images]=await Promise.all([getHomepageSettings(),searchParams,listPortfolioEmailImages()]);
+export default async function Page({searchParams}:{searchParams:Promise<{saved?:string;uploaded?:string;error?:string}>}){
+  const[settings,query,images]=await Promise.all([getHomepageSettings(),searchParams,listWebsiteImages()]);
 
   return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
     <AdminPageHeader eyebrow="Website content" title="Homepage editor" description="Edit the exact content used by the current homepage sections. Layout, card positions and animations remain protected." action={<Link href="/" target="_blank" className="border border-ink-black px-4 py-3 text-[11px] uppercase">Preview homepage ↗</Link>}/>
     {query.saved&&<p className="mt-5 border-l-4 border-green-600 bg-green-50 px-4 py-3 text-sm text-green-900">Homepage settings saved and public cache refreshed.</p>}
+    {query.uploaded&&<p className="mt-5 border-l-4 border-green-600 bg-green-50 px-4 py-3 text-sm text-green-900">Image uploaded to the reusable website media library.</p>}
+    {query.error&&<p className="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900">Could not complete the action: {query.error}</p>}
+    <form action={uploadHomepageMediaAction} className="mt-7 grid gap-3 border border-ink-black/15 bg-white p-5 md:grid-cols-2"><div className="md:col-span-2"><h2 className="text-xl uppercase">Reusable website media</h2><p className="mt-1 text-sm normal-case text-ink-black/60">Upload without creating or changing a portfolio project.</p></div><label className={label}>Image<input name="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required className={input}/></label><Field name="mediaAlt" title="Descriptive alt text" value=""/><button className="justify-self-start bg-ink-black px-6 py-3 text-xs uppercase text-white">Upload to media library</button></form>
 
     <form action={saveHomepageSettingsAction} className="mt-7 grid gap-4">
       <Panel title="SEO metadata" copy="Browser title and search description">
@@ -29,7 +32,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
       </Panel>
 
       <Panel title="Hero" copy="Main images, project link and labels">
-        {Object.entries(settings.hero).map(([key,val])=><Field key={key} name={`hero.${key}`} title={key.replaceAll(/([A-Z])/g," $1")} value={val}/>)}</Panel>
+        <WebsiteImageSelect name="hero.desktopImage" label="Desktop image" value={settings.hero.desktopImage} images={images}/><WebsiteImageSelect name="hero.mobileImage" label="Mobile image" value={settings.hero.mobileImage} images={images}/>{Object.entries(settings.hero).filter(([key])=>!key.endsWith("Image")).map(([key,val])=><Field key={key} name={`hero.${key}`} title={key.replaceAll(/([A-Z])/g," $1")} value={val}/>)}</Panel>
 
       <Panel title="Featured metro cards" copy="Three editable cards in center, right and left rows">
         <Field name="featured.eyebrow" title="Section eyebrow" value={settings.featuredEditorial.eyebrow}/>
@@ -41,8 +44,9 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`featured.${index}.subtitle`} title="Editorial subheading above card" value={settings.featuredEditorial.items[index].subtitle} area/>
           <Field name={`card.${index}.title`} title="Name" value={item.title}/>
           <Field name={`card.${index}.subtitle`} title="Location / metadata" value={item.subtitle}/>
+          <Field name={`card.${index}.ctaLabel`} title="CTA label" value={item.ctaLabel}/>
           <Field name={`card.${index}.href`} title="Card URL" value={item.href} wide/>
-          <Field name={`card.${index}.image`} title="Image path" value={item.image} wide/>
+          <WebsiteImageSelect name={`card.${index}.image`} label="Card image" value={item.image} images={images}/>
           <Field name={`card.${index}.alt`} title="Image alt text" value={item.alt} wide/>
         </fieldset>)}
       </Panel>
@@ -57,6 +61,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
 
       <Panel title="Projects grid" copy="Heading, CTA and the two visible project cards">
         <Field name="portfolio.title" title="Section title" value={settings.portfolio.title}/>
+        <Field name="portfolio.subtitle" title="Section description" value={settings.portfolio.subtitle} area wide/>
         <Field name="portfolio.buttonLabel" title="Button label" value={settings.portfolio.buttonLabel}/>
         <Field name="portfolio.buttonHref" title="Button link" value={settings.portfolio.buttonHref} wide/>
         {settings.portfolio.items.map((item,index)=><fieldset key={index} className="grid gap-3 border border-ink-black/10 p-4 md:col-span-2 md:grid-cols-2">
@@ -64,7 +69,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`portfolio.${index}.title`} title="Project name" value={item.title}/>
           <Field name={`portfolio.${index}.location`} title="Location / metadata" value={item.location}/>
           <Field name={`portfolio.${index}.href`} title="Project URL" value={item.href} wide/>
-          <Field name={`portfolio.${index}.image`} title="Project image path" value={item.image} wide/>
+          <WebsiteImageSelect name={`portfolio.${index}.image`} label="Project image" value={item.image} images={images}/>
           <Field name={`portfolio.${index}.alt`} title="Image alt text" value={item.alt} wide/>
         </fieldset>)}
       </Panel>
@@ -78,7 +83,12 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
         <Field name="testimonials.title" title="Section title" value={settings.testimonials.title} wide/>
         {settings.testimonials.items.map((item,index)=><fieldset key={index} className="grid gap-3 border border-ink-black/10 p-4 md:col-span-2 md:grid-cols-2">
           <legend className="px-2 uppercase">Testimonial {index+1}</legend>
-          {Object.entries(item).map(([key,val])=><Field key={key} name={`testimonial.${index}.${key}`} title={key} value={val} area={key==="quote"} wide={key==="quote"}/>)}</fieldset>)}
+          <Field name={`testimonial.${index}.couple`} title="Couple" value={item.couple}/>
+          <Field name={`testimonial.${index}.location`} title="Location" value={item.location}/>
+          <Field name={`testimonial.${index}.quote`} title="Quote" value={item.quote} area wide/>
+          <WebsiteImageSelect name={`testimonial.${index}.image`} label="Portrait image" value={item.image} images={images}/>
+          <Field name={`testimonial.${index}.alt`} title="Image alt text" value={item.alt}/>
+        </fieldset>)}
       </Panel>
 
       <div hidden aria-hidden="true">
