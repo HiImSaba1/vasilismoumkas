@@ -75,7 +75,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
       </Panel>
 
       <Panel title="Homepage marquee" copy="Twelve images selected from the portfolio library">
-        {settings.marqueeImages.map((image,index)=><WebsiteImageSelect key={`${index}-${image}`} name={`marquee.${index}`} label={`Marquee image ${index+1}`} value={image} images={images}/>)}
+        {settings.marqueeImages.map((image,index)=><fieldset key={`${index}-${image.src}`} className="grid gap-3 border border-ink-black/10 p-4 md:grid-cols-2"><WebsiteImageSelect name={`marquee.${index}.src`} label={`Marquee image ${index+1}`} value={image.src} images={images}/><Field name={`marquee.${index}.alt`} title="Unique image alt text" value={image.alt}/></fieldset>)}
       </Panel>
 
       <Panel title="Testimonials carousel" copy="Names, locations, quotes and portraits">

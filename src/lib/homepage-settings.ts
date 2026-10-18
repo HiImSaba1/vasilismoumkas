@@ -13,6 +13,7 @@ const card=z.object({title:z.string().trim().min(1).max(160),subtitle:z.string()
 const portfolioCard=z.object({title:z.string().trim().min(1).max(160),location:z.string().trim().min(1).max(200),href:safeUrl,image:localPath,alt:z.string().trim().min(3).max(300)});
 const service=z.object({title:z.string().trim().min(1).max(100),projectSlug:z.string().trim().min(1).max(190),description:z.string().trim().min(10).max(1200),keywords:z.array(z.string().trim().min(1).max(100)).min(1).max(8),image:localPath});
 const testimonial=z.object({couple:z.string().trim().min(1).max(160),location:z.string().trim().min(1).max(180),quote:z.string().trim().min(10).max(1600),image:localPath,alt:z.string().trim().min(3).max(300)});
+const marqueeImage=z.union([localPath,z.object({src:localPath,alt:z.string().trim().min(3).max(300)})]).transform(value=>typeof value==="string"?{src:value,alt:"Wedding editorial photography by Vasilis Moumkas"}:value);
 const defaultPortfolioCards=ProjectsData.filter(project=>project.category==="Wedding").slice(0,2).map(project=>({title:project.title,location:project.location,href:`/portfolio/project/${project.slug}`,image:project.thumbnail,alt:`${project.title} wedding photography in ${project.location}`}));
 const defaultFeaturedEditorial={eyebrow:"Selected stories",title:"Love, light & legacy",subtitle:"Three celebrations shaped by place, emotion and the quiet beauty found between the defining moments.",items:[{title:"Documenting love",subtitle:"Honest gestures and modern romance, preserved with an editorial sensitivity."},{title:"Following light",subtitle:"Celebrations shaped by landscape, atmosphere and the unmistakable light of Greece."},{title:"Creating legacy",subtitle:"Timeless photographs that hold the feeling of the day long after it has passed."}]};
 
@@ -24,7 +25,7 @@ export const homepageSettingsSchema=z.object({
   services:z.object({eyebrow:z.string().trim().min(1).max(100),intro:z.string().trim().min(10).max(800),items:z.array(service).length(3)}),
   portfolio:z.object({title:z.string().trim().min(2).max(160),subtitle:z.string().trim().max(500).default(""),buttonLabel:z.string().trim().min(1).max(100),buttonHref:localPath,items:z.array(portfolioCard).length(2).default(defaultPortfolioCards)}),
   story:z.object({eyebrow:z.string().trim().min(2).max(400),title:z.string().trim().min(10).max(1800),buttonLabel:z.string().trim().min(1).max(100),buttonHref:localPath,videoUrl:safeUrl}),
-  marqueeImages:z.array(localPath).length(12).default(HOMEPAGE_BLACK_FOOTER.slice(0,12)),
+  marqueeImages:z.array(marqueeImage).length(12).default(HOMEPAGE_BLACK_FOOTER.slice(0,12).map((src,index)=>({src,alt:`Wedding editorial story ${index+1} by Vasilis Moumkas`}))),
   testimonials:z.object({title:z.string().trim().min(2).max(120),items:z.array(testimonial).min(1).max(12)}),
 });
 export type HomepageSettings=z.infer<typeof homepageSettingsSchema>;
@@ -42,7 +43,7 @@ export const defaultHomepageSettings:HomepageSettings={
   services:{eyebrow:"Expertise",intro:"Capturing the art of human connection through a lens of sophistication transforming moments into a permanent visual legacy.",items:homeServices.map(item=>({title:item.title,projectSlug:item.projectSlug,description:item.description,keywords:item.keywords,image:item.image}))},
   portfolio:{title:"Best of Wedding Portfolio works",subtitle:"",buttonLabel:"Full Portfolio",buttonHref:"/portfolio",items:defaultPortfolioCards},
   story:{eyebrow:"Luxury Fine Art Wedding Photography in Greece. For modern souls. Quiet. Emotional. Timeless",title:"For couples who value emotion, elegance, and authenticity. I am Vasilis Moumkas, a luxury destination wedding photographer based in Thessaloniki, Greece. I document refined celebrations across Santorini, Mykonos, Naxos, and Italy from Lake Como and Tuscany to the Amalfi Coast. I also specialise in intimate elopements across the Greek islands. With a calm, intuitive eye, I transform fleeting feelings into timeless artistry. Because these are not just photographs, they are your legacy.",buttonLabel:"Learn More",buttonHref:"/about",videoUrl:"https://player.vimeo.com/video/1159684670?h=ac91465937&autoplay=1&muted=1&loop=1&background=1&badge=0&autopause=0&quality=1080p"},
-  marqueeImages:HOMEPAGE_BLACK_FOOTER.slice(0,12),
+  marqueeImages:HOMEPAGE_BLACK_FOOTER.slice(0,12).map((src,index)=>({src,alt:`Wedding editorial story ${index+1} by Vasilis Moumkas`})),
   testimonials:{title:"Couple Testimonials",items:TestimonialsData.map(item=>({couple:item.couple,location:item.location,quote:item.quote,image:item.profileImage,alt:`${item.couple} wedding testimonial portrait`}))},
 };
 

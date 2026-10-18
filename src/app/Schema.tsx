@@ -1,31 +1,29 @@
 import { TestimonialsData } from "./(site)/data/TestimonialsData"; 
+import {getSeoSettings} from "@/lib/seo-settings";
 
-export default function Schema() {
+export default async function Schema() {
+  const {business}=await getSeoSettings();
   const schema = {
     "@context": "https://schema.org",
-    "@type": "PhotographyBusiness",
+    "@type": "LocalBusiness",
     "@id": "https://vasilismoumkas.com#business",
-    name: "Vasilis Moumkas Photography",
+    name: business.name,
     alternateName: "Vasilis Moumkas",
-    description: "Luxury wedding and destination photographer based in Greece, specializing in cinematic fine-art storytelling across Europe and Italy.",
+    description: business.description,
     image: "https://vasilismoumkas.com/vm_img/Metadata/og-main.jpg",
     logo: "https://vasilismoumkas.com/favicon.ico", 
     url: "https://vasilismoumkas.com",
-    telephone: "+306972218775",
+    telephone: business.telephone,
+    email: business.email,
     priceRange: "$$$",
-    address: {
+    ...(business.addressConfirmed?{address: {
       "@type": "PostalAddress",
-      streetAddress: "Melinas Merkouri 25",
-      addressLocality: "Thessaloniki",
-      addressRegion: "Central Macedonia",
-      postalCode: "54655",
-      addressCountry: "GR",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 40.59469824153946,
-      longitude: 22.95213755767078,
-    },
+      streetAddress: business.streetAddress,
+      addressLocality: business.addressLocality,
+      addressRegion: business.addressRegion,
+      postalCode: business.postalCode,
+      addressCountry: business.addressCountry,
+    }}:{}),
     areaServed: [
       { "@type": "Country", name: "Greece" },
       { "@type": "Country", name: "Italy" },
@@ -67,10 +65,9 @@ export default function Schema() {
       ],
     },
     sameAs: [
-      "https://www.instagram.com/vasilismoumkas",
-      "https://www.facebook.com/VasilisMoumkasPhotography",
-      "https://linkedin.com/in/vasilismoumkas",
-      "https://www.pinterest.com/vasilismoumkas",
+      business.instagram,
+      business.facebook,
+      business.pinterest,
     ],
     review: TestimonialsData.map((t) => ({
       "@type": "Review",

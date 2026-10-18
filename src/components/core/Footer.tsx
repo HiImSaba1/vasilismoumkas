@@ -15,12 +15,14 @@ import { HOMEPAGE_WHITE_FOOTER } from "@/app/(site)/data/Pages-Photoset/Homepage
 import { OFFER_BAPTISM_POOL } from "@/app/(site)/data/Pages-Photoset/Servicespage";
 import { weddingProposalSmallImages,type ProposalImage } from "@/app/(site)/data/proposal-image-sequence";
 import {useOptionalWebsiteSettings} from "@/providers/WebsiteSettingsContext";
+import type {SeoSettings} from "@/lib/seo-settings";
 gsap.registerPlugin(SplitText, ScrollTrigger);
 interface FooterProps {
   isBaptism?: boolean;
   proposalMode?: boolean;
   hideMarquee?: boolean;
   imagePool?:ProposalImage[];
+  business?:SeoSettings["business"];
 }
 const CustomLink = ({
   href,
@@ -97,7 +99,7 @@ const SectionLabel=({children,animationKey}:{children:React.ReactNode;animationK
 
 type SplitElement=HTMLElement&{_gsapSplitText?:SplitText};
 
-const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePool }: FooterProps) => {
+const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePool,business }: FooterProps) => {
   const websiteSettings=useOptionalWebsiteSettings();
   const currentYear = new Date().getFullYear();
   const footerRef = useRef(null);
@@ -279,22 +281,22 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
             <SectionLabel animationKey={`${pathname}-personal-contact`}>Personal Contact</SectionLabel>
             <div className="flex flex-col gap-1">
               <CustomLink
-                href="mailto:vasilis.moumkas@gmail.com"
+                href={`mailto:${business?.email??"vasilis.moumkas@gmail.com"}`}
                 prefetch={false}
                 className="text-sm md:text-md uppercase break-all"
               >
-                vasilis.moumkas@gmail.com
+                {business?.email??"vasilis.moumkas@gmail.com"}
               </CustomLink>
               <CustomLink
-                href="tel:+306972218775"
+                href={`tel:${business?.telephone??"+306972218775"}`}
                 prefetch={false}
                 className="text-sm md:text-md uppercase mt-2"
               >
-                +30 6972 218 775
+                {business?.telephone??"+30 6972 218 775"}
               </CustomLink>
               <CustomLink
                 isExternal
-                href="https://wa.me/306972218775?text=Hello%20Vasilis!%20I'm%20interested%20in%20your%20wedding%20photography%20services.%20I'd%20love%20to%20check%20your%20availability%20and%20hear%20more%20about%20your%20work."
+                href={`https://wa.me/${(business?.telephone??"+306972218775").replace(/\D/g,"")}?text=Hello%20Vasilis!%20I'm%20interested%20in%20your%20wedding%20photography%20services.`}
                 prefetch={false}
                 className="text-sm md:text-md uppercase mt-2"
               >
@@ -308,7 +310,7 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
               <li>
                 <CustomLink
                   isExternal
-                  href="https://www.instagram.com/vasilismoumkas_weddings/"
+                  href={business?.instagram??"https://www.instagram.com/vasilismoumkas_weddings/"}
                   prefetch={false}
                 >
                   Instagram
@@ -317,7 +319,7 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
               <li>
                 <CustomLink
                   isExternal
-                  href="https://www.facebook.com/VasilisMoumkasPhotography"
+                  href={business?.facebook??"https://www.facebook.com/VasilisMoumkasPhotography"}
                   prefetch={false}
                 >
                   Facebook
@@ -326,7 +328,7 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
               <li>
                 <CustomLink
                   isExternal
-                  href="https://gr.pinterest.com/vasilismoumkas/"
+                  href={business?.pinterest??"https://gr.pinterest.com/vasilismoumkas/"}
                   prefetch={false}
                 >
                   Pinterest
@@ -337,14 +339,14 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
           <div className="flex flex-col col-span-8 md:col-span-1 py-2 md:py-0">
             <SectionLabel animationKey={`${pathname}-find-me`}>Find Me</SectionLabel>
             <CustomLink
-              href="https://maps.app.goo.gl/WgcYHohyWbyXDu3R9"
+              href={business?.mapUrl??"https://maps.app.goo.gl/WgcYHohyWbyXDu3R9"}
               isExternal
               prefetch={false}
               className="text-sm md:text-md leading-snug uppercase tracking-wide"
             >
-              Thessaloniki / Greece
+              {business?.addressLocality??"Thessaloniki"} / {business?.addressCountry??"Greece"}
               <br />
-              Themistokli Sofouli, 52
+              {business?.streetAddress??"Themistokli Sofouli, 52"}
             </CustomLink>
           </div>
           <div className="flex flex-col col-span-4 md:col-span-1 items-start text-start py-2 md:py-0">

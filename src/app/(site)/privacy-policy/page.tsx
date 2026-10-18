@@ -1,10 +1,13 @@
 import LegalContent from "./LegalContent";
+import {getSeoSettings} from "@/lib/seo-settings";
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+  const{business}=await getSeoSettings();
+  const location=business.addressConfirmed?`${business.streetAddress}, ${business.postalCode}, ${business.addressLocality}, ${business.addressCountry}`:`${business.addressLocality}, ${business.addressCountry}`;
   const privacySections = [
     {
       heading: "Who we are",
-      content: "Our website address is: https://vasilismoumkas.com. Vasilis Moumkas Photography is based in Thessaloniki, Greece (Melinas Merkouri 25, 54655) and provides luxury wedding and destination photography services across Greece, Italy, France, and Europe."
+      content: `Our website address is: https://vasilismoumkas.com. ${business.name} is based in ${location} and provides luxury wedding and destination photography services across Greece, Italy, France, and Europe.`
     },
     {
       heading: "Data Collection",
@@ -28,7 +31,7 @@ export default function PrivacyPage() {
     },
     {
       heading: "Contact Information",
-      content: "For any privacy-related inquiries, you can reach Vasilis Moumkas at vasilis.moumkas@gmail.com, by phone at +30 6972218775, or at our studio in Thessaloniki, Greece."
+      content: `For any privacy-related inquiries, you can reach Vasilis Moumkas at ${business.email}, by phone at ${business.telephone}, or at our studio in ${location}.`
     }
   ];
 

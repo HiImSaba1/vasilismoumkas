@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CalendarClock, CalendarDays, CalendarRange, ContactRound, FilePlus2, Files, FileText, Images, LayoutDashboard, ListChecks, Mail, Menu, MonitorCog, PanelLeftClose, PanelLeftOpen, Sparkles, UserRoundPlus, UsersRound, X } from "lucide-react";
+import { BookOpen, CalendarClock, CalendarDays, CalendarRange, ContactRound, FilePlus2, Files, FileText, Images, LayoutDashboard, ListChecks, Mail, Menu, MonitorCog, PanelLeftClose, PanelLeftOpen, Search, Sparkles, UserRoundPlus, UsersRound, X } from "lucide-react";
 import { logoutAction } from "./actions";
 import { AdminTour } from "@/components/admin/AdminTour";
 import { AdminLanguageSwitcher, AdminLocaleProvider } from "@/components/admin/AdminLocale";
@@ -23,6 +23,7 @@ const navigation = [
   { label: "Timelines", href: "/admin/timelines", icon: CalendarRange },
   { label: "Portfolio", href: "/admin/portfolio", icon: Images },
   { label: "Website", href: "/admin/website", icon: MonitorCog },
+  { label: "SEO", href: "/admin/seo", icon: Search },
   { label: "Email Templates", href: "/admin/email-templates", icon: Mail },
   { label: "Document Templates", href: "/admin/document-templates", icon: FileText },
   { label: "Automation Queue", href: "/admin/automations", icon: CalendarClock },

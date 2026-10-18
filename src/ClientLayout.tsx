@@ -11,6 +11,7 @@ import Footer from "@/components/core/Footer";
 import CookieBanner from "./components/core/CookieBanner";
 import {WebsiteSettingsProvider} from "@/providers/WebsiteSettingsContext";
 import type {WebsiteSettings} from "@/lib/website-settings";
+import type {SeoSettings} from "@/lib/seo-settings";
 
 function ScrollReset() {
   const pathname = usePathname();
@@ -29,10 +30,11 @@ function ScrollReset() {
 }
 
 export default function ClientLayout({
-  children,websiteSettings,
+  children,websiteSettings,businessSettings,
 }: {
   children: React.ReactNode;
   websiteSettings:WebsiteSettings;
+  businessSettings:SeoSettings["business"];
 }) {
   const pathname = usePathname();
 
@@ -71,7 +73,7 @@ export default function ClientLayout({
             </main>
             
             {/* Footer is hidden on Instagram, Admin, and Offer pages */}
-            {!isSpecialPage && <Footer />}
+            {!isSpecialPage && <Footer business={businessSettings}/>}
             
             <CookieBanner />
           </ReactLenis>

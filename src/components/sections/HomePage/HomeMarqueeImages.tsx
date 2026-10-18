@@ -16,13 +16,15 @@ const seoKeywords = [
   "Photographer",
 ];
 
-const HomeMarqueeImages = ({images=HOMEPAGE_BLACK_FOOTER.slice(0,12)}:{images?:string[]}) => {
+type MarqueeImage={src:string;alt:string};
+const fallbackImages:MarqueeImage[]=HOMEPAGE_BLACK_FOOTER.slice(0,12).map((src,index)=>({src,alt:`Wedding editorial story ${index+1} by Vasilis Moumkas`}));
+const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => {
   const gapClass = "gap-4 md:gap-6";
-  const [shuffledImages, setShuffledImages] = useState<string[]>([]);
+  const [shuffledImages, setShuffledImages] = useState<MarqueeImage[]>([]);
 
   useEffect(() => {
     // Unique shuffle logic
-    const uniquePool = Array.from(new Set(images));
+    const uniquePool = Array.from(new Map(images.map(image=>[image.src,image])).values());
     const shuffle = () => {
       return [...uniquePool].sort(() => 0.5 - Math.random()).slice(0, 12);
     };
@@ -53,15 +55,15 @@ const HomeMarqueeImages = ({images=HOMEPAGE_BLACK_FOOTER.slice(0,12)}:{images?:s
                 repeat: Infinity,
               }}
             >
-              {[...shuffledImages, ...shuffledImages].map((src, idx) => (
+              {[...shuffledImages, ...shuffledImages].map((image, idx) => (
                 <div
-                  key={`${idx}-${src}`}
+                  key={`${idx}-${image.src}`}
+                  aria-hidden={idx>=shuffledImages.length||undefined}
                   className="relative w-56 h-72 md:w-80 md:h-100 shrink-0 overflow-hidden"
                 >
                   <SeoImage
-                    src={src}
-                    description="wedding-editorial-portfolio"
-                    location="greece-italy-worldwide"
+                    src={image.src}
+                    alt={idx>=shuffledImages.length?"":image.alt}
                     fill
                     sizes="(max-width: 768px) 224px, 320px"
                     priority={idx < 4}

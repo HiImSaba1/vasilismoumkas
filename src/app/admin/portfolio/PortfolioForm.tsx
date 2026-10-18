@@ -23,6 +23,16 @@ export function PortfolioForm({ project }: { project?: Project }) {
       <textarea name="description" required defaultValue={project?.description} rows={7} className="border border-ink-black/20 bg-transparent p-3 normal-case"/>
     </label>
 
+    <fieldset className="grid gap-4 border border-ink-black/15 bg-white p-4 md:grid-cols-2">
+      <legend className="px-2 uppercase">Project SEO</legend>
+      <Field name="seoTitle" label="SEO title" value={project?.seoTitle}/>
+      <Field name="headerImageAlt" label="Header image alt text" value={project?.headerImageAlt ?? `${project?.title ?? "Project"} wedding photography`}/>
+      <label className="grid gap-2 text-sm uppercase md:col-span-2">Meta description
+        <textarea name="metaDescription" defaultValue={project?.metaDescription ?? ""} rows={3} maxLength={500} className="border border-ink-black/20 bg-transparent p-3 normal-case"/>
+      </label>
+      <p className="text-xs text-ink-black/55 md:col-span-2">Leave title or description empty to use the project name and story as the public fallback. Changes update public metadata without a deployment.</p>
+    </fieldset>
+
     <label className="grid gap-2 text-sm  uppercase">Header / cinematic image · max 400 KB
       <input name="header" type="file" accept="image/jpeg,image/png,image/webp,image/avif" className="border border-ink-black/20 p-3"/>
     </label>

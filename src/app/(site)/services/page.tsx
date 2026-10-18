@@ -6,6 +6,7 @@ import ServicesStackingCardsSection from "@/components/sections/ServicesPage/Ser
 export default function ServicesPage() {
   return (
     <>
+      <h1 className="sr-only">Wedding Photography Services in Greece &amp; Italy</h1>
       <ServicesHeroSection />
       <ServicesThreeColSection />
       <ServicesStackingCardsSection />

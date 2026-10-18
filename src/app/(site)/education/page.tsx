@@ -6,6 +6,7 @@ import EducationHero from "@/components/sections/EducationPage/EducationHero";
 export default function EducationPage() {
   return (
     <>
+      <h1 className="sr-only">Photography Education &amp; Mentoring</h1>
       <EducationHero />
       <EducationChessSection />
       <EducationCTA />

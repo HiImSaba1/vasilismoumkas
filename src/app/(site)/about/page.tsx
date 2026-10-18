@@ -7,6 +7,7 @@ import AboutFaqSection from "@/components/sections/AboutPage/AboutFaqSection";
 export default function AboutPage() {
   return (
     <>
+      <h1 className="sr-only">Vasilis Moumkas — Wedding Photographer</h1>
       <AboutHeroVideoSection />
       <AboutQuoteSection />
       <AboutGallerySection />

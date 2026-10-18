@@ -1,11 +1,12 @@
 import ClientLayout from "@/ClientLayout";
 import {getWebsiteSettings} from "@/lib/website-settings";
+import {getSeoSettings} from "@/lib/seo-settings";
 
 export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const websiteSettings=await getWebsiteSettings();
-  return <ClientLayout websiteSettings={websiteSettings}>{children}</ClientLayout>;
+  const[websiteSettings,seoSettings]=await Promise.all([getWebsiteSettings(),getSeoSettings()]);
+  return <ClientLayout websiteSettings={websiteSettings} businessSettings={seoSettings.business}>{children}</ClientLayout>;
 }

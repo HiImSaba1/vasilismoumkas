@@ -1,22 +1,4 @@
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Portfolio",
-  alternates:{canonical:"/portfolio"},
-  description: "Explore a curated collection of luxury wedding stories. From Santorini to Lake Como, view my cinematic destination wedding photography.",
-  openGraph: {
-    title: "Wedding Portfolio | Vasilis Moumkas",
-    description: "Cinematic and timeless wedding photography across Greece and Italy.",
-    url:"/portfolio",
-    images: [{ url: "/vm_img/Metadata/og-portfolio.jpg", width: 1200, height: 630, alt: "Vasilis Moumkas Portfolio" }],
-  },
-  twitter:{card:"summary_large_image",title:"Wedding Portfolio | Vasilis Moumkas",description:"Cinematic and timeless wedding photography across Greece and Italy.",images:["/vm_img/Metadata/og-portfolio.jpg"]},
-};
-
-export default function PortfolioLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
+import type {Metadata} from "next";
+import {getSeoSettings,pageMetadata} from "@/lib/seo-settings";
+export async function generateMetadata():Promise<Metadata>{return pageMetadata((await getSeoSettings()).portfolio,"/portfolio")}
+export default function PortfolioLayout({children}:{children:React.ReactNode}){return <>{children}</>}

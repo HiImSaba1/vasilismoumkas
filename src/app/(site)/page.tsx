@@ -12,6 +12,7 @@ export default async function HomePage() {
   const settings=await getHomepageSettings();
   return (
     <>
+      <h1 className="sr-only">Wedding Photographer in Greece &amp; Italy</h1>
       <HomeHero content={settings.hero}/>
       <HomeCurtainTransition
         featured={<AboutSplitSectionMain cards={settings.featuredCards} editorial={settings.featuredEditorial}/>}

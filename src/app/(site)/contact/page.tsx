@@ -103,6 +103,7 @@ export default function ContactPage() {
       ref={container}
       className="min-h-screen bg-off-white flex flex-col md:flex-row overflow-hidden"
     >
+      <h1 className="sr-only">Let&apos;s Talk About Your Wedding</h1>
       {/* LEFT COLUMN */}
       <section
         className="left-col relative w-full md:w-1/2 h-[50vh] md:h-screen overflow-hidden cursor-pointer"

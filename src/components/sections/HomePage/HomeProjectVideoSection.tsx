@@ -62,6 +62,7 @@ const HomeProjectVideoSection = ({content}:{content:HomepageSettings["story"]}) 
           className="relative w-full aspect-video overflow-hidden origin-top bg-off-white"
         >
           <iframe
+            loading="lazy"
             src={content.videoUrl}
             className="absolute top-1/2 left-1/2 w-[105%] h-[105%] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-100"
             style={{ border: "none", backgroundColor: "#000" }}

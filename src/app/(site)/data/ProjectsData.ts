@@ -12,6 +12,10 @@ export interface Project {
   slug: string;
   title: string;
   description: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  headerImageAlt?: string;
+  updatedAt?: string;
   dateShot: string;
   client: string;
   location: string;

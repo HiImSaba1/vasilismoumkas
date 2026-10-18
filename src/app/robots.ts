@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/', '/admin/', '/_next/'],
+      disallow: ['/api/', '/admin/', '/offer/', '/portal/', '/timeline/'],
     },
     sitemap: 'https://vasilismoumkas.com/sitemap.xml',
   };
