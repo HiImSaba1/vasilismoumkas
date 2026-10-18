@@ -17,6 +17,8 @@ export const defaultBusinessSettings:z.infer<typeof business>={name:"Vasilis Mou
 export const seoSettingsSchema=z.object({
   portfolio:page,
   wedding:page,
+  editorial:page.default({title:"Editorial Photography Stories | Vasilis Moumkas",description:"Explore refined editorial photography stories shaped by fashion, atmosphere and cinematic visual storytelling by Vasilis Moumkas.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Editorial photography stories by Vasilis Moumkas"}),
+  engagement:page.default({title:"Engagement Photography Stories | Vasilis Moumkas",description:"Discover engagement and couple photography stories filled with natural emotion, Mediterranean light and timeless visual storytelling.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Engagement photography stories by Vasilis Moumkas"}),
   about:page,
   services:page,
   contact:page,
@@ -30,6 +32,8 @@ export const SEO_SETTINGS_KEY="website_seo_v1";
 export const defaultSeoSettings:SeoSettings={
   portfolio:{title:"Wedding Stories & Photography Portfolio | Vasilis Moumkas",description:"Explore cinematic wedding stories and editorial destination wedding photography by Vasilis Moumkas across Greece, Italy and Europe.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Wedding photography portfolio by Vasilis Moumkas"},
   wedding:{title:"Wedding Photography Stories | Vasilis Moumkas",description:"Discover wedding photography stories shaped by genuine emotion, Mediterranean light and refined editorial storytelling across Greece and Italy.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Wedding photography stories in Greece and Italy"},
+  editorial:{title:"Editorial Photography Stories | Vasilis Moumkas",description:"Explore refined editorial photography stories shaped by fashion, atmosphere and cinematic visual storytelling by Vasilis Moumkas.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Editorial photography stories by Vasilis Moumkas"},
+  engagement:{title:"Engagement Photography Stories | Vasilis Moumkas",description:"Discover engagement and couple photography stories filled with natural emotion, Mediterranean light and timeless visual storytelling.",image:"/vm_img/Metadata/og-portfolio.jpg",imageAlt:"Engagement photography stories by Vasilis Moumkas"},
   about:{title:"Vasilis Moumkas — Wedding Photographer",description:"Meet Vasilis Moumkas, a wedding photographer creating emotional, cinematic and editorial stories for destination celebrations across Greece and Europe.",image:"/vm_img/Metadata/og-about.jpg",imageAlt:"Vasilis Moumkas wedding photographer"},
   services:{title:"Wedding Photography Services in Greece & Italy | Vasilis Moumkas",description:"Explore bespoke wedding photography services for destination weddings, intimate celebrations and editorial stories throughout Greece and Italy.",image:"/vm_img/Homepage/Metadata/og-services.jpg",imageAlt:"Wedding photography services in Greece and Italy"},
   contact:{title:"Let’s Talk About Your Wedding | Vasilis Moumkas",description:"Contact Vasilis Moumkas to discuss destination wedding photography in Greece, Italy or wherever your celebration takes place.",image:"/vm_img/Metadata/og-contact.jpg",imageAlt:"Contact Vasilis Moumkas about wedding photography"},

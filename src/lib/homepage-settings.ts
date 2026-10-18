@@ -18,7 +18,7 @@ const defaultPortfolioCards=ProjectsData.filter(project=>project.category==="Wed
 const defaultFeaturedEditorial={eyebrow:"Selected stories",title:"Love, light & legacy",subtitle:"Three celebrations shaped by place, emotion and the quiet beauty found between the defining moments.",items:[{title:"Documenting love",subtitle:"Honest gestures and modern romance, preserved with an editorial sensitivity."},{title:"Following light",subtitle:"Celebrations shaped by landscape, atmosphere and the unmistakable light of Greece."},{title:"Creating legacy",subtitle:"Timeless photographs that hold the feeling of the day long after it has passed."}]};
 
 export const homepageSettingsSchema=z.object({
-  seo:z.object({title:z.string().trim().min(5).max(160),description:z.string().trim().min(20).max(500)}),
+  seo:z.object({title:z.string().trim().min(5).max(160),description:z.string().trim().min(20).max(500),image:localPath.default("/vm_img/Metadata/og-main.jpg"),imageAlt:z.string().trim().min(3).max(300).default("Luxury wedding photography by Vasilis Moumkas in Greece and Italy")}),
   hero:z.object({desktopImage:localPath,mobileImage:localPath,projectHref:localPath,imageAlt:z.string().trim().min(3).max(300),topLeft:z.string().trim().min(1).max(80),topCenter:z.string().trim().min(1).max(80),topRight:z.string().trim().min(1).max(80),bottomLeft:z.string().trim().min(1).max(120),bottomRight:z.string().trim().min(1).max(120)}),
   featuredCards:z.array(card).length(3),
   featuredEditorial:z.object({eyebrow:z.string().trim().min(1).max(100),title:z.string().trim().min(2).max(240),subtitle:z.string().trim().min(10).max(600),items:z.array(z.object({title:z.string().trim().min(2).max(180),subtitle:z.string().trim().min(10).max(500)})).length(3)}).default(defaultFeaturedEditorial),
@@ -32,7 +32,7 @@ export type HomepageSettings=z.infer<typeof homepageSettingsSchema>;
 export const HOMEPAGE_SETTINGS_KEY="homepage_content_v1";
 
 export const defaultHomepageSettings:HomepageSettings={
-  seo:{title:"Vasilis Moumkas Photography | Weddings in Greece & Italy",description:"Luxury fine-art wedding photography in Greece, the Greek islands and Italy by Vasilis Moumkas."},
+  seo:{title:"Vasilis Moumkas Photography | Weddings in Greece & Italy",description:"Luxury fine-art wedding photography in Greece, the Greek islands and Italy by Vasilis Moumkas.",image:"/vm_img/Metadata/og-main.jpg",imageAlt:"Luxury wedding photography by Vasilis Moumkas in Greece and Italy"},
   hero:{desktopImage:"/uploads/portfolio/natasa-stamatis/b85c1421-3758-44f5-bc57-d6b5bf761807.webp",mobileImage:"/uploads/portfolio/natasa-stamatis/7099163a-198e-4cf5-ab4c-799e6ae5757a.webp",projectHref:"/portfolio/project/natasa-stamatis",imageAlt:"Natasa and Stamatis wedding photography",topLeft:"For modern",topCenter:"Romantic souls",topRight:"Emotional & timeless",bottomLeft:"Scroll for portraits",bottomRight:"with passion & elegance"},
   featuredCards:[
     {title:"Suzanna & Alexis",subtitle:"Greece",ctaLabel:"View story",href:"/portfolio/project/suzanna-alexis",image:"/uploads/portfolio/suzanna-alexis/aac71937-16fa-49a4-b564-0e4ab82563b6.webp",alt:"Suzanna and Alexis wedding photography in Greece"},

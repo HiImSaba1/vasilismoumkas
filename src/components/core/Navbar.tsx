@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import FullScreenMenu from "./FullScreenMenu";
 import { gsap } from "gsap";
+import type {SeoSettings} from "@/lib/seo-settings";
 
-const Navbar: React.FC = () => {
+const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
   const [isActive, setIsActive] = useState(false);
   const [isStickyVisible, setIsStickyVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
@@ -160,7 +161,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </div>
-      <FullScreenMenu isActive={isActive} setIsActive={setIsActive} />
+      <FullScreenMenu isActive={isActive} setIsActive={setIsActive} business={business}/>
     </>
   );
 };

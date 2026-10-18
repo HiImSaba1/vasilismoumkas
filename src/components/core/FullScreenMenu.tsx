@@ -7,15 +7,18 @@ import MenuLink from "@/providers/MenuLink";
 import MenuImagePreview from "@/components/animations/MenuImagePreview";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import { navItems, footerLinksData } from "@/app/(site)/data/MenuData";
+import type {SeoSettings} from "@/lib/seo-settings";
 
 interface FullScreenMenuProps {
   isActive: boolean;
   setIsActive: React.Dispatch<React.SetStateAction<boolean>>;
+  business?: SeoSettings["business"];
 }
 
 const FullScreenMenu: React.FC<FullScreenMenuProps> = ({
   isActive,
   setIsActive,
+  business,
 }) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
@@ -23,6 +26,13 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({
   const linksRef = useRef<(HTMLAnchorElement | null)[]>([]);
   const footerLinkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   const pathname = usePathname();
+  const menuFooterLinks = business ? footerLinksData.map(column => {
+    const title=column.title.toLowerCase();
+    if(title==="socials")return {...column,links:[{text:"Instagram",href:business.instagram,isExternal:true},{text:"Facebook",href:business.facebook,isExternal:true},{text:"Pinterest",href:business.pinterest,isExternal:true}]};
+    if(title==="address")return {...column,links:[{text:"Google Maps",href:business.mapUrl,isExternal:true}]};
+    if(title==="contact")return {...column,links:[{text:business.telephone,href:`tel:${business.telephone.replace(/[^+\d]/g,"")}`},{text:business.email,href:`mailto:${business.email}`},{text:"WhatsApp Message",href:`https://wa.me/${business.telephone.replace(/\D/g,"")}`,isExternal:true}]};
+    return column;
+  }) : footerLinksData;
 
   const [activeImageIndex, setActiveImageIndex] = useState<number | null>(null);
   const currentPageImageIndex =
@@ -180,7 +190,7 @@ const FullScreenMenu: React.FC<FullScreenMenuProps> = ({
             />
 
             <div className="grid grid-cols-12 md:grid-cols-3 gap-y-8 md:gap-5 w-full">
-              {footerLinksData.map((column, colIndex) => {
+              {menuFooterLinks.map((column, colIndex) => {
                 const title = column.title.toLowerCase();
                 let colSpan = "col-span-12";
                 let order = "order-3";

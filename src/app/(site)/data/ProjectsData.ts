@@ -15,6 +15,7 @@ export interface Project {
   seoTitle?: string;
   metaDescription?: string;
   headerImageAlt?: string;
+  published?: boolean;
   updatedAt?: string;
   dateShot: string;
   client: string;

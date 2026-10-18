@@ -7,7 +7,7 @@ import HomeMarqueeImages from "@/components/sections/HomePage/HomeMarqueeImages"
 import HomeTestimonialsOnScroll from "@/components/sections/HomePage/HomeTestimonialsOnScroll";
 import HomeCurtainTransition from "@/components/sections/HomePage/HomeCurtainTransition";
 import {getHomepageSettings} from "@/lib/homepage-settings";
-export async function generateMetadata():Promise<Metadata>{const{seo,hero}=await getHomepageSettings();return{title:{absolute:seo.title},description:seo.description,alternates:{canonical:"/"},openGraph:{title:seo.title,description:seo.description,url:"/",type:"website",images:[{url:hero.desktopImage,alt:hero.imageAlt}]},twitter:{card:"summary_large_image",title:seo.title,description:seo.description,images:[hero.desktopImage]}}}
+export async function generateMetadata():Promise<Metadata>{const{seo}=await getHomepageSettings();return{title:{absolute:seo.title},description:seo.description,alternates:{canonical:"/"},openGraph:{title:seo.title,description:seo.description,url:"/",type:"website",images:[{url:seo.image,alt:seo.imageAlt}]},twitter:{card:"summary_large_image",title:seo.title,description:seo.description,images:[seo.image]}}}
 export default async function HomePage() {
   const settings=await getHomepageSettings();
   return (

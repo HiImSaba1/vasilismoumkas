@@ -66,7 +66,7 @@ export default function ClientLayout({
             <ScrollReset />
             
             {/* Navbar is hidden on Instagram, Admin, and Offer pages */}
-            {!isSpecialPage && <Navbar />}
+            {!isSpecialPage && <Navbar business={businessSettings}/>}
             
             <main className="relative isolate">
               {children}

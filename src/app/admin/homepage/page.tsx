@@ -29,6 +29,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
       <Panel title="SEO metadata" copy="Browser title and search description">
         <Field name="seo.title" title="SEO title" value={settings.seo.title} wide/>
         <Field name="seo.description" title="Meta description" value={settings.seo.description} area wide/>
+        <input type="hidden" name="seo.image" value={settings.seo.image}/>
+        <input type="hidden" name="seo.imageAlt" value={settings.seo.imageAlt}/>
       </Panel>
 
       <Panel title="Hero" copy="Main images, project link and labels">

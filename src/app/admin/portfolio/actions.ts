@@ -9,7 +9,7 @@ const slug=z.string().trim().min(2).max(190).regex(/^[a-z0-9-]+$/);
 export async function savePortfolioAction(formData:FormData){
   await requireAdmin();
   const value=z.object({originalSlug:z.string().optional(),slug,title:z.string().trim().min(2).max(255),description:z.string().trim().min(10).max(20000),seoTitle:z.string().trim().max(255).default(""),metaDescription:z.string().trim().max(500).default(""),headerImageAlt:z.string().trim().max(500).default(""),dateShot:z.string(),client:z.string().max(255),location:z.string().max(255),category:z.string().min(2).max(80),tags:z.string().max(1000),existingHeader:z.string(),existingPhotos:z.string(),galleryDimensions:z.string().optional().default("[]")}).parse(Object.fromEntries(formData));
-  const current=value.originalSlug?await getPortfolioProject(value.originalSlug):null;
+  const current=value.originalSlug?await getPortfolioProject(value.originalSlug,{includeUnpublished:true}):null;
   const galleryFiles=formData.getAll("gallery").filter(item=>item instanceof File&&item.size) as File[];
   const measured=z.array(z.object({name:z.string(),width:z.number().int().min(1).max(30000),height:z.number().int().min(1).max(30000)})).parse(JSON.parse(value.galleryDimensions));
   const headerFile=formData.get("header");
@@ -21,7 +21,7 @@ export async function savePortfolioAction(formData:FormData){
   const existing=z.array(z.object({src:z.string(),alt:z.string(),width:z.number(),height:z.number()})).parse(JSON.parse(value.existingPhotos)).filter(photo=>!removed.has(photo.src));
   const photos=[...existing,...uploaded.map((src,index)=>({src,alt:value.title,width:measured[index]?.width??1600,height:measured[index]?.height??1200}))];
   if(photos.length>50)throw new Error("A project can contain at most 50 gallery images.");
-  await savePortfolioProject({...value,tags:value.tags.split(",").map(item=>item.trim()).filter(Boolean),headerImage:header,photos});
+  await savePortfolioProject({...value,published:formData.get("published")==="on",tags:value.tags.split(",").map(item=>item.trim()).filter(Boolean),headerImage:header,photos});
   revalidatePath("/admin/portfolio");revalidatePath("/portfolio");revalidatePath(`/portfolio/project/${value.slug}`);revalidatePath(`/portfolio/${value.category.toLowerCase()}`);revalidatePath("/sitemap.xml");
   redirect("/admin/portfolio");
 }

@@ -19,6 +19,11 @@ export function PortfolioForm({ project }: { project?: Project }) {
       <Field name="tags" label="Tags, comma separated" value={project?.tags.join(", ")}/>
     </div>
 
+    <label className="flex items-center gap-3 border border-ink-black/20 bg-white p-4 text-sm uppercase">
+      <input name="published" type="checkbox" defaultChecked={project?.published ?? true}/>
+      Published on public website and sitemap
+    </label>
+
     <label className="grid gap-2 text-sm  uppercase">Description
       <textarea name="description" required defaultValue={project?.description} rows={7} className="border border-ink-black/20 bg-transparent p-3 normal-case"/>
     </label>

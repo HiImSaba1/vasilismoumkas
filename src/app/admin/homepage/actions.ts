@@ -10,7 +10,7 @@ export async function saveHomepageSettingsAction(formData:FormData){
   await requireAdmin();
   const testimonialCount=Math.min(Math.max(Number(formData.get("testimonialCount"))||1,1),12);
   const parsed=homepageSettingsSchema.safeParse({
-    seo:{title:value(formData,"seo.title"),description:value(formData,"seo.description")},
+    seo:{title:value(formData,"seo.title"),description:value(formData,"seo.description"),image:value(formData,"seo.image"),imageAlt:value(formData,"seo.imageAlt")},
     hero:{desktopImage:value(formData,"hero.desktopImage"),mobileImage:value(formData,"hero.mobileImage"),projectHref:value(formData,"hero.projectHref"),imageAlt:value(formData,"hero.imageAlt"),topLeft:value(formData,"hero.topLeft"),topCenter:value(formData,"hero.topCenter"),topRight:value(formData,"hero.topRight"),bottomLeft:value(formData,"hero.bottomLeft"),bottomRight:value(formData,"hero.bottomRight")},
     featuredCards:Array.from({length:3},(_,index)=>({title:value(formData,`card.${index}.title`),subtitle:value(formData,`card.${index}.subtitle`),ctaLabel:value(formData,`card.${index}.ctaLabel`),href:value(formData,`card.${index}.href`),image:value(formData,`card.${index}.image`),alt:value(formData,`card.${index}.alt`)})),
     featuredEditorial:{eyebrow:value(formData,"featured.eyebrow"),title:value(formData,"featured.title"),subtitle:value(formData,"featured.subtitle"),items:Array.from({length:3},(_,index)=>({title:value(formData,`featured.${index}.title`),subtitle:value(formData,`featured.${index}.subtitle`)}))},
