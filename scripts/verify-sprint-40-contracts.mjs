@@ -8,11 +8,11 @@ const actions=read("src/app/admin/offers/actions.ts");
 const controls=read("src/app/admin/offers/OfferDecisionControls.tsx");
 
 requireText(offers,/offer\.language==="en"\?"en":"el"/,"Greek offer language maps to the canonical EL workflow locale");
-requireText(offers,/SELECT document_type,template_key FROM lead_document_templates[\s\S]*document_type IN \('questionnaire','contract','invoice'\)/,"acceptance preflights all three booking document templates");
+requireText(offers,/SELECT document_type,template_key FROM document_templates[\s\S]*document_type IN \('questionnaire','contract','invoice'\)/,"acceptance preflights all three booking document templates from the canonical table");
 requireText(offers,/if\(missing\.length\)throw new OfferAcceptanceError[\s\S]*UPDATE leads SET event_type=\?,workflow_locale=\?,status='converted'/,"template validation completes before the lead profile is repaired and converted");
 requireText(offers,/beginTransaction\(\)[\s\S]*SELECT \* FROM offers WHERE slug=\? FOR UPDATE[\s\S]*SELECT event_date,phone,ceremony_location,reception_location FROM leads WHERE id=\? FOR UPDATE[\s\S]*commit\(\)/,"offer and lead acceptance remain one locked transaction");
 requireText(offers,/SELECT id FROM clients WHERE accepted_offer_id=\? OR \(lead_id IS NOT NULL AND lead_id=\?\)[\s\S]*INSERT IGNORE INTO onboarding[\s\S]*INSERT IGNORE INTO client_portals[\s\S]*INSERT IGNORE INTO lead_document_records/,"repeat acceptance reuses the client and preserves idempotent portal and document provisioning");
-requireText(offers,/const profilePrefix=`\$\{offer\.event_type\}-\$\{workflowLocale\}`/,"document keys use canonical event and locale identity");
+requireText(offers,/for\(const type of \["questionnaire","contract","invoice"\][\s\S]*templates\.get\(type\)[\s\S]*INSERT IGNORE INTO lead_document_records/,"document records use the exact active template keys returned by preflight");
 requireText(actions,/Promise<AcceptOfferState>[\s\S]*instanceof OfferAcceptanceError[\s\S]*No partial client records were kept/,"admin acceptance returns a controlled actionable error instead of a route crash");
 requireText(controls,/useActionState\(acceptOfferAction,initialAcceptState\)[\s\S]*role="status"[\s\S]*acceptPending/,"offer controls display acceptance failures and prevent duplicate clicks while pending");
 requireText(offers,/sendInternalOfferAcceptance/,"accepted-offer notification remains internal only");

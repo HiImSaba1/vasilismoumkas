@@ -89,12 +89,13 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
     const payload=typeof offer.payload==="string"?JSON.parse(offer.payload):offer.payload;payload.response={...input,submittedAt:new Date().toISOString()};
     if(input.action==="accept"){
       const workflowLocale=offer.language==="en"?"en":"el";
+      const templates=new Map<BookingDocumentType,string>();
       const[leadRows]=offer.lead_id?await connection.query<LeadAcceptanceRow[]>("SELECT event_date,phone,ceremony_location,reception_location FROM leads WHERE id=? FOR UPDATE",[offer.lead_id]):[[]];
       const lead=leadRows[0];
       if(offer.lead_id&&!lead)throw new OfferAcceptanceError("The connected lead could not be found. No client records were created.");
       if(offer.lead_id){
-        const[templateRows]=await connection.query<DocumentTemplateRow[]>("SELECT document_type,template_key FROM lead_document_templates WHERE event_type=? AND locale=? AND is_active=1 AND document_type IN ('questionnaire','contract','invoice')",[offer.event_type,workflowLocale]);
-        const templates=new Map(templateRows.map(row=>[row.document_type,row.template_key]));
+        const[templateRows]=await connection.query<DocumentTemplateRow[]>("SELECT document_type,template_key FROM document_templates WHERE event_type=? AND locale=? AND is_active=1 AND document_type IN ('questionnaire','contract','invoice')",[offer.event_type,workflowLocale]);
+        for(const row of templateRows)templates.set(row.document_type,row.template_key);
         const required:BookingDocumentType[]=["questionnaire","contract","invoice"];
         const missing=required.filter(type=>!templates.has(type));
         if(missing.length)throw new OfferAcceptanceError(`Booking documents are not configured for this ${offer.event_type} ${workflowLocale.toUpperCase()} workflow: ${missing.join(", ")}. No client records were created.`);
@@ -113,8 +114,9 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
       if(offer.lead_id){
         const selected=Object.values(payload).find(value=>value&&typeof value==="object"&&!Array.isArray(value)&&(value as Record<string,unknown>).ph===input.packageName) as Record<string,unknown>|undefined;
         const collectionPrice=String(selected?.p??"").replace(/[^0-9.,]/g,"").replace(",",".");
-        const profilePrefix=`${offer.event_type}-${workflowLocale}`;
-        for(const[type,template]of [["questionnaire",`${profilePrefix}-questionnaire`],["contract",`${profilePrefix}-contract`],["invoice",`${profilePrefix}-invoice`]] as const){
+        for(const type of ["questionnaire","contract","invoice"] as const){
+          const template=templates.get(type);
+          if(!template)throw new OfferAcceptanceError(`The ${type} template is no longer available for this workflow. No client records were created.`);
           const data=type==="contract"?{language:offer.language,contract_text:contractForWorkflowProfile(offer.event_type,offer.language)}:type==="invoice"?{client_name:input.name,client_email:input.email,collection_name:input.packageName??"Selected collection",collection_hours:String(selected?.h??""),collection_photographers:String(selected?.phot??""),collection_images:String(selected?.img??""),collection_album_prints:String(selected?.bx??""),collection_extras:String(selected?.cs??""),subtotal:collectionPrice,total:collectionPrice,prepaid_amount:"0",balance_due:collectionPrice,installment_1_status:"unpaid",installment_1_amount:collectionPrice,installment_1_due:"",payment_url:""}:{};
           await connection.execute("INSERT IGNORE INTO lead_document_records (id,lead_id,document_type,template_key,status,document_data) VALUES (?,?,?,?,\"draft\",?)",[randomUUID(),offer.lead_id,type,template,JSON.stringify(data)]);
         }
