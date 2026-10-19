@@ -1,0 +1,3 @@
+export type ExtraFinancialLine={status:"proposed"|"agreed"|"cancelled";quantity:number;unitPrice:number;vatRate:number;priceIncludesVat:boolean};
+export const roundMoney=(value:number)=>Math.round((value+Number.EPSILON)*100)/100;
+export function calculateExtraFinancials(items:ExtraFinancialLine[]){let net=0,vat=0,gross=0,agreedCount=0;for(const item of items){if(item.status!=="agreed")continue;agreedCount+=1;const line=roundMoney(item.quantity*item.unitPrice);const lineNet=item.priceIncludesVat?roundMoney(line/(1+item.vatRate/100)):line;const lineVat=roundMoney(lineNet*item.vatRate/100);net=roundMoney(net+lineNet);vat=roundMoney(vat+lineVat);gross=roundMoney(gross+(item.priceIncludesVat?line:lineNet+lineVat))}return{net,vat,gross,agreedCount}}

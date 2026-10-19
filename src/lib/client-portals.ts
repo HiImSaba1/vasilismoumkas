@@ -6,6 +6,8 @@ import { resolveContractForWorkflowProfile } from "@/lib/contract-templates";
 import { sendInternalWorkflowNotification } from "@/lib/email-delivery";
 import { sanitizeQuestionnaireAnswers } from "@/lib/questionnaire-definitions";
 import { normalizePortalSlugValue } from "@/lib/portal-url";
+import { listClientExtras } from "@/lib/client-extras";
+import { listTeamAssignments } from "@/lib/coverage-team";
 export const normalizePortalSlug=normalizePortalSlugValue;
 function parsePortalDocumentData(value:unknown):Record<string,string>{
   if(value&&typeof value==="object"&&!Array.isArray(value))return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,item==null?"":typeof item==="string"?item:JSON.stringify(item)]));
@@ -56,7 +58,10 @@ export async function getPortalBySlug(slug:string){
     if(!portalText(row.id)||!portalText(row.original_name)||!Number.isFinite(sizeBytes))return[];
     return[{id:row.id,originalName:row.original_name,mimeType:portalText(row.mime_type,"application/octet-stream"),sizeBytes,createdAt:safePortalDate(row.created_at,"timestamp")}];
   });
-  return{clientId:portal.client_id,leadId:portal.lead_id,eventType,coupleNames:portalText(portal.couple_names,"Client"),email:portalText(portal.email)||null,eventDate:safePortalDate(portal.event_date,"date"),location:portalText(portal.reception_location)||portalText(portal.ceremony_location)||null,slug:portalText(portal.public_slug,normalizedSlug),language,documents,files};
+  const[portalExtras,portalTeam]=await Promise.all([listClientExtras(portal.client_id,true),listTeamAssignments(portal.client_id,true)]);
+  const extras=portalExtras.map(item=>({id:item.id,titleEl:item.titleEl,titleEn:item.titleEn,descriptionEl:item.descriptionEl,descriptionEn:item.descriptionEn,coverageScope:item.coverageScope,quantity:item.quantity,unitPrice:item.unitPrice,vatRate:item.vatRate,priceIncludesVat:item.priceIncludesVat}));
+  const team=portalTeam.map(item=>({id:item.id,fullName:item.fullName,email:item.showContactInPortal?item.email:null,phone:item.showContactInPortal?item.phone:null,role:item.role,customRole:item.customRole,coverageStart:item.coverageStart,coverageEnd:item.coverageEnd,meetingPoint:item.meetingPoint,showContactInPortal:item.showContactInPortal}));
+  return{clientId:portal.client_id,leadId:portal.lead_id,eventType,coupleNames:portalText(portal.couple_names,"Client"),email:portalText(portal.email)||null,eventDate:safePortalDate(portal.event_date,"date"),location:portalText(portal.reception_location)||portalText(portal.ceremony_location)||null,slug:portalText(portal.public_slug,normalizedSlug),language,documents,files,extras,team};
 }
 export async function getPortalForLead(leadId:string){const[rows]=await getDatabase().query<(RowDataPacket&{public_slug:string;status:string})[]>("SELECT p.public_slug,p.status FROM client_portals p JOIN clients c ON c.id=p.client_id WHERE c.lead_id=? LIMIT 1",[leadId]);return rows[0]?{slug:rows[0].public_slug,status:rows[0].status}:null}
 export async function listClientPortals(){const[rows]=await getDatabase().query<(RowDataPacket&{lead_id:string|null;client_id:string;public_slug:string;status:string})[]>("SELECT c.lead_id,p.client_id,p.public_slug,p.status FROM client_portals p JOIN clients c ON c.id=p.client_id");return rows.map(row=>({leadId:row.lead_id,clientId:row.client_id,slug:row.public_slug,status:row.status}))}

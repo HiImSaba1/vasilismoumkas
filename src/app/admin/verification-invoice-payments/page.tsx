@@ -9,12 +9,17 @@ const clientId = "33333333-3333-4333-8333-333333333333";
 
 const summary: InvoicePaymentSummary = {
   invoiceDocumentId: "11111111-1111-4111-8111-111111111111",
+  baseCollectionTotal: 1300,
+  extrasNet: 241.94,
+  extrasVat: 58.06,
+  extrasTotal: 300,
   invoiceTotal: 1600,
   requiredDeposit: 400,
   depositSatisfied: false,
   totalPaid: 350,
   balanceDue: 1250,
   status: "part-paid",
+  documentUpdateRequired: true,
   payments: [
     {
       id: "22222222-2222-4222-8222-222222222222",
@@ -37,6 +42,7 @@ const portal = {
   email: "paulsaba1710@gmail.com",
   eventDate: "2027-05-17",
   language: "en" as const,
+  extras: [{id:"44444444-4444-4444-8444-444444444444",titleEl:"Επιπλέον ώρες",titleEn:"Additional hours",descriptionEl:null,descriptionEn:null,coverageScope:"Photography",quantity:2,unitPrice:150,vatRate:24,priceIncludesVat:true}],
 };
 
 const invoiceDocument = {
