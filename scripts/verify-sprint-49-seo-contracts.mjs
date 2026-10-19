@@ -25,6 +25,10 @@ const admin=await read("src/app/admin/seo/page.tsx");
 assert(admin.includes("I confirm this is the current professional address"),"address confirmation boundary is missing");
 assert(admin.includes("Portfolio project SEO")&&admin.includes("Homepage marquee alt texts")&&admin.includes("Business and schema"),"SEO controls are not centralized in /admin/seo");
 assert(admin.includes('name="home.image"')&&admin.includes("Published on public website and sitemap"),"homepage social image or project publishing control is missing");
+assert(admin.includes('required={false}')&&admin.includes('required={required}'),"project SEO fields must remain optional while page SEO stays required");
+
+const seoAction=await read("src/app/admin/seo/actions.ts");
+assert(seoAction.includes('(current.seoTitle??"")!==project.seoTitle')&&seoAction.includes('(current.metaDescription??"")!==project.metaDescription')&&seoAction.includes('(current.headerImageAlt??"")!==project.headerImageAlt'),"blank project SEO fallbacks must not create unrelated project overrides");
 
 const home=await read("src/app/(site)/page.tsx");
 assert(home.includes("seo.image")&&home.includes("seo.imageAlt"),"homepage social metadata must be independent from the hero image");
