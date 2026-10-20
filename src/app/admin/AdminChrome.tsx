@@ -18,6 +18,7 @@ const navigation = [
   { label: "Create Offer", href: "/admin/dashboard", icon: FilePlus2 },
   { label: "Offers", href: "/admin/offers", icon: Files },
   { label: "Clients", href: "/admin/clients", icon: ContactRound },
+  { label: "Collaborators", href: "/admin/collaborators", icon: UsersRound },
   { label: "Calendar", href: "/admin/calendar", icon: CalendarDays },
   { label: "Onboarding", href: "/admin/onboarding", icon: UsersRound },
   { label: "Timelines", href: "/admin/timelines", icon: CalendarRange },

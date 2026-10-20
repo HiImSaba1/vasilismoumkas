@@ -240,11 +240,13 @@ CREATE TABLE IF NOT EXISTS client_extra_services (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS collaborators (
-  id CHAR(36) PRIMARY KEY, full_name VARCHAR(255) NOT NULL, email VARCHAR(320) NULL, phone VARCHAR(60) NULL,
+  id CHAR(36) PRIMARY KEY, full_name VARCHAR(255) NOT NULL,
+  specialty ENUM('photographer','videographer','both') NOT NULL DEFAULT 'photographer', email VARCHAR(320) NULL, phone VARCHAR(60) NULL,
+  base_location VARCHAR(255) NULL, service_areas TEXT NULL, website_url VARCHAR(1000) NULL, internal_notes TEXT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_collaborator_name (full_name)
+  INDEX idx_collaborator_name (full_name), INDEX idx_collaborator_email (email), INDEX idx_collaborator_phone (phone)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS client_team_assignments (
@@ -252,8 +254,11 @@ CREATE TABLE IF NOT EXISTS client_team_assignments (
   role ENUM('lead-photographer','second-photographer','lead-videographer','second-videographer','custom') NOT NULL,
   custom_role VARCHAR(255) NULL, status ENUM('pending','confirmed','cancelled') NOT NULL DEFAULT 'pending',
   coverage_start TIME NULL, coverage_end TIME NULL, meeting_point VARCHAR(500) NULL,
-  internal_instructions TEXT NULL, fee DECIMAL(10,2) NULL,
+  internal_instructions TEXT NULL, share_internal_instructions TINYINT(1) NOT NULL DEFAULT 0, fee DECIMAL(10,2) NULL,
+  fee_vat_status ENUM('unspecified','included','excluded') NOT NULL DEFAULT 'unspecified', travel_terms TEXT NULL,
+  deliverables TEXT NULL, deliverables_due VARCHAR(500) NULL, additional_coverage TEXT NULL,
   show_name_in_portal TINYINT(1) NOT NULL DEFAULT 0, show_contact_in_portal TINYINT(1) NOT NULL DEFAULT 0,
+  last_notified_at DATETIME NULL, last_notified_snapshot_hash CHAR(64) NULL,
   cancelled_at DATETIME NULL, created_by VARCHAR(190) NOT NULL, updated_by VARCHAR(190) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -261,6 +266,20 @@ CREATE TABLE IF NOT EXISTS client_team_assignments (
   CONSTRAINT fk_team_assignment_collaborator FOREIGN KEY (collaborator_id) REFERENCES collaborators(id) ON DELETE RESTRICT,
   UNIQUE KEY uq_client_collaborator_role (client_id,collaborator_id,role),
   INDEX idx_team_assignment_status (client_id,status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS collaborator_notifications (
+  id CHAR(36) PRIMARY KEY, assignment_id CHAR(36) NOT NULL, client_id CHAR(36) NOT NULL, collaborator_id CHAR(36) NOT NULL,
+  idempotency_key CHAR(36) NOT NULL, recipient VARCHAR(320) NOT NULL, subject VARCHAR(500) NOT NULL,
+  rendered_html LONGTEXT NOT NULL, rendered_text LONGTEXT NOT NULL, disclosed_fee DECIMAL(10,2) NULL,
+  attachments_json JSON NULL, source_snapshot_hash CHAR(64) NOT NULL,
+  status ENUM('queued','sent','failed') NOT NULL DEFAULT 'queued', attempts INT NOT NULL DEFAULT 0,
+  provider_message_id VARCHAR(500) NULL, failure_reason TEXT NULL, created_by VARCHAR(190) NOT NULL,
+  sent_at DATETIME NULL, created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_collab_notification_assignment FOREIGN KEY (assignment_id) REFERENCES client_team_assignments(id) ON DELETE CASCADE,
+  CONSTRAINT fk_collab_notification_client FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE,
+  CONSTRAINT fk_collab_notification_collaborator FOREIGN KEY (collaborator_id) REFERENCES collaborators(id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_collab_notification_idempotency (idempotency_key), INDEX idx_collab_notification_assignment (assignment_id,created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS questionnaires (

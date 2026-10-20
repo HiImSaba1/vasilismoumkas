@@ -1,0 +1,4 @@
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { listCollaborators } from "@/lib/coverage-team";
+import { CollaboratorDirectory } from "./CollaboratorDirectory";
+export default async function CollaboratorsPage({searchParams}:{searchParams:Promise<{q?:string}>}){const{q=""}=await searchParams;const items=await listCollaborators(q,true);return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12"><AdminPageHeader eyebrow="Photography and video network" title="Collaborators" description="Maintain one reusable collaborator directory. Assignment fees and wedding instructions remain separate for every client."/><form className="mt-6 flex gap-2"><input name="q" defaultValue={q} placeholder="Search name, email or phone" className="min-w-0 flex-1 border border-ink-black/20 bg-white px-4 py-3 text-sm"/><button className="bg-ink-black px-5 py-3 text-xs uppercase text-white">Search</button></form><CollaboratorDirectory items={items}/></main>}
