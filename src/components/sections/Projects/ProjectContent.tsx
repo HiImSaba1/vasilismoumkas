@@ -13,17 +13,15 @@ import "yet-another-react-lightbox/styles.css";
 import ProjectHero from "./ProjectHero";
 import ProjectSidebar from "./ProjectSidebar";
 
-// Define the Bezier curve as a constant tuple to satisfy TypeScript
 const EXPO_OUT = [0.16, 1, 0.3, 1] as const;
-function seededRandom(seedText:string){let seed=2166136261;for(const char of seedText)seed=Math.imul(seed^char.charCodeAt(0),16777619);return()=>{seed+=0x6d2b79f5;let value=seed;value=Math.imul(value^(value>>>15),value|1);value^=value+Math.imul(value^(value>>>7),value|61);return((value^(value>>>14))>>>0)/4294967296}}
-function mixProjectPhotos(photos:Photo[],slug:string){const random=seededRandom(slug);const shuffle=(items:Photo[])=>{const result=[...items];for(let index=result.length-1;index>0;index--){const target=Math.floor(random()*(index+1));[result[index],result[target]]=[result[target],result[index]]}return result};const portraits=shuffle(photos.filter(photo=>photo.width<=photo.height));const landscapes=shuffle(photos.filter(photo=>photo.width>photo.height));const result:Photo[]=[];let portraitIndex=0;let landscapeIndex=0;let portraitCounter=0;let targetGap=[4,6,8][Math.floor(random()*3)];while(portraitIndex+1<portraits.length||landscapeIndex<landscapes.length){if(portraitIndex+1<portraits.length){result.push(portraits[portraitIndex++],portraits[portraitIndex++]);portraitCounter+=2}if(portraitCounter>=targetGap&&landscapeIndex<landscapes.length){result.push(landscapes[landscapeIndex++]);portraitCounter=0;targetGap=[4,6,8][Math.floor(random()*3)]}if(portraitIndex+1>=portraits.length&&landscapeIndex<landscapes.length){result.push(...landscapes.slice(landscapeIndex));landscapeIndex=landscapes.length}}if(portraitIndex<portraits.length)result.push(portraits[portraitIndex]);return result}
 
 const ProjectContent = ({ project }: { project: Project }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIdx, setCurrentIdx] = useState(1);
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
-  const mixedPhotos=useMemo(()=>mixProjectPhotos(project.photoset,project.slug),[project.photoset,project.slug]);
+  // The CRM position is the public order. Never remix it by orientation or slug.
+  const orderedPhotos=project.photoset;
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -31,15 +29,15 @@ const ProjectContent = ({ project }: { project: Project }) => {
   });
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    if (mixedPhotos.length === 0) return;
-    const step = 1 / mixedPhotos.length;
-    const idx = Math.min(Math.floor(latest / step) + 1, mixedPhotos.length);
+    if (orderedPhotos.length === 0) return;
+    const step = 1 / orderedPhotos.length;
+    const idx = Math.min(Math.floor(latest / step) + 1, orderedPhotos.length);
     if (idx !== currentIdx) setCurrentIdx(idx);
   });
 
   const slides = useMemo(
-    () => mixedPhotos.map((photo) => ({ src: photo.src })),
-    [mixedPhotos],
+    () => orderedPhotos.map((photo) => ({ src: photo.src })),
+    [orderedPhotos],
   );
 
   return (
@@ -49,7 +47,7 @@ const ProjectContent = ({ project }: { project: Project }) => {
     >
       <ProjectHero project={project} />
 
-      {mixedPhotos.length > 0 ? (
+      {orderedPhotos.length > 0 ? (
         <section className="relative grid grid-cols-12 w-full px-3 md:px-6 py-12 gap-0">
           <ProjectSidebar project={project} currentIdx={currentIdx} />
 
@@ -59,13 +57,13 @@ const ProjectContent = ({ project }: { project: Project }) => {
                 <div className="text-md tracking-widest tabular-nums uppercase flex items-center">
                   <span>{String(currentIdx).padStart(2, "0")}</span>
                   <span className="mx-2 text-sm">/</span>
-                  <span>{String(mixedPhotos.length).padStart(2, "0")}</span>
+                  <span>{String(orderedPhotos.length).padStart(2, "0")}</span>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
-              {mixedPhotos.map((photo, i) => (
+              {orderedPhotos.map((photo, i) => (
                 <ProjectImageItem
                   key={`${project.slug}-${photo.src}-${i}`}
                   photo={photo}

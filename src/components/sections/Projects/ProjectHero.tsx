@@ -33,7 +33,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
   }, [project.category]);
 
   const titleClasses =
-    "text-[9vw] md:text-[6vw] lg:text-[7vw] uppercase text-soft-yellow leading-none text-center tracking-tighter block w-full font-karena px-4";
+    "text-[9vw] md:text-[6vw] lg:text-[7vw] uppercase text-soft-yellow leading-[1.05] text-center tracking-tighter block w-full font-karena px-4 py-[0.12em]";
 
   useGSAP(
     () => {
@@ -47,7 +47,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
       if (revealElement) {
         const split = new SplitText(revealElement, {
           type: "words",
-          wordsClass: "overflow-hidden px-[0.1em]",
+          wordsClass: "overflow-hidden px-[0.1em] py-[0.12em] -my-[0.12em]",
         });
         const words = new SplitText(split.words, { type: "words" });
         gsap.from(words.words, {
@@ -99,6 +99,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
           src={project.thumbnail}
           alt={project.title}
           priority
+          unoptimized
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-ink-black/50" />
@@ -127,7 +128,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
             {/* TITLE CONTAINER */}
             <div
               ref={heroTitleRef}
-              className="relative overflow-hidden w-full h-[25vw] md:h-[15vw]"
+              className="relative w-full min-h-[clamp(7rem,25vw,12rem)] overflow-hidden md:min-h-[clamp(8rem,15vw,14rem)]"
             >
               <div className="static-wrap w-full h-full flex items-center justify-center">
                 <span className={`hero-title-reveal ${titleClasses}`}>

@@ -13,6 +13,7 @@ interface ParallaxImageProps {
   alt?: string;
   fit?: "cover" | "contain";
   fallbackSrc?: string;
+  unoptimized?: boolean;
 }
 
 const lerp = (start: number, end: number, factor: number): number =>
@@ -29,6 +30,7 @@ const ParallaxImage: FC<ParallaxImageProps> = ({
   alt,
   fit = "cover",
   fallbackSrc,
+  unoptimized = false,
 }) => {
   const imageRef = useRef<HTMLDivElement>(null);
   const bounds = useRef<{ top: number; bottom: number } | null>(null);
@@ -99,6 +101,7 @@ const ParallaxImage: FC<ParallaxImageProps> = ({
           priority={priority}
           alt={alt}
           fallbackSrc={fallbackSrc}
+          unoptimized={unoptimized}
           className={fit==="contain"?"object-contain":"object-cover"}
           style={{objectFit:fit}}
           sizes={sizes || "(max-width: 768px) 100vw, 50vw"}

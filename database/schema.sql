@@ -270,7 +270,7 @@ CREATE TABLE IF NOT EXISTS client_team_assignments (
 
 CREATE TABLE IF NOT EXISTS collaborator_notifications (
   id CHAR(36) PRIMARY KEY, assignment_id CHAR(36) NOT NULL, client_id CHAR(36) NOT NULL, collaborator_id CHAR(36) NOT NULL,
-  idempotency_key CHAR(36) NOT NULL, recipient VARCHAR(320) NOT NULL, subject VARCHAR(500) NOT NULL,
+  idempotency_key CHAR(36) NOT NULL, recipient VARCHAR(320) NOT NULL, cc_recipient VARCHAR(320) NULL, subject VARCHAR(500) NOT NULL,
   rendered_html LONGTEXT NOT NULL, rendered_text LONGTEXT NOT NULL, disclosed_fee DECIMAL(10,2) NULL,
   attachments_json JSON NULL, source_snapshot_hash CHAR(64) NOT NULL,
   status ENUM('queued','sent','failed') NOT NULL DEFAULT 'queued', attempts INT NOT NULL DEFAULT 0,

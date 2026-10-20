@@ -30,7 +30,7 @@ const ProjectSidebar: React.FC<ProjectSidebarProps> = ({
           // Double splitting is great for line-masking effects
           const split = new SplitText(el, {
             type: "lines",
-            linesClass: "overflow-hidden",
+            linesClass: "overflow-hidden py-[0.12em] -my-[0.12em]",
           });
           
           const lines = new SplitText(split.lines, { type: "lines" });
