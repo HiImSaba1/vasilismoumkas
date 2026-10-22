@@ -33,9 +33,9 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
       <div className="relative mt-5 mb-6 flex w-full flex-col items-center gap-4 pt-4 text-center md:mt-16 md:flex-row md:items-center md:justify-between md:gap-0 md:pt-12 md:text-left">
         <div className="w-full md:flex-1 md:pr-4">
           <RevealAnimation>
-            <span className="block w-full text-center text-[14px] uppercase leading-[1.1] tracking-wide text-ink-black/80 xs:text-[16px] md:text-left md:text-lg lg:text-xl">
+            <h2 className="m-0 block w-full font-normal text-center text-[14px] uppercase leading-[1.1] tracking-wide text-ink-black/80 xs:text-[16px] md:text-left md:text-lg lg:text-xl">
               {content?.title??<>Best of {isBaptism ? "Baptism" : "Wedding"} <br className="hidden xs:block" />Portfolio works</>}
-            </span>
+            </h2>
           </RevealAnimation>
           {content?.subtitle&&<RevealAnimation><p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-ink-black/60 md:mx-0 md:text-base">{content.subtitle}</p></RevealAnimation>}
         </div>
@@ -62,7 +62,7 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
       <div className="mx-auto grid w-full max-w-[1280px] grid-cols-1 gap-x-8 gap-y-12 md:grid-cols-2 lg:gap-x-14">
         {displayedProjects.map((project, index) => (
           <div key={"href" in project?project.href:project.id} className={index===1?"md:mt-[clamp(10rem,24vw,22rem)]":""}>
-            <ProjectCard project={project} index={index}/>
+            <ProjectCard project={project} index={index} persistentCaption={!!content}/>
           </div>
         ))}
       </div>

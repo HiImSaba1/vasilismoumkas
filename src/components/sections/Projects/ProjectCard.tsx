@@ -15,7 +15,7 @@ if (typeof window !== "undefined") {
 
 type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string};
 
-export default function ProjectCard({ project, index, hoverOverlay=true, portrait=false }: { project: ProjectCardProject; index: number; hoverOverlay?: boolean; portrait?: boolean }) {
+export default function ProjectCard({ project, index, hoverOverlay=true, portrait=false, persistentCaption=false }: { project: ProjectCardProject; index: number; hoverOverlay?: boolean; portrait?: boolean; persistentCaption?: boolean }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const borderRef = useRef<HTMLDivElement>(null);
@@ -158,7 +158,7 @@ export default function ProjectCard({ project, index, hoverOverlay=true, portrai
         </motion.div>
       </Link>
 
-      <div className="flex flex-col items-center justify-between px-1 text-center text-ink-black md:hidden">
+      <div className={`flex flex-col items-center justify-between px-1 text-center text-ink-black ${persistentCaption ? "" : "md:hidden"}`}>
         <span className="text-[16px] font-medium uppercase tracking-wider">
           <Link href={projectLink} className="hover:opacity-60 transition-opacity">
             {project.title}

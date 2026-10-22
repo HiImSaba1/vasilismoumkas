@@ -72,34 +72,28 @@ export const homeServices: HomeService[] = [
 
 const baseServices = [
   {
-    title: "Luxury Wedding Experience",
-    description: "A BESPOKE PHOTOGRAPHY SERVICE TAILORED FOR HIGH-END CELEBRATIONS. WE FOCUS ON THE GRANDEUR, THE LUXE DETAILS, AND THE UNCOMPROMISING STANDARDS OF DISCERNING COUPLES.",
+    title: "Wedding Day Photography",
+    description: "From getting ready to the celebration, coverage is planned around your wedding schedule. I document the day as it unfolds, with time for couple portraits, family photographs and the details you have chosen.",
     href: "/services/luxury-weddings",
-    tags: ["ULTRA-LUXE EVENTS", "WHITE-GLOVE SERVICE", "DETAIL ARCHIVING", "EXCLUSIVE ESTATES"]
+    tags: [
+      "WEDDING DAY PHOTOGRAPHY"
+    ]
   },
   {
-    title: "Editorial Wedding Photography",
-    description: "WE CURATE EVERY FRAME WITH A FASHION-FORWARD LENS, ENSURING YOUR CELEBRATION IS CAPTURED WITH THE SOPHISTICATION AND COMPOSITION OF A HIGH-END VOGUE EDITORIAL.",
-    href: "/services/editorial",
-    tags: ["FASHION AESTHETIC", "ART DIRECTION", "LIGHTING DESIGN", "EDITORIAL STYLING"]
-  },
-  {
-    title: "Global Destination Weddings",
-    description: "FROM THE SUN-DRENCHED AMALFI COAST TO HISTORIC CHATEAUS IN PROVENCE, WE SPECIALIZE IN THE COMPLEX LOGISTICS AND STUNNING VISUALS OF LUXURY TRAVEL WEDDINGS.",
+    title: "Destination Weddings & Additional Events",
+    description: "For weddings in Greece and Italy, we agree on travel and photography arrangements in advance. Welcome celebrations and additional days can be discussed as part of your personalised proposal.",
     href: "/services/destination",
-    tags: ["TRAVEL LOGISTICS", "MULTI-DAY COVERAGE", "SCOUTING", "ELOPEMENTS"]
+    tags: [
+      "DESTINATION WEDDINGS"
+    ]
   },
   {
-    title: "Candid Photojournalism",
-    description: "CAPTURING THE SOUL OF THE DAY THROUGH AN UNOBTRUSIVE LENS. WE DOCUMENT THE RAW EMOTIONS, THE UNSCRIPTED TEARS, AND THE QUIET MOMENTS THAT OFTEN GO UNNOTICED.",
-    href: "/services/photojournalism",
-    tags: ["DOCUMENTARY STYLE", "RAW EMOTION", "UNSCRIPTED MOMENTS", "STORYTELLING"]
-  },
-  {
-    title: "Fine Art Imagery",
-    description: "WHERE PHOTOGRAPHY MEETS CLASSICAL ART. UTILIZING SOFT LIGHT AND THOUGHTFUL COMPOSITION TO CREATE TIMELESS MASTERPIECES THAT FEEL LIKE A GALLERY EXHIBITION.",
-    href: "/services/fine-art",
-    tags: ["MUSEUM QUALITY", "SOFT LIGHTING", "CLASSICAL COMPOSITION", "TIMELESS ART"]
+    title: "Couple Portraits & After-Wedding Sessions",
+    description: "A separate couple session gives us time to explore a location and create portraits beyond the wedding-day schedule. Timing and coverage are agreed as part of your personalised proposal.",
+    href: "/services/editorial",
+    tags: [
+      "COUPLE PORTRAITS"
+    ]
   }
 ];
 

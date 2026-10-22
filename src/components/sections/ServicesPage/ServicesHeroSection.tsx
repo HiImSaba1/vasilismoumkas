@@ -1,4 +1,5 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef, useState, useEffect } from "react";
 import SeoImage from "@/components/ui/SeoImage";
@@ -28,12 +29,15 @@ const ServicesHeroSection = () => {
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
 
   useEffect(() => {
-    setHasMounted(true);
-    if (HERO_SERVICE_POOL.length > 0) {
-      const randomImg =
-        HERO_SERVICE_POOL[Math.floor(Math.random() * HERO_SERVICE_POOL.length)];
-      setStaticImg(randomImg);
-    }
+    const frame = requestAnimationFrame(() => {
+      setHasMounted(true);
+      if (HERO_SERVICE_POOL.length > 0) {
+        const randomImg =
+          HERO_SERVICE_POOL[Math.floor(Math.random() * HERO_SERVICE_POOL.length)];
+        setStaticImg(randomImg);
+      }
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   useGSAP(
@@ -153,9 +157,7 @@ const ServicesHeroSection = () => {
               className="text-md md:text-xl lg:text-2xl leading-tight block opacity-80"
               style={{ fontFamily: "var(--font-bricolage)" }}
             >
-              I believe true excellence requires time. To maintain the highest
-              standard of artistry, I commit to just a few select weddings
-              annually.
+              {publicCopy.servicesIntro}
             </span>
           </div>
         </div>

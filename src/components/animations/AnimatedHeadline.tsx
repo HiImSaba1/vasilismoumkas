@@ -9,12 +9,13 @@ import AnimatedBorder from "./AnimatedBorder";
 gsap.registerPlugin(SplitText);
 
 
+// Keep the existing entrance and looping choreography; all frames use the approved wording.
 const KEYWORDS = {
-  part1: ["LUXURY", "CINEMATIC", "FINE-ART", "AUTHENTIC"],
+  part1: ["EDITORIAL", "EDITORIAL", "EDITORIAL", "EDITORIAL"],
   part2: ["WEDDING", "WEDDING", "WEDDING", "WEDDING"],
-  part3: ["PHOTOGRAPHER", "PHOTOGRAPHER", "PHOTOGRAPHER", "PHOTOGRAPHER"],
-  part4: ["IN", "IN", "IN", "IN"],
-  part5: ["GREECE", "ITALY", "GREECE", "EUROPE"],
+  part3: ["PHOTOGRAPHY", "PHOTOGRAPHY", "PHOTOGRAPHY", "PHOTOGRAPHY"],
+  part4: ["ACROSS", "ACROSS", "ACROSS", "ACROSS"],
+  part5: ["GREECE & ITALY", "GREECE & ITALY", "GREECE & ITALY", "GREECE & ITALY"],
 };
 
 interface AnimatedHeadlineProps {
@@ -140,14 +141,14 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
       >
         {isMobile ? (
           <>
-            <span className="whitespace-nowrap"><span data-key="part1">LUXURY</span> <span data-key="part2">WEDDING</span></span><br />
-            <span className="whitespace-nowrap" data-key="part3">PHOTOGRAPHER</span><br />
-            <span className="whitespace-nowrap"><span data-key="part4">IN</span> <span data-key="part5">GREECE</span></span>
+            <span className="whitespace-nowrap"><span data-key="part1">EDITORIAL</span> <span data-key="part2">WEDDING</span></span><br />
+            <span className="whitespace-nowrap" data-key="part3">PHOTOGRAPHY</span><br />
+            <span><span data-key="part4">ACROSS</span> <span data-key="part5">GREECE &amp; ITALY</span></span>
           </>
         ) : (
           <>
-            <span data-key="part1">LUXURY</span> <span data-key="part2">WEDDING</span> <br />
-            <span data-key="part3">PHOTOGRAPHER</span> <span data-key="part4">IN</span> <span data-key="part5">GREECE</span>
+            <span data-key="part1">EDITORIAL</span> <span data-key="part2">WEDDING</span> <br />
+            <span data-key="part3">PHOTOGRAPHY</span> <span data-key="part4">ACROSS</span> <span data-key="part5">GREECE &amp; ITALY</span>
           </>
         )}
       </span>

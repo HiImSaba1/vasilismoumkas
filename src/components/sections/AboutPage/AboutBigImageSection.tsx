@@ -1,4 +1,5 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -124,25 +125,12 @@ const AboutBigImageSection = () => {
             <div className="md:col-span-7 space-y-10">
               <RevealAnimation>
                 <span className="block text-off-white text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-tight">
-                  For over 12 years, I have been working as a{" "}
-                  <span className="text-soft-yellow">
-                    luxury wedding photographer in Greece
-                  </span>{" "}
-                  and a destination wedding photographer across Greece & Italy.
-                  Born and raised in Thessaloniki, my journey began with the
-                  joy, the spontaneous moments, and the quiet interactions that
-                  say everything without words.
+                  {publicCopy.aboutIntro[0].split("wedding photographer")[0]}<span className="text-soft-yellow">wedding photographer</span>{publicCopy.aboutIntro[0].split("wedding photographer")[1]}
                 </span>
               </RevealAnimation>
               <RevealAnimation>
                 <span className="block text-off-white text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-tight">
-                  On your wedding day, my presence is calm and unobtrusive. From
-                  the Greek islands to the elegance of Italy, I will freeze
-                  these authentic moments in time, so you carry them with you{" "}
-                  <span className="text-soft-yellow">
-                    timeless, elegant, and deeply meaningful
-                  </span>{" "}
-                  for a lifetime.
+                  {publicCopy.aboutIntro[1].split("gently guided editorial portraits")[0]}<span className="text-soft-yellow">gently guided editorial portraits</span>{publicCopy.aboutIntro[1].split("gently guided editorial portraits")[1]}
                 </span>
               </RevealAnimation>
               <RevealAnimation>

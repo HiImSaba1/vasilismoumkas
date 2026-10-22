@@ -1,4 +1,5 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef, useState } from "react";
 import gsap from "gsap";
@@ -7,7 +8,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { Plus, Minus } from "lucide-react";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
-import CTAButton from "@/components/ui/CTAButton";
 import { faqAboutData } from "@/app/(site)/data/FaqAboutData";
 
 if (typeof window !== "undefined") {
@@ -230,11 +230,7 @@ const AboutFaqSection = () => {
                 ref={paragraphRef}
                 className="text-[13px] md:text-sm leading-tight uppercase tracking-tight text-ink-black/60 max-w-sm"
               >
-                Choosing your wedding photographer in Greece is a
-                once-in-a-lifetime decision an investment not only in images,
-                but in how your story will be remembered. As a destination
-                wedding photographer in Greece, I understand that this process
-                may feel new, and naturally, you’ll have questions.
+                {publicCopy.aboutFaqIntro}
               </span>
             </div>
           </div>

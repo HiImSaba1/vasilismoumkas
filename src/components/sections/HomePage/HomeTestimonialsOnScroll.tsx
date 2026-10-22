@@ -66,9 +66,9 @@ const HomeTestimonialsOnScroll = ({content}:{content:HomepageSettings["testimoni
       <div className="max-w-7xl mx-auto flex flex-col items-center text-center relative pt-8">
         <div className="relative mb-12 inline-block">
           <RevealAnimation>
-            <span className="font-saans-bold text-center text-[14px] md:text-xl uppercase tracking-[0.215em] text-ink-black pb-6 block">
+            <h2 className="m-0 font-saans-bold font-normal text-center text-[14px] md:text-xl uppercase tracking-[0.215em] text-ink-black pb-6 block">
               {content.title}
-            </span>
+            </h2>
           </RevealAnimation>
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-24">
             <AnimatedBorder

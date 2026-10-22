@@ -1,4 +1,5 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -102,8 +103,9 @@ const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => 
                 className="text-ink-black text-md md:text-2xl lg:text-3xl uppercase tracking-tight leading-[1.05]"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
-                Fashion Wedding Photographer Featured in Leading Editorials.
-                Capturing Timeless Stories Worldwide
+                {publicCopy.homeStyle[0]}<br />
+                {publicCopy.homeStyle[1]}
+                <span className="mt-5 block text-sm md:text-base leading-relaxed tracking-wide">{publicCopy.homeDestinations}</span>
               </p>
             </RevealAnimation>
           </div>

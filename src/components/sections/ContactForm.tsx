@@ -1,7 +1,8 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { DayPicker } from "react-day-picker";
@@ -39,6 +40,15 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
+function ErrorMsg({ message }: { message?: string }) {
+  if (!message) return null;
+  return (
+    <span className="absolute -bottom-5 left-0 text-[10px] font-bold text-red-500 uppercase tracking-tighter">
+      {message}
+    </span>
+  );
+}
+
 const inputStyles = "w-full bg-transparent text-black text-sm md:text-base outline-none placeholder:text-black/20 uppercase autofill:shadow-[0_0_0_100px_#f9f3f4_inset] autofill:[-webkit-text-fill-color:#1a1a1a]";
 
 export default function ContactForm() {
@@ -49,7 +59,6 @@ export default function ContactForm() {
     register,
     handleSubmit,
     control,
-    watch,
     setValue,
     reset, // Added to clear the form
     formState: { isSubmitting, isValid, errors },
@@ -58,8 +67,8 @@ export default function ContactForm() {
     mode: "onChange",
   });
 
-  const selectedDate = watch("date");
-  const selectedPlanning = watch("planning");
+  const selectedDate = useWatch({ control, name: "date" });
+  const selectedPlanning = useWatch({ control, name: "planning" });
 
   const onSubmit = async (data: ContactFormData) => {
     // Format the date for the email body
@@ -84,15 +93,6 @@ export default function ContactForm() {
     });
   };
 
-  const ErrorMsg = ({ name }: { name: keyof ContactFormData }) => {
-    if (!errors[name]) return null;
-    return (
-      <span className="absolute -bottom-5 left-0 text-[10px] font-bold text-red-500 uppercase tracking-tighter">
-        {errors[name]?.message}
-      </span>
-    );
-  };
-
   return (
     <>
       <Toaster position="bottom-left" richColors />
@@ -112,7 +112,7 @@ export default function ContactForm() {
               placeholder="FULL NAME" 
               className={inputStyles} 
             />
-            <ErrorMsg name="name" />
+            <ErrorMsg message={errors.name?.message} />
           </div>
 
           <div className="relative border-b border-ink-black/20 pb-1">
@@ -164,7 +164,7 @@ export default function ContactForm() {
               {selectedDate ? format(selectedDate, "PPP") : <span className="text-black/20">SELECT DATE</span>}
               <span className={`text-[10px] transition-transform duration-300 ${isCalendarOpen ? "rotate-180" : ""}`}>▼</span>
             </div>
-            <ErrorMsg name="date" />
+            <ErrorMsg message={errors.date?.message} />
             {isCalendarOpen && (
               <div className="absolute top-full left-0 z-110 mt-2 bg-off-white border border-ink-black/10 p-4 shadow-2xl">
                 <Controller
@@ -193,7 +193,7 @@ export default function ContactForm() {
               placeholder="CITY, COUNTRY" 
               className={inputStyles} 
             />
-            <ErrorMsg name="location" />
+            <ErrorMsg message={errors.location?.message} />
           </div>
         </div>
 
@@ -202,7 +202,7 @@ export default function ContactForm() {
           <div className="relative border-b border-ink-black/20 pb-1">
             <label className="block text-sm font-bold tracking-wide text-black mb-1 uppercase">My email is*</label>
             <input {...register("email")} type="email" placeholder="EMAIL@ADDRESS.COM" className={inputStyles} />
-            <ErrorMsg name="email" />
+            <ErrorMsg message={errors.email?.message} />
           </div>
           <div className="relative border-b border-ink-black/20 pb-1">
             <label className="block text-sm font-bold tracking-wide text-black mb-1 uppercase">My phone is</label>
@@ -233,7 +233,7 @@ export default function ContactForm() {
           <label className="block text-sm font-bold tracking-wide text-black mb-1 uppercase">Additional info</label>
           <textarea 
             {...register("message")} 
-            placeholder="ANYTHING ELSE?" 
+            placeholder={publicCopy.contactMessage}
             rows={2} 
             className={`${inputStyles} resize-none pt-1`} 
           />
@@ -250,9 +250,7 @@ export default function ContactForm() {
           </div>
           <div className="w-full md:basis-[60%]">
             <span className="text-[12px] leading-tight uppercase tracking-wider opacity-90 block text-black">
-              I look forward to knowing more about your story. If you would like
-              to enquire and share with me more details about your day, fill in
-              the form and i will get back to you within 24 hours.
+              {publicCopy.contactIntro}
             </span>
           </div>
         </div>

@@ -1,4 +1,5 @@
 "use client";
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -207,7 +208,9 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
             </div>
             <div className="flex flex-col gap-6">
               <h3 className="text-[12vw] md:text-[6vw] max-w-md tracking-tighter leading-none uppercase gsap-reveal-text">
-                {isBaptism ? (
+                {pathname === "/" && !isBaptism && !proposalMode ? (
+                  <>{publicCopy.homeCta[0]}<br />{publicCopy.homeCta[1]}</>
+                ) : isBaptism ? (
                   <>
                     Looking for a<br /> Luxury Baptism Photographer in Greece or
                     Italy?

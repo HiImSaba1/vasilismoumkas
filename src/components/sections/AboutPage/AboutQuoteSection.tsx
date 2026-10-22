@@ -71,8 +71,8 @@ const AboutQuoteSection = () => {
           <RevealAnimation>
             <span className="text-2xl md:text-5xl font-karena leading-[1.1] text-ink-black uppercase tracking-tighter block text-balance">
               “I photograph weddings with a{" "}
-              <span className="text-red-600">calm editorial</span>eye, drawn to
-              real moments, <span className="text-red-600">emotion</span> and
+              <span className="text-red-600">calm editorial</span>{" "}eye, drawn to
+              real moments, <span className="text-red-600">emotion</span> and{" "}
               <span className="text-red-600">timeless beauty.</span> Following
               the <span className="text-red-600">light</span> and the feeling of
               the day documenting life,{" "}

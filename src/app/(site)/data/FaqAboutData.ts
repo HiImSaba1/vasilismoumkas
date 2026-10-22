@@ -1,3 +1,4 @@
+import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 // /src/app/(site)/data/FaqAboutData.ts
 export const faqAboutData = [
   {
@@ -6,38 +7,38 @@ export const faqAboutData = [
     date: "Booking"
   },
   {
-    question: "What is your pricing?",
-    answer: "Every wedding is unique, especially when planning a destination wedding in Greece. For this reason, I create bespoke photography collections based on your specific needs and vision. I take the time to understand your plans and collaborate with you or your planner before crafting a custom proposal.",
+    question: "How much does wedding photography cost?",
+    answer: "Your proposal is tailored to your location, coverage hours and the photography services you choose. Get in touch with your plans so I can recommend the right coverage for your celebration.",
     date: "Investment"
   },
   {
-    question: "Do you work with a second shooter?",
-    answer: "Yes, absolutely. I collaborate with trusted second photographers who work seamlessly alongside me to ensure every moment is captured with depth and intention. Depending on the size and scope of your wedding, I may also include additional assistants.",
+    question: "Can we include a second photographer?",
+    answer: "A second photographer can be included depending on your plans and coverage needs. Your proposal will confirm the photography team for your wedding.",
     date: "The Team"
   },
   {
-    question: "Do you offer videography?",
-    answer: "I focus exclusively on wedding photography to ensure the highest quality. However, I’m happy to recommend talented videography teams in Greece whose work aligns perfectly with my aesthetic and approach.",
+    question: "Do you offer wedding videography?",
+    answer: "My focus is photography. I can recommend trusted videography collaborators and discuss options alongside your photography coverage.",
     date: "Services"
   },
   {
     question: "When do you arrive for a wedding?",
-    answer: "With years of experience as a destination photographer, I typically arrive two days prior to your wedding. This allows time for any unexpected travel delays and ensures I’m fully prepared to capture your day at my best.",
+    answer: "For destination weddings, my arrival is arranged according to your location and photography schedule, with travel details agreed in advance.",
     date: "Logistics"
   },
   {
     question: "When will we receive our photos?",
-    answer: "Within approximately two days, you’ll receive a preview gallery of 30–40 carefully edited images. Your full high-resolution gallery will be delivered within approximately 90 days through a private online link.",
+    answer: `${publicCopy.preview} ${publicCopy.delivery}`,
     date: "Delivery"
   },
   {
-    question: "How many hours of coverage?",
-    answer: "My standard coverage is around 10 hours, allowing me to document your day in a complete and meaningful way. If you need additional time for multi-day events, extended coverage can always be arranged.",
+    question: "How many hours of coverage do we need?",
+    answer: "Coverage is tailored to your wedding schedule. Your proposal confirms the agreed hours, with options to discuss additional events or extended coverage.",
     date: "Coverage"
   },
   {
-    question: "Do you travel for weddings?",
-    answer: "Yes, I photograph weddings across Greece including Mykonos, Santorini, Naxos and destinations worldwide. Whether it's an intimate celebration or a grand destination wedding, I’m excited to document your story.",
+    question: "Where do you photograph weddings?",
+    answer: "I’m based in Thessaloniki and photograph weddings across Greece and Italy. Share your destination and plans with me so we can discuss availability and travel arrangements.",
     date: "Travel"
   }
 ];

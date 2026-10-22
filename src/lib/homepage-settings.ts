@@ -41,10 +41,10 @@ export const defaultHomepageSettings:HomepageSettings={
   ],
   featuredEditorial:defaultFeaturedEditorial,
   services:{eyebrow:"Expertise",intro:"Capturing the art of human connection through a lens of sophistication transforming moments into a permanent visual legacy.",items:homeServices.map(item=>({title:item.title,projectSlug:item.projectSlug,description:item.description,keywords:item.keywords,image:item.image}))},
-  portfolio:{title:"Best of Wedding Portfolio works",subtitle:"",buttonLabel:"Full Portfolio",buttonHref:"/portfolio",items:defaultPortfolioCards},
+  portfolio:{title:"A CLOSER LOOK AT THE CELEBRATIONS",subtitle:"",buttonLabel:"Full Portfolio",buttonHref:"/portfolio",items:defaultPortfolioCards},
   story:{eyebrow:"Luxury Fine Art Wedding Photography in Greece. For modern souls. Quiet. Emotional. Timeless",title:"For couples who value emotion, elegance, and authenticity. I am Vasilis Moumkas, a luxury destination wedding photographer based in Thessaloniki, Greece. I document refined celebrations across Santorini, Mykonos, Naxos, and Italy from Lake Como and Tuscany to the Amalfi Coast. I also specialise in intimate elopements across the Greek islands. With a calm, intuitive eye, I transform fleeting feelings into timeless artistry. Because these are not just photographs, they are your legacy.",buttonLabel:"Learn More",buttonHref:"/about",videoUrl:"https://player.vimeo.com/video/1159684670?h=ac91465937&autoplay=1&muted=1&loop=1&background=1&badge=0&autopause=0&quality=1080p"},
   marqueeImages:HOMEPAGE_BLACK_FOOTER.slice(0,12).map((src,index)=>({src,alt:`Wedding editorial story ${index+1} by Vasilis Moumkas`})),
-  testimonials:{title:"Couple Testimonials",items:TestimonialsData.map(item=>({couple:item.couple,location:item.location,quote:item.quote,image:item.profileImage,alt:`${item.couple} wedding testimonial portrait`}))},
+  testimonials:{title:"Wedding photography reviews from our couples",items:TestimonialsData.map(item=>({couple:item.couple,location:item.location,quote:item.quote,image:item.profileImage,alt:`${item.couple} wedding testimonial portrait`}))},
 };
 
 export async function getHomepageSettings():Promise<HomepageSettings>{
