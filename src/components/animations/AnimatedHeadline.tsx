@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, FC } from "react";
+import React, { useRef, useMemo, FC } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { SplitText } from "gsap/SplitText";
@@ -21,12 +21,14 @@ const KEYWORDS = {
 interface AnimatedHeadlineProps {
   animationDelay: number;
   isMobile?: boolean;
+  headlineParts?: string[];
 }
 
 const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
   animationDelay,
-  isMobile = false,
+  isMobile = false, headlineParts,
 }) => {
+  const keywords=useMemo(()=>Object.fromEntries(Object.entries(KEYWORDS).map(([key,values],index)=>[key,Array(4).fill(headlineParts?.[index]??values[0])])) as typeof KEYWORDS,[headlineParts]);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLHeadingElement>(null);
   const sequenceIndex = useRef(0);
@@ -49,10 +51,17 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
 
       // 1. INITIAL ENTRANCE
       const initialSplit = new SplitText(textRef.current, {
-        type: "chars",
+        type: "words,chars",
+        wordsClass: "headline-word",
         charsClass: "split-char",
       });
 
+      initialSplit.words.forEach(word => {
+        if (word instanceof HTMLElement) {
+          word.style.display = "inline-block";
+          word.style.whiteSpace = "nowrap";
+        }
+      });
       const chars = initialSplit.chars;
       const shuffled = [...chars].sort(() => Math.random() - 0.5);
 
@@ -87,9 +96,15 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
           if (prev) prev.revert();
 
           const key = el.getAttribute("data-key") as keyof typeof KEYWORDS;
-          el.textContent = KEYWORDS[key][sequenceIndex.current];
+          el.textContent = keywords[key][sequenceIndex.current];
 
-          const newSplit = new SplitText(el, { type: "chars" });
+          const newSplit = new SplitText(el, { type: "words,chars", wordsClass: "headline-word" });
+          newSplit.words.forEach(word => {
+            if (word instanceof HTMLElement) {
+              word.style.display = "inline-block";
+              word.style.whiteSpace = "nowrap";
+            }
+          });
           activeSplits.current.set(el, newSplit);
           
           wrapElements(newSplit.chars);
@@ -117,7 +132,7 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
       activeSplits.current.forEach((split) => split.revert());
     };
   }, { 
-    dependencies: [animationDelay, isMobile], 
+    dependencies: [animationDelay, isMobile, keywords],
     scope: containerRef, 
     revertOnUpdate: true 
   });
@@ -141,14 +156,14 @@ const AnimatedHeadline: FC<AnimatedHeadlineProps> = ({
       >
         {isMobile ? (
           <>
-            <span className="whitespace-nowrap"><span data-key="part1">EDITORIAL</span> <span data-key="part2">WEDDING</span></span><br />
-            <span className="whitespace-nowrap" data-key="part3">PHOTOGRAPHY</span><br />
-            <span><span data-key="part4">ACROSS</span> <span data-key="part5">GREECE &amp; ITALY</span></span>
+            <span className="whitespace-nowrap"><span data-key="part1">{keywords.part1[0]}</span> <span data-key="part2">{keywords.part2[0]}</span></span><br />
+            <span className="whitespace-nowrap" data-key="part3">{keywords.part3[0]}</span><br />
+            <span><span data-key="part4">{keywords.part4[0]}</span> <span data-key="part5">{keywords.part5[0]}</span></span>
           </>
         ) : (
           <>
-            <span data-key="part1">EDITORIAL</span> <span data-key="part2">WEDDING</span> <br />
-            <span data-key="part3">PHOTOGRAPHY</span> <span data-key="part4">ACROSS</span> <span data-key="part5">GREECE &amp; ITALY</span>
+            <span data-key="part1">{keywords.part1[0]}</span> <span data-key="part2">{keywords.part2[0]}</span> <br />
+            <span data-key="part3">{keywords.part3[0]}</span> <span data-key="part4">{keywords.part4[0]}</span> <span data-key="part5">{keywords.part5[0]}</span>
           </>
         )}
       </span>

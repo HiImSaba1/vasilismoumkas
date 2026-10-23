@@ -17,9 +17,9 @@ const seoKeywords = [
   "Photographer",
 ];
 
-type MarqueeImage={src:string;alt:string};
+type MarqueeImage={src:string;alt:string;caption?:string};
 const fallbackImages:MarqueeImage[]=HOMEPAGE_BLACK_FOOTER.slice(0,12).map((src,index)=>({src,alt:`Wedding editorial story ${index+1} by Vasilis Moumkas`}));
-const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => {
+const HomeMarqueeImages = ({images=fallbackImages,copy={lines:publicCopy.homeStyle,destinations:publicCopy.homeDestinations,keywords:seoKeywords}}:{images?:MarqueeImage[];copy?:{lines:string[];destinations:string;keywords:string[]}}) => {
   const gapClass = "gap-4 md:gap-6";
   const [shuffledImages, setShuffledImages] = useState<MarqueeImage[]>([]);
 
@@ -70,6 +70,7 @@ const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => 
                     priority={idx < 4}
                     className="object-cover hover:grayscale transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)]"
                   />
+                  {image.caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{image.caption}</span>}
                 </div>
               ))}
             </motion.div>
@@ -78,7 +79,7 @@ const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => 
 
         <div className="relative flex flex-col items-center gap-6 text-center md:gap-12">
           <div className="grid grid-cols-3 lg:grid-cols-6 gap-4 lg:gap-16 w-full max-w-full px-4 pb-8 relative">
-            {seoKeywords.map((keyword, idx) => (
+            {copy.keywords.map((keyword, idx) => (
               <span
                 key={idx}
                 className="text-ink-black text-sm uppercase tracking-widest font-medium"
@@ -103,9 +104,9 @@ const HomeMarqueeImages = ({images=fallbackImages}:{images?:MarqueeImage[]}) => 
                 className="text-ink-black text-md md:text-2xl lg:text-3xl uppercase tracking-tight leading-[1.05]"
                 style={{ fontFamily: "var(--font-karena)" }}
               >
-                {publicCopy.homeStyle[0]}<br />
-                {publicCopy.homeStyle[1]}
-                <span className="mt-5 block text-sm md:text-base leading-relaxed tracking-wide">{publicCopy.homeDestinations}</span>
+                {copy.lines[0]}<br />
+                {copy.lines[1]}
+                <span className="mt-5 block text-sm md:text-base leading-relaxed tracking-wide">{copy.destinations}</span>
               </p>
             </RevealAnimation>
           </div>

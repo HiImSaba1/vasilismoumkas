@@ -14,9 +14,14 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
+type PortfolioItem = HomepageSettings["portfolio"]["items"][number];
+type ProjectsGridContent = Omit<HomepageSettings["portfolio"], "items"> & {
+  items: (Omit<PortfolioItem, "caption"> & { caption?: string })[];
+};
+
 interface HomeProjectsGridProps {
   isBaptism?: boolean;
-  content?:HomepageSettings["portfolio"];
+  content?: ProjectsGridContent;
 }
 
 const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) => {
@@ -26,7 +31,7 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
   );
 
   // Never cross event categories: a baptism offer must not fall back to wedding work.
-  const displayedProjects = content?.items.map(item=>({title:item.title,location:item.location,thumbnail:item.image,href:item.href,alt:item.alt}))??filteredProjects.slice(0, 2);
+  const displayedProjects = content?.items.map(item=>({title:item.title,location:item.location,thumbnail:item.image,href:item.href,alt:item.alt,caption:item.caption}))??filteredProjects.slice(0, 2);
 
   return (
     <section className="relative min-h-0 w-full bg-off-white px-4 py-6 lg:px-8">
@@ -45,7 +50,7 @@ const HomeProjectsGrid = ({ isBaptism = false,content }: HomeProjectsGridProps) 
               href={content?.buttonHref??"/portfolio"}
               className="px-4 py-2 "
             >
-              <span className="text-md xs:text-xl">Portfolio</span>
+              <span className="text-md xs:text-xl">{content?.buttonLabel??"Portfolio"}</span>
             </CTAButton>
           </RevealAnimation>
         </div>

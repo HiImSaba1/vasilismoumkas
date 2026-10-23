@@ -103,7 +103,7 @@ export default function HomeHeroDesktop({content}:{content:HomepageSettings["her
           <div className="w-full flex flex-col">
             <TopSubtext content={content}/>
             <div className="py-8">
-              <AnimatedHeadline animationDelay={isFirstVisit ? 0.2 : 0.5} />
+              <AnimatedHeadline headlineParts={[content.headlineEditorial,content.headlineWedding,content.headlinePhotography,content.headlineAcross,content.headlineDestinations]} animationDelay={isFirstVisit ? 0.2 : 0.5} />
             </div>
             <BottomIndicators content={content}/>
           </div>
@@ -111,7 +111,7 @@ export default function HomeHeroDesktop({content}:{content:HomepageSettings["her
       </section>
       <section className="intro relative w-full bg-off-white z-50">
         <div className="w-full px-8">
-          <ImageComponent isDesktop={true} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
+          <ImageComponent isDesktop={true} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt} caption={content.imageCaption}/>
         </div>
       </section>
     </>

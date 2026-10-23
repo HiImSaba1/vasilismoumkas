@@ -1,4 +1,7 @@
 "use client";
+import {contentWords} from "@/lib/content-text";
+import {InlineContent} from "@/components/ui/InlineContent";
+import type {Service} from "@/app/(site)/data/ServicesData";
 import React, { forwardRef, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -9,7 +12,7 @@ import ParallaxImage from "@/components/animations/ParallaxImage";
 gsap.registerPlugin(ScrollTrigger);
 
 interface ServiceCardMobileProps {
-  service: any;
+  service: Service;
   index: number;
 }
 
@@ -48,10 +51,10 @@ const ServiceCardMobile = forwardRef<HTMLDivElement, ServiceCardMobileProps>(
     }, { scope: containerRef });
 
     const renderSplitText = (text: string) => {
-      return text.split(" ").map((word, i) => (
+      return contentWords(text).map((word, i) => (
         <span key={i} className="inline-block overflow-hidden mr-[0.2em]">
           <span className="reveal-word-inner inline-block opacity-0">
-            {word}
+            <InlineContent text={word}/>
           </span>
         </span>
       ));
@@ -76,9 +79,10 @@ const ServiceCardMobile = forwardRef<HTMLDivElement, ServiceCardMobileProps>(
           <div className="relative w-full mb-6 mx-auto">
             <ParallaxImage 
               src={service.image_main} 
-              alt={service.title} 
+              alt={service.imageAlt||service.title}
               className="w-full h-full object-cover aspect-square" 
             />
+            {service.caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{service.caption}</span>}
             <span 
               className="absolute top-3 right-3 text-soft-yellow text-lg tracking-widest z-10 "
             >

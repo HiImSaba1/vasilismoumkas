@@ -1,18 +1,4 @@
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Cookies Policy",
-  description: "Information about how we use cookies to improve your experience on our wedding photography portfolio.",
-  openGraph: {
-    images: [{ url: "/vm_img/Metadata/og-services.jpg" }],
-  },
-};
-
-
-export default function CookiesLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
+import {publicMetadata} from "@/lib/seo-overrides";
+import {secondarySeo} from "@/lib/secondary-seo";
+export async function generateMetadata(){return publicMetadata(secondarySeo["/cookies"],"/cookies");}
+export default function Layout({children}:{children:React.ReactNode}){return <>{children}</>;}

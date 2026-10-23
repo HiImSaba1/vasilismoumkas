@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import {InlineContent} from "@/components/ui/InlineContent";
 import SeoImage from "@/components/ui/SeoImage";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -44,36 +45,41 @@ const QUOTES = [
   </>,
 ];
 
-const AboutGallerySection = () => {
+const AboutGallerySection = ({galleryImages=[],galleryQuotes=[]}:{galleryImages?:{src:string;alt:string;caption:string}[];galleryQuotes?:string[]}) => {
+  const imagePool = useMemo(()=>galleryImages.length >= 4 ? galleryImages.map(image=>image.src) : ABOUT_GALLERY_POOL,[galleryImages]);
+  const quotes: React.ReactNode[] = useMemo(()=>galleryQuotes.length ? galleryQuotes.map((text,index)=><InlineContent key={index} text={text}/>) : QUOTES,[galleryQuotes]);
   const containerRef = useRef<HTMLDivElement>(null);
   const quoteRef = useRef<HTMLDivElement>(null);
 
   const [images, setImages] = useState<string[]>([]);
-  const [currentQuote, setCurrentQuote] = useState<React.ReactNode>(QUOTES[0]);
+  const [currentQuote, setCurrentQuote] = useState<React.ReactNode>(quotes[0]);
 
   const quotePool = useRef<React.ReactNode[]>([]);
   const lastUpdatedIndices = useRef<number[]>([0, 1, 2, 3]);
 
   useEffect(() => {
-    const pool = Array.from(new Set(ABOUT_GALLERY_POOL));
+    const frame = requestAnimationFrame(() => {
+    const pool = Array.from(new Set(imagePool));
     const initialImages = [...pool].sort(() => 0.5 - Math.random()).slice(0, 4);
     setImages(initialImages);
 
     // Filter by index/reference since they are now objects (React Nodes)
-    quotePool.current = [...QUOTES]
+    quotePool.current = [...quotes]
       .sort(() => 0.5 - Math.random())
-      .filter((q) => q !== QUOTES[0]);
-  }, []);
+      .filter((q) => q !== quotes[0]);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [imagePool,quotes]);
 
   const triggerSwap = useCallback(() => {
     if (quotePool.current.length === 0) {
-      quotePool.current = [...QUOTES].sort(() => 0.5 - Math.random());
+      quotePool.current = [...quotes].sort(() => 0.5 - Math.random());
     }
 
     const nextQuote = quotePool.current.pop();
     if (nextQuote) setCurrentQuote(nextQuote);
 
-    const pool = Array.from(new Set(ABOUT_GALLERY_POOL));
+    const pool = Array.from(new Set(imagePool));
     setImages((prev) => {
       const nextImages = [...prev];
       const slotsToChange = [0, 1, 2, 3]
@@ -84,11 +90,11 @@ const AboutGallerySection = () => {
       slotsToChange.forEach((slot) => {
         const filteredPool = pool.filter((img) => !nextImages.includes(img));
         nextImages[slot] =
-          filteredPool[Math.floor(Math.random() * filteredPool.length)];
+          filteredPool[Math.floor(Math.random() * filteredPool.length)] || nextImages[slot];
       });
       return nextImages;
     });
-  }, []);
+  }, [imagePool,quotes]);
 
   useEffect(() => {
     const timer = setInterval(triggerSwap, 5000);
@@ -159,7 +165,7 @@ const AboutGallerySection = () => {
               >
                 <SeoImage
                   key={src}
-                  src={src}
+                  src={src} alt={galleryImages.find(image=>image.src===src)?.alt}
                   fill
                   description="fine-art-wedding-gallery"
                   location="greece-italy"
@@ -168,6 +174,7 @@ const AboutGallerySection = () => {
                   priority={i < 4}
                 />
               </div>
+              {galleryImages.find(image=>image.src===src)?.caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{galleryImages.find(image=>image.src===src)?.caption}</span>}
             </div>
           );
         })}

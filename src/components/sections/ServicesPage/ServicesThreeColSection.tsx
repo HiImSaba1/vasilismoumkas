@@ -10,7 +10,9 @@ import {
   HORIZONTAL_PHOTO_POOL,
 } from "@/app/(site)/data/Project-Photoset/photoPool";
 
-const ServicesThreeColSection = () => {
+import { servicesVisualDefaults, type PublicPageContent } from "@/lib/public-page-content";
+import { HighlightedContent } from "@/components/ui/HighlightedContent";
+const ServicesThreeColSection = ({content=servicesVisualDefaults}:{content?:PublicPageContent["services"]["visuals"]}) => {
   const [images, setImages] = useState<{
     left: string;
     partner: string;
@@ -19,6 +21,7 @@ const ServicesThreeColSection = () => {
   } | null>(null);
 
   useEffect(() => {
+    const frame = requestAnimationFrame(() => {
     if (PORTRAIT_PHOTO_POOL?.length > 0 && HORIZONTAL_PHOTO_POOL?.length > 0) {
       const portPool = [...PORTRAIT_PHOTO_POOL].sort(() => Math.random() - 0.5);
       const randomHorizontal =
@@ -27,13 +30,15 @@ const ServicesThreeColSection = () => {
         ];
 
       setImages({
-        left: portPool[0] || "",
-        partner: portPool[1] || "",
-        right: portPool[2] || "",
+        left: content.leftImage || portPool[0] || "",
+        partner: content.partnerImage || portPool[1] || "",
+        right: content.rightImage || portPool[2] || "",
         divider: randomHorizontal || "",
       });
     }
-  }, []);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [content.leftImage, content.partnerImage, content.rightImage]);
 
   if (!images) {
     return <section className="min-h-screen bg-off-white" />;
@@ -47,11 +52,11 @@ const ServicesThreeColSection = () => {
           <div className="hidden md:flex md:col-span-3 flex-col justify-start items-start">
             <div className="relative w-[18vw] aspect-3/4 overflow-hidden bg-ink-black/5">
               <ParallaxImage
-                src={images.left}
+                src={images.left} alt={content.leftAlt}
                 description="editorial-wedding-details-portrait"
                 location="greece-italy"
                 className="absolute top-0 left-0 w-full h-full object-cover pointer-events-none"
-              />
+              />{content.leftCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.leftCaption}</span>}
             </div>
           </div>
 
@@ -73,14 +78,7 @@ const ServicesThreeColSection = () => {
                     className="block text-ink-black text-[clamp(28px,4.5vw,3rem)] leading-[1.1] uppercase tracking-tighter font-light"
                     style={{ fontFamily: "var(--font-karena)" }}
                   >
-                    "Through disciplined{" "}
-                    <span className="text-red-600">creative direction</span> and
-                    a focus on{" "}
-                    <span className="text-red-600">cinematic storytelling</span>
-                    , I translate our{" "}
-                    <span className="text-red-600">artistic values</span> into
-                    an <span className="text-red-600">authentic legacy</span>{" "}
-                    that feels as vivid as the day itself."
+                    <HighlightedContent text={content.quote} phrases={["creative direction","cinematic storytelling","artistic values","authentic legacy"]}/>
                   </span>
                 </RevealAnimation>
               </div>
@@ -89,13 +87,13 @@ const ServicesThreeColSection = () => {
               <div className="mt-12 md:mt-16 flex flex-col items-start space-y-4">
                 <div className="relative w-36 md:w-[10vw] lg:w-[12vw] aspect-square overflow-hidden bg-ink-black/5">
                   <SeoImage
-                    src={images.partner}
+                    src={images.partner} alt={content.partnerAlt}
                     description="vasilis-moumkas-editorial-detail"
                     location="greece-italy"
                     fill
                     className="object-cover"
                     sizes="(max-width: 768px) 96px, 10vw"
-                  />
+                  />{content.partnerCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.partnerCaption}</span>}
                 </div>
               </div>
             </div>
@@ -105,11 +103,11 @@ const ServicesThreeColSection = () => {
           <div className="hidden md:flex md:col-span-2 flex-col justify-end items-end">
             <div className="relative w-full aspect-3/4 overflow-hidden bg-ink-black/5">
               <ParallaxImage
-                src={images.right}
+                src={images.right} alt={content.rightAlt}
                 description="destination-wedding-photography-cinematic"
                 location="greece-italy"
                 className="absolute top-0 left-0 w-full h-full object-cover pointer-events-none"
-              />
+              />{content.rightCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.rightCaption}</span>}
             </div>
           </div>
         </div>
@@ -119,7 +117,7 @@ const ServicesThreeColSection = () => {
       <div className="w-full overflow-hidden bg-off-white">
         <div className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden shadow-sm">
           <video
-            src="/videos/vm_services_video_main.mp4"
+            src={content.video}
             autoPlay
             muted
             loop

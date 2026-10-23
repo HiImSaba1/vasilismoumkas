@@ -45,9 +45,9 @@ const LegalContent = ({ title, sections }: LegalContentProps) => {
           {sections.map((sec, i) => (
             <section key={i} className="legal-section border-t border-ink-black/50 pt-8">
               <RevealAnimation>
-                <h3 className="uppercase tracking-[0.2em] mb-4 text-sm">
+                <h2 style={{lineHeight:"1.25"}} className="uppercase tracking-[0.2em] mb-4 text-sm">
                   {sec.heading}
-                </h3>
+                </h2>
               </RevealAnimation>
               <RevealAnimation>
                 <p className="text-lg md:text-xl leading-none opacity-80 font-light">

@@ -1,6 +1,9 @@
 import { PORTRAIT_PHOTO_POOL } from "@/app/(site)/data/Project-Photoset/photoPool";
 import { HOMEPAGE_BLACK_FOOTER } from "./Pages-Photoset/Homepage";
 export type Service = {
+  imageAlt?:string;
+  detailAlt?:string;
+  caption?:string;
   title: string;
   description: string;
   image_main: string;
@@ -10,6 +13,9 @@ export type Service = {
 };
 
 export type HomeService = {
+  imageAlt?:string;
+  detailAlt?:string;
+  caption?:string;
   title: string;
   slug: string;
   projectSlug: string; // Added for project page navigation
@@ -70,7 +76,7 @@ export const homeServices: HomeService[] = [
   }
 ];
 
-const baseServices = [
+export const baseServices = [
   {
     title: "Wedding Day Photography",
     description: "From getting ready to the celebration, coverage is planned around your wedding schedule. I document the day as it unfolds, with time for couple portraits, family photographs and the details you have chosen.",

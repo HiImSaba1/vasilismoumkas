@@ -1,14 +1,4 @@
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Link in Bio | Vasilis Moumkas",
-  description: "Exclusive services and templates for photographers by Vasilis Moumkas.",
-};
-
-export default function InstagramLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return <>{children}</>;
-}
+import {publicMetadata} from "@/lib/seo-overrides";
+import {secondarySeo} from "@/lib/secondary-seo";
+export async function generateMetadata(){return publicMetadata(secondarySeo["/instagram"],"/instagram");}
+export default function Layout({children}:{children:React.ReactNode}){return <>{children}</>;}

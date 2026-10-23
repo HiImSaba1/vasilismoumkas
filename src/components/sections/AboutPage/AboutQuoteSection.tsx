@@ -13,7 +13,9 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const AboutQuoteSection = () => {
+import { aboutVisualDefaults, type PublicPageContent } from "@/lib/public-page-content";
+import { HighlightedContent } from "@/components/ui/HighlightedContent";
+const AboutQuoteSection = ({content=aboutVisualDefaults}:{content?:PublicPageContent["about"]["visuals"]}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const leftImgRef = useRef<HTMLDivElement>(null);
   const rightImgRef = useRef<HTMLDivElement>(null);
@@ -69,17 +71,9 @@ const AboutQuoteSection = () => {
         {/* QUOTE SECTION */}
         <div className="mb-16">
           <RevealAnimation>
-            <span className="text-2xl md:text-5xl font-karena leading-[1.1] text-ink-black uppercase tracking-tighter block text-balance">
-              “I photograph weddings with a{" "}
-              <span className="text-red-600">calm editorial</span>{" "}eye, drawn to
-              real moments, <span className="text-red-600">emotion</span> and{" "}
-              <span className="text-red-600">timeless beauty.</span> Following
-              the <span className="text-red-600">light</span> and the feeling of
-              the day documenting life,{" "}
-              <span className="text-red-600">love</span> and capturing the{" "}
-              <span className="text-red-600">soul</span> of the world’s most{" "}
-              <span className="text-red-600">breathtaking</span> landscapes.”
-            </span>
+            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="text-2xl md:text-5xl font-karena leading-[1.1] text-ink-black uppercase tracking-tighter block text-balance">
+              “<HighlightedContent text={content.quote} phrases={["calm editorial","emotion","timeless beauty.","light","love","soul","breathtaking"]}/>”
+            </h2>
           </RevealAnimation>
         </div>
         <div className="w-full max-w-5xl">
@@ -88,13 +82,13 @@ const AboutQuoteSection = () => {
             <div className="hidden md:block w-full max-w-65 aspect-3/4 overflow-hidden relative">
               <div ref={leftImgRef} className="relative w-full h-full">
                 <SeoImage
-                  src="/vm_img/About/vasilis_moumkas_profile_image_new.webp"
+                  src={content.portrait} alt={content.portraitAlt}
                   description="vasilis-moumkas-portrait"
                   location="thessaloniki-greece"
                   fill
                   sizes="220px"
                   className="object-cover"
-                />
+                />{content.portraitCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.portraitCaption}</span>}
               </div>
             </div>
 
@@ -117,7 +111,7 @@ const AboutQuoteSection = () => {
                 />
                 <RevealAnimation>
                   <span className="text-2xl md:text-3xl lg:text-4xl uppercase tracking-wide text-ink-black font-karena whitespace-nowrap">
-                    Vasilis Moumkas
+                    {content.signature}
                   </span>
                 </RevealAnimation>
                 <AnimatedBorder
@@ -128,7 +122,7 @@ const AboutQuoteSection = () => {
               </div>
               <RevealAnimation>
                 <span className="text-[14px] uppercase opacity-70 tracking-wide  whitespace-nowrap">
-                  Lead Photographer & Visionary
+                  {content.signatureRole}
                 </span>
               </RevealAnimation>
 
@@ -139,13 +133,13 @@ const AboutQuoteSection = () => {
                   className="relative w-48 h-64 overflow-hidden"
                 >
                   <SeoImage
-                    src="/vm_img/About/vasilis_moumkas_profile_image_new.webp"
+                    src={content.portrait} alt={content.portraitAlt}
                     description="vasilis-moumkas-profile"
                     location="thessaloniki-greece"
                     fill
                     sizes="220px"
                     className="object-cover"
-                  />
+                  />{content.portraitCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.portraitCaption}</span>}
                 </div>
               </div>
             </div>
@@ -157,13 +151,13 @@ const AboutQuoteSection = () => {
                 className="relative w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
               >
                 <SeoImage
-                  src="/vm_img/About/vasilis_moumkas_about_profile_camera.jpg"
+                  src={content.cameraPortrait} alt={content.cameraAlt}
                   description="photographer-at-work-editorial-eye"
                   location="greece-italy"
                   fill
                   sizes="180px"
                   className="object-cover"
-                />
+                />{content.cameraCaption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{content.cameraCaption}</span>}
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 "use client";
+import {InlineContent} from "@/components/ui/InlineContent";
 import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useState } from "react";
@@ -51,7 +52,7 @@ function ErrorMsg({ message }: { message?: string }) {
 
 const inputStyles = "w-full bg-transparent text-black text-sm md:text-base outline-none placeholder:text-black/20 uppercase autofill:shadow-[0_0_0_100px_#f9f3f4_inset] autofill:[-webkit-text-fill-color:#1a1a1a]";
 
-export default function ContactForm() {
+export default function ContactForm({previewOnly=false,content={intro:publicCopy.contactIntro,message:publicCopy.contactMessage}}:{content?:{intro:string;message:string;buttonLabel?:string};previewOnly?:boolean}) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isPlanningOpen, setIsPlanningOpen] = useState(false);
 
@@ -71,6 +72,7 @@ export default function ContactForm() {
   const selectedPlanning = useWatch({ control, name: "planning" });
 
   const onSubmit = async (data: ContactFormData) => {
+    if (previewOnly) { toast.info("Preview only — no inquiry was submitted."); return; }
     // Format the date for the email body
     const submissionData = {
       ...data,
@@ -83,14 +85,14 @@ export default function ContactForm() {
       return result;
     };
 
-    toast.promise(sendRequest(), {
-      loading: "Sending your message...",
-      success: () => {
-        reset(); // Clears form fields on success
-        return "Message sent successfully!";
-      },
-      error: (err) => err.message || "Failed to send message.",
-    });
+    const toastId=toast.loading("Sending your message...");
+    try {
+      await sendRequest();
+      reset();
+      toast.success("Message sent successfully!",{id:toastId});
+    } catch(error) {
+      toast.error(error instanceof Error?error.message:"Failed to send message.",{id:toastId});
+    }
   };
 
   return (
@@ -233,7 +235,7 @@ export default function ContactForm() {
           <label className="block text-sm font-bold tracking-wide text-black mb-1 uppercase">Additional info</label>
           <textarea 
             {...register("message")} 
-            placeholder={publicCopy.contactMessage}
+            placeholder={content.message}
             rows={2} 
             className={`${inputStyles} resize-none pt-1`} 
           />
@@ -244,13 +246,13 @@ export default function ContactForm() {
           <div className="w-full md:basis-[40%]">
             <div className={!isValid || isSubmitting ? "opacity-30 grayscale cursor-not-allowed" : "opacity-100"}>
               <CTAButton asButton disabled={!isValid || isSubmitting}>
-                {isSubmitting ? "SENDING..." : "SEND MESSAGE"}
+                {isSubmitting ? "SENDING..." : (content.buttonLabel ?? "SEND MESSAGE")}
               </CTAButton>
             </div>
           </div>
           <div className="w-full md:basis-[60%]">
             <span className="text-[12px] leading-tight uppercase tracking-wider opacity-90 block text-black">
-              {publicCopy.contactIntro}
+              <InlineContent text={content.intro}/>
             </span>
           </div>
         </div>

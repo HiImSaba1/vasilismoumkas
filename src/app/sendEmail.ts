@@ -47,7 +47,9 @@ export async function sendEmail(raw: unknown) {
 
     // Website inquiries intentionally never schedule or send Template 000.
     // The studio selects GR/EN, reviews the content and sends it explicitly from CRM.
+    let internalNotification: "sent" | "smtp-disabled" | "failed" = "smtp-disabled";
     if (smtpConfigured()) {
+      try {
       const safe = (value?: string) => escape(value || "Not provided");
       await getSmtpTransport().sendMail({
         from: `Website Inquiry <${process.env.SMTP_FROM_EMAIL}>`,
@@ -56,13 +58,18 @@ export async function sendEmail(raw: unknown) {
         subject: `New enquiry: ${data.planning ?? "Photography"} - ${data.name}`,
         html: `<h2>New Website Enquiry</h2><p><strong>Name:</strong> ${safe(data.name)}</p><p><strong>Email:</strong> ${safe(data.email)}</p><p><strong>Planning:</strong> ${safe(data.planning)}</p><p><strong>Date:</strong> ${safe(data.date)}</p><p><strong>Location:</strong> ${safe(data.location)}</p><p><strong>Phone:</strong> ${safe(data.phone)}</p><p><strong>Instagram:</strong> ${safe(data.instagram)}</p><p><strong>Message:</strong><br>${safe(data.message)}</p>`,
       });
+      internalNotification = "sent";
+      } catch {
+        // The lead is already saved. Do not encourage a duplicate inquiry if SMTP fails.
+        internalNotification = "failed";
+      }
     }
 
     return {
       success: true,
       leadId,
       acknowledgement: "manual-required" as const,
-      internalNotification: smtpConfigured() ? ("sent" as const) : ("smtp-disabled" as const),
+      internalNotification,
     };
   } catch (error) {
     return {

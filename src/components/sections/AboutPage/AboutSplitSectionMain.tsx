@@ -30,7 +30,7 @@ export default function AboutSplitSectionMain({cards,editorial=fallbackEditorial
             <RevealAnimation><p className="my-3 max-w-md text-center text-sm leading-relaxed text-ink-black/60 md:my-4 md:text-left md:text-xl">{copy.subtitle}</p></RevealAnimation>
             <RevealAnimation><CTAButton href={card.href} className="mt-2 md:mt-4" aria-label={`${card.ctaLabel}: ${card.title}, ${card.subtitle}`}>{card.ctaLabel}</CTAButton></RevealAnimation>
           </div>
-          <ProjectCard project={{title:card.title,location:card.subtitle,thumbnail:card.image,href:card.href,alt:card.alt}} index={index} hoverOverlay={false} portrait/>
+          <ProjectCard project={{title:card.title,location:card.subtitle,thumbnail:card.image,href:card.href,alt:card.alt,caption:card.caption}} index={index} hoverOverlay={false} portrait/>
         </article>;
       })}
     </div>

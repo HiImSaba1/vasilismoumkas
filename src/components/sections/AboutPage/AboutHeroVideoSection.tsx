@@ -5,7 +5,8 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 
-const AboutHeroVideoSection = () => {
+import { aboutVisualDefaults, type PublicPageContent } from "@/lib/public-page-content";
+const AboutHeroVideoSection = ({content=aboutVisualDefaults}:{content?:PublicPageContent["about"]["visuals"]}) => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const titleWrapperRef = useRef<HTMLDivElement>(null);
@@ -68,7 +69,7 @@ const AboutHeroVideoSection = () => {
       <div className="absolute inset-0 z-0">
         <video
           ref={videoRef}
-          src="/videos/about-vm-video-2.mp4"
+          src={content.heroVideo}
           autoPlay
           muted
           loop
@@ -93,8 +94,7 @@ const AboutHeroVideoSection = () => {
               ref={leftParaRef}
               className="text-off-white/80 text-sm  md:text-sm leading-tight max-w-50 uppercase tracking-wider"
             >
-              Capturing timeless moments as a destination wedding photographer,
-              focusing on the raw emotions and cinematic beauty.
+              {content.heroLeft}
             </p>
           </div>
 
@@ -106,13 +106,13 @@ const AboutHeroVideoSection = () => {
               style={{ fontFamily: "var(--font-karena)" }}
             >
               <div className={`static-text -mt-4 ${titleClasses}`}>
-                Fine <br /> Artist
+                {content.heroTitle.split("\n").map((line,i)=><React.Fragment key={i}>{i>0&&<br/>}{line}</React.Fragment>)}
               </div>
               <div
                 className={`animated-text absolute inset-0 flex items-center justify-center pt-4 ${titleClasses}`}
                 style={{ transform: "translateY(100%)" }}
               >
-                Lover<br />of Life
+                {content.heroHoverTitle.split("\n").map((line,i)=><React.Fragment key={i}>{i>0&&<br/>}{line}</React.Fragment>)}
               </div>
             </div>
           </div>
@@ -123,8 +123,7 @@ const AboutHeroVideoSection = () => {
               ref={rightParaRef}
               className="text-off-white/80 text-sm  md:text-sm leading-tight max-w-50 text-right uppercase tracking-wider"
             >
-              From intimate elopements to grand celebrations, my editorial
-              approach ensures every frame feels like a piece of art.
+              {content.heroRight}
             </p>
           </div>
         </div>

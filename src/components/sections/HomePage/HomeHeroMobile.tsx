@@ -61,11 +61,11 @@ export default function HomeHeroMobile({content}:{content:HomepageSettings["hero
       </div>
 
       <div className="relative h-[50vh] min-h-[58vh] w-full overflow-hidden ">
-        <ImageComponent isDesktop={false} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt}/>
+        <ImageComponent isDesktop={false} desktopSrc={content.desktopImage} mobileSrc={content.mobileImage} projectHref={content.projectHref} alt={content.imageAlt} caption={content.imageCaption}/>
       </div>
 
       <div className="shrink-0 mb-2">
-        <AnimatedHeadline animationDelay={headlineDelay} isMobile={true} />
+        <AnimatedHeadline headlineParts={[content.headlineEditorial,content.headlineWedding,content.headlinePhotography,content.headlineAcross,content.headlineDestinations]} animationDelay={headlineDelay} isMobile={true} />
       </div>
 
       <div className="flex items-center justify-between mt-2 border-t border-black/5 shrink-0">

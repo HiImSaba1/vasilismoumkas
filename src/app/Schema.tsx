@@ -1,8 +1,8 @@
-import { TestimonialsData } from "./(site)/data/TestimonialsData"; 
+import {getPublicPageSettings} from "@/lib/public-page-settings";
 import {getSeoSettings} from "@/lib/seo-settings";
 
 export default async function Schema() {
-  const {business}=await getSeoSettings();
+  const [{business},{content}]=await Promise.all([getSeoSettings(),getPublicPageSettings("services")]);
   const schema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -15,7 +15,6 @@ export default async function Schema() {
     url: "https://vasilismoumkas.com",
     telephone: business.telephone,
     email: business.email,
-    priceRange: "$$$",
     ...(business.addressConfirmed?{address: {
       "@type": "PostalAddress",
       streetAddress: business.streetAddress,
@@ -24,72 +23,20 @@ export default async function Schema() {
       postalCode: business.postalCode,
       addressCountry: business.addressCountry,
     }}:{}),
-    areaServed: [
-      { "@type": "Country", name: "Greece" },
-      { "@type": "Country", name: "Italy" },
-      { "@type": "Country", name: "France" },
-      { "@type": "Country", name: "Spain" },
-      { "@type": "City", name: "Santorini" },
-      { "@type": "City", name: "Mykonos" },
-      { "@type": "City", name: "Lake Como" },
-      { "@type": "City", name: "Naxos" },
-      { "@type": "City", name: "Thessaloniki" },
-      { "@type": "City", name: "Athens" },
-    ],
-    openingHoursSpecification: {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-      opens: "09:00",
-      closes: "21:00",
-    },
-    hasOfferCatalog: {
-      "@type": "OfferCatalog",
-      name: "Professional Photography Services",
-      itemListElement: [
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Luxury Wedding Photography",
-            description: "High-end editorial and documentary wedding photography for discerning couples."
-          },
-        },
-        {
-          "@type": "Offer",
-          itemOffered: {
-            "@type": "Service",
-            name: "Destination Wedding Photography",
-            description: "Bespoke travel wedding coverage across Greece, Italy, and Europe."
-          },
-        },
-      ],
-    },
+    areaServed: [{ "@type": "Country", name: "Greece" }, { "@type": "Country", name: "Italy" }],
+    hasOfferCatalog: { "@type": "OfferCatalog", name: content.title, itemListElement: content.items.map(item => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: item.title, description: item.description.replace(/\[([^\]]+)\]\([^)]*\)/g,"$1") } })) },
     sameAs: [
       business.instagram,
       business.facebook,
       business.pinterest,
     ],
-    review: TestimonialsData.map((t) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: t.couple },
-      reviewBody: t.quote,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: "5",
-        bestRating: "5",
-      },
-    })),
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "5",
-      reviewCount: TestimonialsData.length.toString(),
-    },
+
   };
 
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }}
     />
   );
 }

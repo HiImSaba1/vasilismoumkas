@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import {getProjectRedirects} from "@/lib/project-url-history";
 
 const COOKIE_NAME = "moumkas_admin_session";
 
@@ -21,6 +22,15 @@ async function validSession(token?: string) {
 export async function proxy(request: NextRequest) {
   const session = request.cookies.get(COOKIE_NAME)?.value;
   const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/portfolio/project/")) {
+    const rule = (await getProjectRedirects()).find(item => item.from === pathname);
+    return rule ? NextResponse.redirect(new URL(rule.to, request.url), 301) : NextResponse.next();
+  }
+  if (!pathname.startsWith("/admin")) {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return response;
+  }
   const authenticated = await validSession(session);
 
   // 1. Protect the Dashboard
@@ -36,10 +46,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/admin/overview', request.url));
   }
 
-  return NextResponse.next();
+  const response=NextResponse.next();
+  response.headers.set("X-Robots-Tag","noindex, nofollow, noarchive");
+  return response;
 }
 
 // The matcher stays the same to tell Next.js which routes to watch
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/offer/:path*", "/portal/:path*", "/timeline/:path*", "/questionnaire/:path*", "/portfolio/project/:slug"],
 };

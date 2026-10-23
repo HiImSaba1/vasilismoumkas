@@ -11,7 +11,7 @@ import useWindowSize from "@/lib/useWindowSize";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ServicesStackingCardsSection = () => {
+const ServicesStackingCardsSection = ({content}:{content?:{title:string;description:string;image_main?:string;image_small?:string;imageAlt?:string;detailAlt?:string;caption?:string;tags?:string[]}[]}) => {
   const scrollWrapperRef = useRef<HTMLDivElement>(null);
   const pinContainerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
@@ -23,13 +23,15 @@ const ServicesStackingCardsSection = () => {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setHasMounted(true);
-    const randomized = getDynamicServices();
-    setDisplayServices(randomized);
+    const frame=requestAnimationFrame(()=>{
+      setHasMounted(true);
+      const randomized = getDynamicServices();
+      setDisplayServices(randomized.map((service,index)=>{const saved=content?.[index];const tags=saved?.tags;return {...service,...saved,image_main:saved?.image_main||service.image_main,image_small:saved?.image_small||service.image_small,tags:tags&&tags.length?tags:service.tags};}));
+    });
     
     const timer = setTimeout(() => setIsReady(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+    return () => {cancelAnimationFrame(frame);clearTimeout(timer);};
+  }, [content]);
 
   const isMobile = useMemo(() => {
     if (!hasMounted) return false;

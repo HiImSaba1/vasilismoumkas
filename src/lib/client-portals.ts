@@ -4,7 +4,7 @@ import type { RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/database";
 import { resolveContractForWorkflowProfile } from "@/lib/contract-templates";
 import { sendInternalWorkflowNotification } from "@/lib/email-delivery";
-import { sanitizeQuestionnaireAnswers } from "@/lib/questionnaire-definitions";
+import { submitNativeQuestionnaireAnswers, submitLegacyQuestionnaireAnswers } from "@/lib/questionnaire-answer-editing";
 import { normalizePortalSlugValue } from "@/lib/portal-url";
 import { listClientExtras } from "@/lib/client-extras";
 import { listTeamAssignments } from "@/lib/coverage-team";
@@ -45,14 +45,18 @@ export async function getPortalBySlug(slug:string){
     try{const[result]=await db.query<typeof documentRows>("SELECT document_type,template_key,status,document_data FROM lead_document_records WHERE lead_id=?",[portal.lead_id]);documentRows=result}catch{documentRows=[]}
   }
   try{const[result]=await db.query<typeof fileRows>("SELECT id,original_name,mime_type,size_bytes,created_at FROM documents WHERE client_id=? AND document_type='other' AND status='active' ORDER BY created_at DESC",[portal.client_id]);fileRows=result}catch{fileRows=[]}
-  const documents=documentRows.flatMap(row=>{
+  const documents:{type:string;status:string;templateKey:string;data:Record<string,string>;source:"portal"|"legacy"}[]=documentRows.flatMap(row=>{
     if(!["questionnaire","contract","invoice"].includes(row.document_type))return[];
     try{
       const data=parsePortalDocumentData(row.document_data);
       if(row.document_type==="contract")data.contract_text=resolveContractForWorkflowProfile(data.contract_text,eventType,language);
-      return[{type:row.document_type,status:portalText(row.status,"draft"),templateKey:portalText(row.template_key),data}];
+      return[{type:row.document_type,status:portalText(row.status,"draft"),templateKey:portalText(row.template_key),data,source:"portal" as const}];
     }catch{return[]}
   });
+  if(!documents.some(document=>document.type==="questionnaire")){
+    const[legacy]=await db.query<(RowDataPacket&{answers:unknown;submitted_at:unknown})[]>("SELECT answers,submitted_at FROM questionnaires WHERE client_id=? LIMIT 1",[portal.client_id]);
+    if(legacy[0])documents.push({type:"questionnaire",status:legacy[0].submitted_at?"completed":"sent",templateKey:"legacy-questionnaire",data:parsePortalDocumentData(legacy[0].answers),source:"legacy"});
+  }
   const files=fileRows.flatMap(row=>{
     const sizeBytes=Number(row.size_bytes);
     if(!portalText(row.id)||!portalText(row.original_name)||!Number.isFinite(sizeBytes))return[];
@@ -67,16 +71,27 @@ export async function getPortalForLead(leadId:string){const[rows]=await getDatab
 export async function listClientPortals(){const[rows]=await getDatabase().query<(RowDataPacket&{lead_id:string|null;client_id:string;public_slug:string;status:string})[]>("SELECT c.lead_id,p.client_id,p.public_slug,p.status FROM client_portals p JOIN clients c ON c.id=p.client_id");return rows.map(row=>({leadId:row.lead_id,clientId:row.client_id,slug:row.public_slug,status:row.status}))}
 export async function updatePortalDocument(slug:string,type:"questionnaire"|"contract",data:Record<string,string>){
   const portal=await getPortalBySlug(slug);
-  if(!portal?.leadId)throw new Error("Portal unavailable");
+  if(!portal)throw new Error("Portal unavailable");
   const current=portal.documents.find(item=>item.type===type);
   if(current&&(type==="questionnaire"?current.status==="completed":current.status==="signed"))return;
   const db=getDatabase();
-  const acceptedData=type==="questionnaire"?sanitizeQuestionnaireAnswers(portal.eventType,portal.language,data,current?.data):data;
-  await db.execute("UPDATE lead_document_records SET status=?,document_data=? WHERE lead_id=? AND document_type=?",[type==="questionnaire"?"completed":"signed",JSON.stringify({...current?.data,...acceptedData}),portal.leadId,type]);
-  if(type==="questionnaire")await db.execute("UPDATE onboarding SET questionnaire_status='completed' WHERE client_id=?",[portal.clientId]);
-  else await db.execute("UPDATE onboarding SET agreement_status='approved',booking_status=IF(invoice_status IN ('part-paid','paid'),'confirmed',booking_status) WHERE client_id=?",[portal.clientId]);
+  if(type==="questionnaire"&&current?.source==="legacy"){
+    const[rows]=await db.query<(RowDataPacket&{id:string})[]>("SELECT id FROM questionnaires WHERE client_id=? LIMIT 1",[portal.clientId]);
+    if(!rows[0])throw new Error("Questionnaire unavailable.");
+    await submitLegacyQuestionnaireAnswers({id:rows[0].id,clientId:portal.clientId,eventType:portal.eventType,language:portal.language,answers:data});
+    await sendInternalWorkflowNotification({event:"questionnaire-completed",clientName:portal.coupleNames,clientEmail:portal.email,leadId:portal.leadId,clientId:portal.clientId,details:["The client submitted the private questionnaire through the portal."]});
+    return;
+  }
+  if(!portal.leadId)throw new Error("Portal unavailable");
+  if(type==="questionnaire"){
+    const saved=await submitNativeQuestionnaireAnswers({leadId:portal.leadId,clientId:portal.clientId,eventType:portal.eventType,language:portal.language,answers:data});
+    if(!saved)return;
+  }else{
+    await db.execute("UPDATE lead_document_records SET status='signed',document_data=? WHERE lead_id=? AND document_type='contract'",[JSON.stringify({...current?.data,...data}),portal.leadId]);
+    await db.execute("UPDATE onboarding SET agreement_status='approved',booking_status=IF(invoice_status IN ('part-paid','paid'),'confirmed',booking_status) WHERE client_id=?",[portal.clientId]);
+  }
   await db.execute("INSERT IGNORE INTO automation_jobs (id,job_key,job_type,client_id,offer_id,template_id,scheduled_for,payload) SELECT ?,CONCAT('client:',c.id,':post-event-thank-you'),'post-event-thank-you',c.id,c.accepted_offer_id,'007',DATE_ADD(c.event_date,INTERVAL 1 DAY),JSON_OBJECT('source','portal-booking-confirmed') FROM onboarding o JOIN clients c ON c.id=o.client_id WHERE c.id=? AND o.booking_status='confirmed' AND c.event_date IS NOT NULL",[randomUUID(),portal.clientId]);
   await db.execute("INSERT IGNORE INTO automation_jobs (id,job_key,job_type,client_id,template_id,scheduled_for,payload) SELECT ?,CONCAT('client:',c.id,':timeline-reminder'),'timeline-reminder',c.id,'009',DATE_SUB(c.event_date,INTERVAL 60 DAY),JSON_OBJECT('source','portal-booking-confirmed') FROM onboarding o JOIN clients c ON c.id=o.client_id WHERE c.id=? AND o.booking_status='confirmed' AND c.event_date IS NOT NULL",[randomUUID(),portal.clientId]);
-  await db.execute("INSERT INTO activity_log (lead_id,client_id,event_type,summary) VALUES (?,?,?,?)",[portal.leadId,portal.clientId,type==="questionnaire"?"questionnaire-completed":"contract-signed",type==="questionnaire"?"Portal questionnaire submitted":"Portal contract accepted"]);
+  if(type==="contract")await db.execute("INSERT INTO activity_log (lead_id,client_id,event_type,summary) VALUES (?,?,?,?)",[portal.leadId,portal.clientId,"contract-signed","Portal contract accepted"]);
   await sendInternalWorkflowNotification({event:type==="questionnaire"?"questionnaire-completed":"contract-signed",clientName:portal.coupleNames,clientEmail:portal.email,leadId:portal.leadId,clientId:portal.clientId,details:[type==="questionnaire"?"The client submitted the questionnaire through the portal.":`Signed by: ${data.signed_name??portal.coupleNames}`]});
 }

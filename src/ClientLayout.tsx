@@ -30,10 +30,12 @@ function ScrollReset() {
 }
 
 export default function ClientLayout({
-  children,websiteSettings,businessSettings,
+  children,websiteSettings,businessSettings,previewPublic=false,homeFooterLines,
 }: {
   children: React.ReactNode;
   websiteSettings:WebsiteSettings;
+  previewPublic?:boolean;
+  homeFooterLines?:string[];
   businessSettings:SeoSettings["business"];
 }) {
   const pathname = usePathname();
@@ -44,10 +46,10 @@ export default function ClientLayout({
   const isSpecialPage = useMemo(() => {
     return (
       pathname?.startsWith("/instagram") ||
-      pathname?.startsWith("/admin") ||
+      (pathname?.startsWith("/admin") && !previewPublic) ||
       pathname?.startsWith("/offer")
     );
-  }, [pathname]);
+  }, [pathname,previewPublic]);
 
   const lenisOptions = useMemo(
     () => ({
@@ -73,7 +75,7 @@ export default function ClientLayout({
             </main>
             
             {/* Footer is hidden on Instagram, Admin, and Offer pages */}
-            {!isSpecialPage && <Footer business={businessSettings}/>}
+            {!isSpecialPage && <Footer business={businessSettings} homeTitleLines={homeFooterLines} homePreview={previewPublic&&pathname==="/admin/pages/home/preview"}/>}
             
             <CookieBanner />
           </ReactLenis>

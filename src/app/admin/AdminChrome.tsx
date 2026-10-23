@@ -23,6 +23,7 @@ const navigation = [
   { label: "Onboarding", href: "/admin/onboarding", icon: UsersRound },
   { label: "Timelines", href: "/admin/timelines", icon: CalendarRange },
   { label: "Portfolio", href: "/admin/portfolio", icon: Images },
+  { label: "Pages", href: "/admin/pages", icon: Files },
   { label: "Website", href: "/admin/website", icon: MonitorCog },
   { label: "SEO", href: "/admin/seo", icon: Search },
   { label: "Email Templates", href: "/admin/email-templates", icon: Mail },
@@ -41,6 +42,7 @@ function AdminChromeContent({ children,reminders }: { children: React.ReactNode;
   const [compact, setCompact] = useState(false);
 
   if (pathname === "/admin") return children;
+  if (pathname.endsWith("/preview")) return <div data-admin-locale-isolated="true">{children}</div>;
 
   return (
     <div className={`admin-shell min-h-svh bg-soft-white text-ink-black lg:grid lg:transition-[grid-template-columns] lg:duration-1000 lg:ease-[cubic-bezier(0.19,1,0.22,1)] ${compact?"lg:grid-cols-[4.75rem_minmax(0,1fr)]":"lg:grid-cols-[17rem_minmax(0,1fr)]"}`}>
@@ -51,7 +53,7 @@ function AdminChromeContent({ children,reminders }: { children: React.ReactNode;
         </div>
         <nav aria-label="Admin navigation" className="flex-1 overflow-y-auto px-3 py-4">
           {navigation.map(({ label, href, icon: Icon }, index) => {
-            const active = pathname === href || pathname.startsWith(`${href}/`) || (href === "/admin/website" && pathname === "/admin/homepage");
+            const active = pathname === href || pathname.startsWith(`${href}/`) || (href === "/admin/pages" && pathname === "/admin/homepage");
             return (
               <Link key={href} href={href} onClick={() => setOpen(false)} aria-label={label} title={compact?label:undefined} aria-current={active ? "page" : undefined} className={`group flex items-center overflow-hidden border-b border-soft-white/10 py-3.5 text-sm uppercase tracking-[0.06em] transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${compact?"justify-center gap-0 px-2":"justify-start gap-3 px-3"} ${active ? "bg-soft-yellow text-ink-black" : "text-soft-white/70 hover:bg-soft-white/10 hover:text-soft-white"}`}>
                 <span className={`shrink-0 overflow-hidden text-[10px] opacity-50 transition-all duration-1000 ease-[cubic-bezier(0.19,1,0.22,1)] ${compact?"w-0 opacity-0":"w-5"}`}>{String(index + 1).padStart(2, "0")}</span>

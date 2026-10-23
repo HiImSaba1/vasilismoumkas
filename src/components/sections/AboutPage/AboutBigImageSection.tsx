@@ -1,4 +1,5 @@
 "use client";
+import {InlineContent} from "@/components/ui/InlineContent";
 import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef } from "react";
@@ -7,7 +8,10 @@ import SeoImage from "@/components/ui/SeoImage";
 import RevealAnimation from "@/components/animations/RevealAnimation";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 
-const AboutBigImageSection = () => {
+function HighlightedBio({text,phrase}:{text:string;phrase:string}){const index=text.indexOf(phrase);if(index<0)return <InlineContent text={text}/>;return <><InlineContent text={text.slice(0,index)}/><span className="text-soft-yellow">{phrase}</span><InlineContent text={text.slice(index+phrase.length)}/></>;}
+
+import { aboutVisualDefaults, type PublicPageContent } from "@/lib/public-page-content";
+const AboutBigImageSection = ({intro=publicCopy.aboutIntro,content=aboutVisualDefaults}:{intro?:string[];content?:PublicPageContent["about"]["visuals"]}) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll({
@@ -29,7 +33,7 @@ const AboutBigImageSection = () => {
           className="relative w-full h-[120%] -top-[10%]"
         >
           <SeoImage
-            src="/vm_img/About/vasilis_moumkas_about_big_image_17.webp"
+            src={content.biographyImage} alt={content.biographyAlt}
             description="luxury-wedding-photographer-profile"
             location="thessaloniki-greece"
             fill
@@ -37,6 +41,7 @@ const AboutBigImageSection = () => {
             className="object-cover"
           />
           <div className="absolute inset-0 bg-ink-black/45 md:bg-ink-black/35" />
+          {content.biographyCaption&&<span className="absolute inset-x-0 bottom-0 p-3 text-xs text-white">{content.biographyCaption}</span>}
         </motion.div>
       </div>
 
@@ -45,10 +50,9 @@ const AboutBigImageSection = () => {
         {/* Top Section */}
         <div className="w-full">
           <RevealAnimation>
-            <span className="block text-soft-yellow text-[clamp(45px,7vw,70px)] md:text-[clamp(60px,10vw,100px)] leading-[0.9] uppercase tracking-tighter">
-              Documenting Life, <br />
-              Love & Light
-            </span>
+            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="block text-soft-yellow text-[clamp(45px,7vw,70px)] md:text-[clamp(60px,10vw,100px)] leading-[0.9] uppercase tracking-tighter">
+              {content.biographyHeading.split("\n").map((line,i)=><React.Fragment key={i}>{i>0&&<br/>}{line}</React.Fragment>)}
+            </h2>
           </RevealAnimation>
           <AnimatedBorder
             origin="left"
@@ -67,19 +71,11 @@ const AboutBigImageSection = () => {
                   className="block text-soft-yellow text-xl lg:text-5xl uppercase tracking-wide"
                   style={{ fontFamily: "var(--font-karena)" }}
                 >
-                  Greek Roots
+                  {content.rootsHeading}
                 </span>
               </RevealAnimation>
               <div className="flex flex-wrap max-w-md gap-3 opacity-80">
-                {[
-                  "Luxury",
-                  "Editorial",
-                  "Greece",
-                  "Italy",
-                  "Destination",
-                  "Timeless",
-                  "Authentic",
-                ].map((tag) => (
+                {content.tags.map((tag) => (
                   <span
                     key={tag}
                     className="text-soft-yellow text-[14px] uppercase border border-soft-yellow/40 px-2 py-1 tracking-widest"
@@ -93,19 +89,13 @@ const AboutBigImageSection = () => {
             {/* RIGHT COLUMN */}
             <div className="w-full md:w-[55%]">
               <RevealAnimation>
-                <span className="block text-soft-yellow text-4xl lg:text-6xl tracking-tighter leading-none mb-8">
-                  Your Shared Truth
-                </span>
+                <h3 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="block text-soft-yellow text-4xl lg:text-6xl tracking-tighter leading-none mb-8">
+                  {content.sharedHeading}
+                </h3>
               </RevealAnimation>
               <RevealAnimation>
                 <span className="block text-off-white text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-tight max-w-2xl">
-                  There will come a time when you will seek words outside words,
-                  for moments outside the thread of thoughts, for images that{" "}
-                  <span className="text-soft-yellow">
-                    cling to the beating of your heart.
-                  </span>{" "}
-                  That is where you will find your shared truth, your deposited
-                  love raw, genuine, new again.
+                  <HighlightedBio text={content.sharedText} phrase="cling to the beating of your heart."/>
                 </span>
               </RevealAnimation>
             </div>
@@ -125,17 +115,17 @@ const AboutBigImageSection = () => {
             <div className="md:col-span-7 space-y-10">
               <RevealAnimation>
                 <span className="block text-off-white text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-tight">
-                  {publicCopy.aboutIntro[0].split("wedding photographer")[0]}<span className="text-soft-yellow">wedding photographer</span>{publicCopy.aboutIntro[0].split("wedding photographer")[1]}
+                  <HighlightedBio text={intro[0]} phrase="wedding photographer"/>
                 </span>
               </RevealAnimation>
               <RevealAnimation>
                 <span className="block text-off-white text-xl md:text-2xl lg:text-3xl leading-[1.2] tracking-tight">
-                  {publicCopy.aboutIntro[1].split("gently guided editorial portraits")[0]}<span className="text-soft-yellow">gently guided editorial portraits</span>{publicCopy.aboutIntro[1].split("gently guided editorial portraits")[1]}
+                  <HighlightedBio text={intro[1]} phrase="gently guided editorial portraits"/>
                 </span>
               </RevealAnimation>
               <RevealAnimation>
                 <span className="block text-soft-yellow text-lg md:text-xl uppercase tracking-[0.3em] pt-4 font-bold">
-                  MEANINGFUL. TIMELESS. DEEPLY CONNECTED.
+                  {content.closing}
                 </span>
               </RevealAnimation>
             </div>
@@ -146,9 +136,9 @@ const AboutBigImageSection = () => {
             <div className="hidden md:block md:col-span-3" />
             <div className="md:col-span-9 flex flex-col items-start md:items-end justify-end">
               <RevealAnimation>
-                <span className="text-soft-yellow text-[clamp(45px,7vw,70px)] md:text-[clamp(60px,10vw,100px)] leading-[0.9] uppercase tracking-tighter text-left md:text-right block">
-                  A Quiet Visual <br className="hidden md:block" /> Language
-                </span>
+                <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="text-soft-yellow text-[clamp(45px,7vw,70px)] md:text-[clamp(60px,10vw,100px)] leading-[0.9] uppercase tracking-tighter text-left md:text-right block">
+                  {content.closingHeading.split("\n").map((line,i)=><React.Fragment key={i}>{i>0&&<br className="hidden md:block"/>}{i>0&&" "}{line}</React.Fragment>)}
+                </h2>
               </RevealAnimation>
             </div>
           </div>

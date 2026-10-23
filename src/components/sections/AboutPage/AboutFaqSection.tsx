@@ -1,4 +1,6 @@
 "use client";
+import {contentWords} from "@/lib/content-text";
+import {InlineContent} from "@/components/ui/InlineContent";
 import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef, useState } from "react";
@@ -143,10 +145,10 @@ const FaqItem = ({ item, isOpen, onToggle }: FaqItemProps) => {
             className="text-sm md:text-base leading-relaxed uppercase tracking-tight text-ink-black/80 group-hover:text-off-white/90 flex flex-wrap gap-x-[0.3em]"
             style={{ fontFamily: "var(--font-karena)" }}
           >
-            {item.answer.split(" ").map((word, i) => (
+            {contentWords(item.answer).map((word, i) => (
               <span key={i} className="inline-block overflow-hidden">
                 <span className="faq-word-inner inline-block opacity-0">
-                  {word}
+                  <InlineContent text={word}/>
                 </span>
               </span>
             ))}
@@ -157,14 +159,15 @@ const FaqItem = ({ item, isOpen, onToggle }: FaqItemProps) => {
   );
 };
 
-const AboutFaqSection = () => {
+const AboutFaqSection = ({items=faqAboutData,introduction=publicCopy.aboutFaqIntro,heading="Common Questions"}:{items?:typeof faqAboutData;introduction?:string;heading?:string}) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLParagraphElement>(null);
 
-  const leftCol = faqAboutData.slice(0, 4);
-  const rightCol = faqAboutData.slice(4, 8);
+  const midpoint = Math.ceil(items.length / 2);
+  const leftCol = items.slice(0, midpoint);
+  const rightCol = items.slice(midpoint);
 
   useGSAP(
     () => {
@@ -218,19 +221,19 @@ const AboutFaqSection = () => {
           <AnimatedBorder origin="left" className="bg-ink-black/20 mb-8" />
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <div className="lg:col-span-6">
-              <span
+              <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}}
                 ref={headerRef}
                 className="text-[clamp(32px,5vw,75px)] leading-[1.1] font-light uppercase tracking-tighter text-ink-black"
               >
-                Common Questions
-              </span>
+                {heading}
+              </h2>
             </div>
             <div className="lg:col-span-6">
               <span
                 ref={paragraphRef}
                 className="text-[13px] md:text-sm leading-tight uppercase tracking-tight text-ink-black/60 max-w-sm"
               >
-                {publicCopy.aboutFaqIntro}
+                <InlineContent text={introduction}/>
               </span>
             </div>
           </div>
@@ -252,11 +255,11 @@ const AboutFaqSection = () => {
           <div className="flex flex-col">
             {rightCol.map((item, index) => (
               <FaqItem
-                key={index + 4}
+                key={index + midpoint}
                 item={item}
-                isOpen={openIndex === index + 4}
+                isOpen={openIndex === index + midpoint}
                 onToggle={() =>
-                  setOpenIndex(openIndex === index + 4 ? null : index + 4)
+                  setOpenIndex(openIndex === index + midpoint ? null : index + midpoint)
                 }
               />
             ))}

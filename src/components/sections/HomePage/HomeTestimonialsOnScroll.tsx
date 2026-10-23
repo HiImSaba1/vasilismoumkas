@@ -116,7 +116,7 @@ const HomeTestimonialsOnScroll = ({content}:{content:HomepageSettings["testimoni
                   }`}
                 >
                   <SeoImage
-                    src={item.image}
+                    src={item.image} alt={item.alt}
                     description={`testimonial-thumb-${item.couple.toLowerCase()}`}
                     location="greece-italy"
                     fill
@@ -183,7 +183,7 @@ function TestimonialSlide({ item }: { item: HomepageSettings["testimonials"]["it
     >
       <div className="slide-img relative w-46 h-58 md:w-72 md:h-96 mb-8 md:mb-12 overflow-hidden">
         <SeoImage
-          src={item.image}
+          src={item.image} alt={item.alt}
           description={item.alt}
           location="greece-italy"
           fill
@@ -191,6 +191,7 @@ function TestimonialSlide({ item }: { item: HomepageSettings["testimonials"]["it
           draggable={false}
           sizes="(max-width: 768px) 150px, 200px"
         />
+        {item.caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{item.caption}</span>}
       </div>
 
       <blockquote className="max-w-5xl mx-auto mb-10">

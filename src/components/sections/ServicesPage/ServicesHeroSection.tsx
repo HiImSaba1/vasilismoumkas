@@ -1,4 +1,5 @@
 "use client";
+import {InlineContent} from "@/components/ui/InlineContent";
 import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
 import React, { useRef, useState, useEffect } from "react";
@@ -15,7 +16,8 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
-const ServicesHeroSection = () => {
+import { servicesVisualDefaults, type PublicPageContent } from "@/lib/public-page-content";
+const ServicesHeroSection = ({introduction=publicCopy.servicesIntro,content=servicesVisualDefaults}:{introduction?:string;content?:PublicPageContent["services"]["visuals"]}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroTitleRef = useRef<HTMLHeadingElement>(null);
   const paragraphRef = useRef<HTMLDivElement>(null);
@@ -34,11 +36,11 @@ const ServicesHeroSection = () => {
       if (HERO_SERVICE_POOL.length > 0) {
         const randomImg =
           HERO_SERVICE_POOL[Math.floor(Math.random() * HERO_SERVICE_POOL.length)];
-        setStaticImg(randomImg);
+        setStaticImg(content.heroImage || randomImg);
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [content.heroImage]);
 
   useGSAP(
     () => {
@@ -129,7 +131,7 @@ const ServicesHeroSection = () => {
               ref={labelRef}
               className="text-sm  md:text-md lg:text-2xl uppercase tracking-widest opacity-60 block pt-16 md:pt-8 md:pb-2"
             >
-              (Editorial Wedding Photography)
+              {content.heroLabel}
             </span>
             <AnimatedBorder
               className="mt-2 bg-ink-black"
@@ -138,12 +140,12 @@ const ServicesHeroSection = () => {
           </div>
 
           <div className="w-full">
-            <span
+            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}}
               ref={heroTitleRef}
               className="text-[8vw] md:text-[4vw] leading-[0.95] max-w-4xl tracking-tighter uppercase block w-full"
             >
-              Bridging the gap between elegance and power of photography.
-            </span>
+              {content.heroHeading}
+            </h2>
           </div>
 
           <div className="max-w-2xl">
@@ -157,7 +159,7 @@ const ServicesHeroSection = () => {
               className="text-md md:text-xl lg:text-2xl leading-tight block opacity-80"
               style={{ fontFamily: "var(--font-bricolage)" }}
             >
-              {publicCopy.servicesIntro}
+              <InlineContent text={introduction}/>
             </span>
           </div>
         </div>
@@ -167,9 +169,10 @@ const ServicesHeroSection = () => {
         ref={visualWrapperRef}
         className="relative w-full flex-1 h-[40vh] md:h-full overflow-hidden"
       >
+        {content.heroCaption&&<span className="absolute inset-x-0 bottom-0 z-10 bg-ink-black/60 p-2 text-xs text-white">{content.heroCaption}</span>}
         {hasMounted && staticImg && (
           <SeoImage
-            src={staticImg}
+            src={staticImg} alt={content.heroAlt}
             description="editorial-wedding-photography-hero-service"
             location="greece-italy"
             fill

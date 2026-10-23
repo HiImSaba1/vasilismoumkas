@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- Preserve the existing image element controlled by GSAP crop and transforms. */
 
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -23,6 +24,7 @@ interface ImageComponentProps {
   projectSlug?: string;
   projectHref?: string;
   alt?: string;
+  caption?:string;
 }
 
 const ImageComponent: FC<ImageComponentProps> = ({ 
@@ -32,7 +34,7 @@ const ImageComponent: FC<ImageComponentProps> = ({
   mobileSrc = "/uploads/portfolio/natasa-stamatis/7099163a-198e-4cf5-ab4c-799e6ae5757a.webp",
   projectSlug = "natasa-stamatis",
   projectHref,
-  alt="Natasa & Stamatis wedding",
+  alt="Natasa & Stamatis wedding",caption,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -130,6 +132,7 @@ const ImageComponent: FC<ImageComponentProps> = ({
             />
           )}
         </div>
+        {caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-3 text-xs text-white">{caption}</span>}
       </Link>
     </div>
   );

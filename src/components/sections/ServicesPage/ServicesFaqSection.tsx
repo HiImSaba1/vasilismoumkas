@@ -1,5 +1,7 @@
 "use client";
 
+import {contentWords} from "@/lib/content-text";
+import {InlineContent} from "@/components/ui/InlineContent";
 import React, { useRef, useState } from "react";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
@@ -133,9 +135,9 @@ const FaqItem = ({ item, isOpen, onToggle }: FaqItemProps) => {
           <div className="grid grid-cols-12 w-full">
             <div className="col-span-12 lg:col-start-4 lg:col-span-8">
               <div className="text-md md:text-2xl leading-[1.4] uppercase tracking-tight text-ink-black/80 group-hover:text-off-white/90 flex flex-wrap gap-x-[0.3em]" style={{ fontFamily: "var(--font-karena)" }}>
-                {item.answer.split(" ").map((word, i) => (
+                {contentWords(item.answer).map((word, i) => (
                   <span key={i} className="inline-block overflow-hidden">
-                    <span className="faq-word-inner inline-block opacity-0">{word}</span>
+                    <span className="faq-word-inner inline-block opacity-0"><InlineContent text={word}/></span>
                   </span>
                 ))}
               </div>
@@ -147,7 +149,7 @@ const FaqItem = ({ item, isOpen, onToggle }: FaqItemProps) => {
   );
 };
 
-const ServicesFaqSection = () => {
+const ServicesFaqSection = ({items=faqData,heading="Photography\nProcess & Journey",buttonLabel="Inquire Now",buttonHref="/contact"}:{items?:typeof faqData;heading?:string;buttonLabel?:string;buttonHref?:string}) => {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLHeadingElement>(null);
@@ -198,15 +200,15 @@ const ServicesFaqSection = () => {
           </div>
           <div className="col-span-12 lg:col-span-8 pt-10 md:pl-4">
             <h2 ref={headerRef} className="text-[clamp(32px,6vw,70px)] leading-[0.85] font-light uppercase tracking-tighter text-ink-black">
-              Photography <br /> Process & Journey
+              {heading.split("\n").map((line,i)=><React.Fragment key={i}>{i>0&&<br/>}{line}</React.Fragment>)}
             </h2>
           </div>
           <div ref={buttonRef} className="col-span-12 lg:col-span-4 flex justify-start lg:justify-end pb-4">
-            <CTAButton href="/contact">Inquire Now</CTAButton>
+            <CTAButton href={buttonHref}>{buttonLabel}</CTAButton>
           </div>
         </div>
         <div className="border-b border-ink-black/80">
-          {faqData.map((item, index) => (
+          {items.map((item, index) => (
             <FaqItem
               key={index}
               item={item}

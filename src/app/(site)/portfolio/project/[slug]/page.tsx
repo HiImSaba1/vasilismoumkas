@@ -1,3 +1,4 @@
+import {publicMetadata} from "@/lib/seo-overrides";
 import {notFound} from "next/navigation";
 import {listPortfolioProjects} from "@/lib/portfolio";
 import ProjectLayout from "@/components/sections/Projects/ProjectLayout";
@@ -11,7 +12,7 @@ export async function generateMetadata({params}:{params:Promise<{slug:string}>})
   const description=project.metaDescription?.trim()||project.description?.trim().slice(0,500)||`Explore ${project.title}, photographed by Vasilis Moumkas${project.location?` in ${project.location}`:""}.`;
   const canonical=`/portfolio/project/${project.slug}`;
   const imageAlt=project.headerImageAlt||`${project.title}${project.location?` in ${project.location}`:""}`;
-  return{title:{absolute:title},description,alternates:{canonical},openGraph:{title,description,url:canonical,type:"article",images:[{url:project.thumbnail,alt:imageAlt}]},twitter:{card:"summary_large_image",title,description,images:[project.thumbnail]}};
+  return publicMetadata({title,description,image:project.thumbnail,imageAlt},canonical,"article");
 }
 
 export default async function ProjectPage({params}:{params:Promise<{slug:string}>}){

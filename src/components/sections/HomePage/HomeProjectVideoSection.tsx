@@ -1,5 +1,6 @@
 "use client";
 
+import {InlineContent} from "@/components/ui/InlineContent";
 import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
@@ -41,19 +42,19 @@ const HomeProjectVideoSection = ({content}:{content:HomepageSettings["story"]}) 
   );
 
   return (
-    <section id="home-video-curtain" ref={containerRef} className="mx-auto flex w-full max-w-full flex-col justify-center overflow-hidden bg-off-white px-2 md:min-h-screen md:px-[5%]">
-      <div className="flex w-full flex-col content-center items-center justify-center gap-12 py-[30px] text-center md:py-24">
+    <section id="home-video-curtain" ref={containerRef} className="mx-auto flex w-full max-w-full flex-col justify-center overflow-hidden bg-off-white px-5 md:min-h-screen md:px-[5%]">
+      <div data-home-personal-intro className="flex w-full flex-col content-center items-center justify-center gap-8 md:gap-12 py-[30px] text-center md:py-24">
         <RevealAnimation>
           <p className="w-full text-sm md:text-md uppercase tracking-widest leading-[1.15] text-ink-black">
             {content.eyebrow}
           </p>
         </RevealAnimation>
-        <div className="grid w-full gap-4">
-          {content.title.split(/\n\s*\n/).map((paragraph,index)=><RevealAnimation key={index}><p className="mx-auto w-full max-w-6xl text-md leading-[1.2] tracking-tight text-ink-black md:text-xl">{paragraph}</p></RevealAnimation>)}
+        <div className="grid w-full gap-5 md:gap-4">
+          {content.title.split(/\n\s*\n/).map((paragraph,index)=><RevealAnimation key={index} responsive><p className="home-intro-paragraph mx-auto w-full max-w-6xl whitespace-normal text-[16px] font-extralight leading-[1.65] tracking-normal text-ink-black md:whitespace-pre-wrap md:text-xl md:font-light md:leading-[1.2] md:tracking-tight">{<InlineContent text={paragraph}/>}</p></RevealAnimation>)}
         </div>
 
         <div className="flex justify-center">
-          <CTAButton href={content.buttonHref}>{content.buttonLabel}</CTAButton>
+          <CTAButton href={content.buttonHref}><span className="inline-flex items-center gap-2">{content.buttonLabel.replace(/\s*[↗→➜➡\uFE0F\uFE0E]+\s*$/u, "")}<svg aria-hidden="true" focusable="false" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 19 19 5M5 5h14v14"/></svg></span></CTAButton>
         </div>
       </div>
       <div className="w-full pb-12">

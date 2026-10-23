@@ -12,6 +12,28 @@ import { revalidateAdminWorkflow } from "@/lib/admin-workflow-revalidation";
 import { stopOfferFollowups } from "@/lib/automations";
 import { saveClientExtra } from "@/lib/client-extras";
 import { saveTeamAssignment } from "@/lib/coverage-team";
+import { saveAdminQuestionnaireAnswers } from "@/lib/questionnaire-answer-editing";
+
+export async function saveQuestionnaireAnswersAction(_state:ClientModuleActionState,formData:FormData):Promise<ClientModuleActionState>{
+  await requireAdmin();
+  try{
+    const clientId=z.uuid().parse(formData.get("clientId"));
+    const version=z.string().regex(/^[a-f0-9]{64}$/).parse(formData.get("version"));
+    const entries=Array.from(formData.entries()).filter(([key])=>key.startsWith("answer."));
+    if(entries.length>200)throw new Error("Too many questionnaire fields.");
+    const answers:Record<string,string>={};
+    for(const[key,value]of entries){
+      const name=key.slice(7);
+      if(!/^[a-zA-Z0-9_]+$/.test(name)||typeof value!=="string"||value.length>5000)throw new Error("Invalid questionnaire answer.");
+      answers[name]=value;
+    }
+    await saveAdminQuestionnaireAnswers({clientId,version,answers});
+    revalidatePath(`/admin/clients/${clientId}`);
+    revalidatePath("/portal/[slug]","page");
+    revalidatePath("/questionnaire/[token]","page");
+    return{success:true,message:"Questionnaire answers saved. No email was sent and booking status is unchanged."};
+  }catch(error){return{success:false,message:error instanceof z.ZodError?"Invalid questionnaire request.":error instanceof Error?error.message:"Unable to save questionnaire answers."};}
+}
 const id=z.uuid();const optional=(max:number)=>z.string().trim().max(max).transform(value=>value||null);
 export type InvoicePaymentActionState={success:boolean;message:string};
 export type ClientModuleActionState={success:boolean;message:string};

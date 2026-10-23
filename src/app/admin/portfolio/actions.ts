@@ -22,6 +22,8 @@ export async function savePortfolioAction(formData:FormData){
   const photos=[...existing,...uploaded.map((src,index)=>({src,alt:value.title,width:measured[index]?.width??1600,height:measured[index]?.height??1200}))];
   if(photos.length>50)throw new Error("A project can contain at most 50 gallery images.");
   await savePortfolioProject({...value,published:formData.get("published")==="on",tags:value.tags.split(",").map(item=>item.trim()).filter(Boolean),headerImage:header,photos});
+  if(current&&current.slug!==value.slug)revalidatePath(`/portfolio/project/${current.slug}`);
+  revalidatePath("/admin/seo/coverage");
   revalidatePath("/admin/portfolio");revalidatePath("/portfolio");revalidatePath(`/portfolio/project/${value.slug}`);revalidatePath(`/portfolio/${value.category.toLowerCase()}`);revalidatePath("/sitemap.xml");
   redirect("/admin/portfolio");
 }

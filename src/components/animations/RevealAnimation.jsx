@@ -8,7 +8,7 @@ import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(SplitText, ScrollTrigger);
 
-const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = false }) => {
+const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = false, responsive = false }) => {
   const containerRef = useRef(null);
   const elementRef = useRef([]);
   const splitRef = useRef([]);
@@ -39,6 +39,18 @@ const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = f
           if (!element) return; // Guard for children
           elementRef.current.push(element);
           
+          if (responsive) {
+            const split = SplitText.create(element, {
+              type: "lines", mask: "lines", linesClass: "line++", autoSplit: true,
+              onSplit: (self) => gsap.fromTo(self.lines, { y: "100%" }, {
+                y: "0%", duration: 1.7, stagger: 0.3, ease: "power4.out", delay,
+                ...(animateOnScroll ? { scrollTrigger: { trigger: element, start: "top 85%", end: "top 15%", scrub: once ? false : true, toggleActions: once ? "play none none none" : "play none none reverse", once } } : {}),
+              }),
+            });
+            splitRef.current.push(split);
+            return;
+          }
+
           const split = SplitText.create(element, {
             type: "lines",
             mask: "lines",
@@ -59,6 +71,7 @@ const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = f
           lines.current.push(...split.lines);
         });
 
+        if (responsive) return;
         gsap.set(lines.current, { y: "100%" });
 
         const animationProps = {
@@ -99,7 +112,7 @@ const RevealAnimation = ({ children, animateOnScroll = true, delay = 0, once = f
     },
     {
       scope: containerRef,
-      dependencies: [animateOnScroll, delay, once],
+      dependencies: [animateOnScroll, delay, once, responsive],
     }
   );
 

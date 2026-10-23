@@ -1,21 +1,25 @@
 import Link from "next/link";
+import {requireAdmin} from "@/lib/admin-auth";
 import {AdminPageHeader} from "@/components/admin/AdminPageHeader";
 import {WebsiteImageSelect} from "@/components/admin/WebsiteImageSelect";
 import SeoImage from "@/components/ui/SeoImage";
 import {listWebsiteImages} from "@/lib/website-media";
 import {getSeoSettings,type SeoPageKey} from "@/lib/seo-settings";
-import {getHomepageSettings} from "@/lib/homepage-settings";
+import {getHomepageSnapshot} from "@/lib/homepage-settings";
 import {listPortfolioProjects} from "@/lib/portfolio";
 import {saveSeoSettingsAction} from "./actions";
 
 const labels:Record<SeoPageKey,string>={portfolio:"Portfolio",wedding:"Wedding category",editorial:"Editorial category",engagement:"Engagement category",about:"About",services:"Services",contact:"Contact",education:"Education"};
 export default async function SeoPage({searchParams}:{searchParams:Promise<{saved?:string;error?:string}>}){
-  const[settings,homepage,projects,images,query]=await Promise.all([getSeoSettings(),getHomepageSettings(),listPortfolioProjects({includeUnpublished:true}),listWebsiteImages(),searchParams]);
+  await requireAdmin();
+  const[settings,homeSnapshot,projects,images,query]=await Promise.all([getSeoSettings(),getHomepageSnapshot(),listPortfolioProjects({includeUnpublished:true}),listWebsiteImages(),searchParams]);
+  const homepage=homeSnapshot.content;
   return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
     <AdminPageHeader eyebrow="Website management" title="SEO" description="Manage public page titles, descriptions, social images and image alt text without a deployment." action={<Link href="/sitemap.xml" target="_blank" className="border border-ink-black px-4 py-3 text-[11px] uppercase">Open sitemap ↗</Link>}/>
+    <Link href="/admin/seo/coverage" className="mt-5 inline-block border px-4 py-3 text-sm">SEO coverage, independent social previews and redirects</Link>
     {query.saved&&<p className="mt-5 border-l-4 border-green-600 bg-green-50 px-4 py-3 text-sm">SEO settings saved and public routes refreshed.</p>}
     {query.error&&<p className="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm">{query.error}</p>}
-    <form action={saveSeoSettingsAction} className="mt-7 grid gap-5">
+    <form action={saveSeoSettingsAction} className="mt-7 grid gap-5"><input type="hidden" name="home.version" value={homeSnapshot.version}/>
       <fieldset className="grid gap-4 border border-ink-black/15 bg-white p-5 md:grid-cols-2"><legend className="px-2 text-xl uppercase">Homepage</legend><Field name="home.title" label="SEO title" value={homepage.seo.title}/><Field name="home.description" label="Meta description" value={homepage.seo.description} area/><WebsiteImageSelect name="home.image" label="Social image" value={homepage.seo.image} images={images}/><Field name="home.imageAlt" label="Social image alt text" value={homepage.seo.imageAlt}/></fieldset>
       {(Object.keys(labels) as SeoPageKey[]).map(key=><fieldset key={key} className="grid gap-4 border border-ink-black/15 bg-white p-5 md:grid-cols-2"><legend className="px-2 text-xl uppercase">{labels[key]}</legend><Field name={`${key}.title`} label="SEO title" value={settings[key].title}/><Field name={`${key}.description`} label="Meta description" value={settings[key].description} area/><WebsiteImageSelect name={`${key}.image`} label="Social / header image" value={settings[key].image} images={images}/><Field name={`${key}.imageAlt`} label="Image alt text" value={settings[key].imageAlt}/></fieldset>)}
       <fieldset className="grid gap-4 border border-ink-black/15 bg-white p-5 md:grid-cols-2"><legend className="px-2 text-xl uppercase">Portfolio project SEO and publishing</legend><input type="hidden" name="projectCount" value={projects.length}/>{projects.map((project,index)=><fieldset key={project.slug} className="grid gap-3 border border-ink-black/10 p-4 md:col-span-2 md:grid-cols-2"><legend className="px-2 uppercase">{project.title}</legend><input type="hidden" name={`project.${index}.slug`} value={project.slug}/><Field name={`project.${index}.seoTitle`} label="SEO title" value={project.seoTitle??""} required={false}/><Field name={`project.${index}.headerImageAlt`} label="Header image alt" value={project.headerImageAlt??""} required={false}/><Field name={`project.${index}.metaDescription`} label="Meta description" value={project.metaDescription??""} area required={false}/><label className="flex items-center gap-3 text-sm uppercase"><input type="checkbox" name={`project.${index}.published`} defaultChecked={project.published!==false}/>Published on public website and sitemap</label></fieldset>)}</fieldset>

@@ -13,7 +13,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string};
+type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string;caption?:string};
 
 export default function ProjectCard({ project, index, hoverOverlay=true, portrait=false, persistentCaption=false }: { project: ProjectCardProject; index: number; hoverOverlay?: boolean; portrait?: boolean; persistentCaption?: boolean }) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -156,6 +156,7 @@ export default function ProjectCard({ project, index, hoverOverlay=true, portrai
             </span>
           </motion.div>}
         </motion.div>
+        {project.caption&&<span className="absolute inset-x-0 bottom-0 z-30 bg-ink-black/60 p-2 text-xs text-white">{project.caption}</span>}
       </Link>
 
       <div className={`flex flex-col items-center justify-between px-1 text-center text-ink-black ${persistentCaption ? "" : "md:hidden"}`}>

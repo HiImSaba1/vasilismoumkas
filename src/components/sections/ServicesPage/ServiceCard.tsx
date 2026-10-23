@@ -1,11 +1,12 @@
 "use client";
+import {InlineContent} from "@/components/ui/InlineContent";
+import type {Service} from "@/app/(site)/data/ServicesData";
 import React, { forwardRef } from "react";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import ParallaxImage from "@/components/animations/ParallaxImage";
-import RevealAnimation from "@/components/animations/RevealAnimation";
 
 interface ServiceCardProps {
-  service: any;
+  service: Service;
   index: number;
 }
 
@@ -31,12 +32,13 @@ const ServiceCard = forwardRef<HTMLDivElement, ServiceCardProps>(
         <div className="h-full px-8 py-12">
           <div className="grid grid-cols-12 h-full gap-4">
             {/* COLUMN 1: Main Parallax Image */}
-            <div className="col-span-3 flex gap-4 items-start">
+            <div className="col-span-3 relative flex gap-4 items-start">
               <ParallaxImage
                 src={service.image_main}
-                alt={service.title}
+                alt={service.imageAlt||service.title}
                 className="aspect-4/5 w-full  hover:grayscale-100 transition-all duration-700"
               />
+              {service.caption&&<span className="absolute inset-x-0 bottom-0 bg-ink-black/60 p-2 text-xs text-white">{service.caption}</span>}
               <span
                 className="text-red-600 text-lg leading-none pt-1"
                 style={{ fontFamily: "var(--font-bricolage)" }}
@@ -48,9 +50,9 @@ const ServiceCard = forwardRef<HTMLDivElement, ServiceCardProps>(
             {/* COLUMN 2: Animated Text Content */}
             <div className="col-span-7 flex flex-col justify-between pl-8">
               <div className="grow">
-                <span className="text-[clamp(32px,4.5vw,50px)] leading-[0.9] uppercase tracking-tighter text-black block">
+                <h3 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="text-[clamp(32px,4.5vw,50px)] leading-[0.9] uppercase tracking-tighter text-black block">
                   {service.title}
-                </span>
+                </h3>
                 <div className="flex flex-wrap gap-2 mt-6">
                   {service.tags.map((tag: string, i: number) => (
                     <div key={i} className="overflow-hidden">
@@ -63,7 +65,7 @@ const ServiceCard = forwardRef<HTMLDivElement, ServiceCardProps>(
                 {/* Description Reveal with slight delay */}
                 <div className="max-w-md mt-12">
                   <p className="text-md uppercase tracking-tight leading-[1.1] text-ink-black600 block pb-8">
-                    {service.description}
+                    <InlineContent text={service.description}/>
                   </p>
                 </div>
               </div>
@@ -73,7 +75,7 @@ const ServiceCard = forwardRef<HTMLDivElement, ServiceCardProps>(
             <div className="col-span-2 flex flex-col justify-end items-end">
               <ParallaxImage
                 src={service.image_small}
-                alt="Detail View"
+                alt={service.detailAlt||service.title+" detail"}
                 className="w-full aspect-square"
               />
             </div>

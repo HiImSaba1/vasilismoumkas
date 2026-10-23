@@ -31,6 +31,7 @@ Object.assign(el,{"Use 25% deposit":"ΧΡΗΣΗ ΠΡΟΚΑΤΑΒΟΛΗΣ 25%"});
 Object.assign(el,{"Client email language":"ΓΛΩΣΣΑ EMAIL ΠΕΛΑΤΗ","Controls the email sent to the couple, not the admin interface.":"ΕΛΕΓΧΕΙ ΤΗ ΓΛΩΣΣΑ ΤΟΥ EMAIL ΠΡΟΣ ΤΟ ΖΕΥΓΑΡΙ ΚΑΙ ΟΧΙ ΤΗ ΓΛΩΣΣΑ ΤΟΥ ADMIN."});
 Object.assign(el,guideAutomationEl);
 Object.assign(el,journeyEl);
+Object.assign(el,{"Pages":"Σελίδες","Homepage":"Αρχική","About":"Σχετικά","Services":"Υπηρεσίες","Contact":"Επικοινωνία","Back to Pages":"Επιστροφή στις σελίδες","Edit page":"Επεξεργασία σελίδας","Save page content":"Αποθήκευση περιεχομένου","View public page":"Προβολή δημόσιας σελίδας","Edit questionnaire answers":"Επεξεργασία απαντήσεων ερωτηματολογίου","Save questionnaire answers":"Αποθήκευση απαντήσεων","Administrator":"Διαχειριστής","Client":"Πελάτης","Author not recorded":"Δεν έχει καταγραφεί συντάκτης","Page content saved and public page refreshed.":"Το περιεχόμενο αποθηκεύτηκε και η δημόσια σελίδα ενημερώθηκε.","Questionnaire answers saved. No email was sent and booking status is unchanged.":"Οι απαντήσεις αποθηκεύτηκαν. Δεν στάλθηκε email και η κατάσταση κράτησης δεν άλλαξε."});
 const originals=new WeakMap<Node,string>();
 const removeGreekTonos=(value:string)=>value.normalize("NFD").replace(/[\u0301\u0342]/g,"").normalize("NFC");
 function dynamicGreek(value:string){

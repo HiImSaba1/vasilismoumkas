@@ -1,7 +1,7 @@
 import type {ReactNode} from "react";
 import Link from "next/link";
 import {AdminPageHeader} from "@/components/admin/AdminPageHeader";
-import {getHomepageSettings} from "@/lib/homepage-settings";
+import {getHomepageSnapshot} from "@/lib/homepage-settings";
 import {listWebsiteImages} from "@/lib/website-media";
 import {WebsiteImageSelect} from "@/components/admin/WebsiteImageSelect";
 import {saveHomepageSettingsAction,uploadHomepageMediaAction} from "./actions";
@@ -16,16 +16,19 @@ const cardLabels=["Left first story","Right second story","Left third story"];
 const projectLabels=["Left project card","Staggered right project card"];
 
 export default async function Page({searchParams}:{searchParams:Promise<{saved?:string;uploaded?:string;error?:string}>}){
-  const[settings,query,images]=await Promise.all([getHomepageSettings(),searchParams,listWebsiteImages()]);
+  const[snapshot,query,images]=await Promise.all([getHomepageSnapshot(),searchParams,listWebsiteImages()]);
+  const settings=snapshot.content;
 
   return <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+    <Link href="/admin/pages" className="mb-5 inline-block text-sm underline">Back to Pages</Link>
+    <p className="mb-5 text-sm"><Link href="/admin/pages/home" className="underline">Open draft, preview and revision editor</Link> · This legacy editor saves directly to the public homepage.</p>
     <AdminPageHeader eyebrow="Website content" title="Homepage editor" description="Edit the exact content used by the current homepage sections. Layout, card positions and animations remain protected." action={<Link href="/" target="_blank" className="border border-ink-black px-4 py-3 text-[11px] uppercase">Preview homepage ↗</Link>}/>
     {query.saved&&<p className="mt-5 border-l-4 border-green-600 bg-green-50 px-4 py-3 text-sm text-green-900">Homepage settings saved and public cache refreshed.</p>}
     {query.uploaded&&<p className="mt-5 border-l-4 border-green-600 bg-green-50 px-4 py-3 text-sm text-green-900">Image uploaded to the reusable website media library.</p>}
     {query.error&&<p className="mt-5 border-l-4 border-red-600 bg-red-50 px-4 py-3 text-sm text-red-900">Could not complete the action: {query.error}</p>}
     <form action={uploadHomepageMediaAction} className="mt-7 grid gap-3 border border-ink-black/15 bg-white p-5 md:grid-cols-2"><div className="md:col-span-2"><h2 className="text-xl uppercase">Reusable website media</h2><p className="mt-1 text-sm normal-case text-ink-black/60">Upload without creating or changing a portfolio project.</p></div><label className={label}>Image<input name="mediaFile" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required className={input}/></label><Field name="mediaAlt" title="Descriptive alt text" value=""/><button className="justify-self-start bg-ink-black px-6 py-3 text-xs uppercase text-white">Upload to media library</button></form>
 
-    <form action={saveHomepageSettingsAction} className="mt-7 grid gap-4">
+    <form action={saveHomepageSettingsAction} className="mt-7 grid gap-4"><input type="hidden" name="homepageVersion" value={snapshot.version}/>
       <Panel title="SEO metadata" copy="Browser title and search description">
         <Field name="seo.title" title="SEO title" value={settings.seo.title} wide/>
         <Field name="seo.description" title="Meta description" value={settings.seo.description} area wide/>
@@ -49,10 +52,11 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`card.${index}.ctaLabel`} title="CTA label" value={item.ctaLabel}/>
           <Field name={`card.${index}.href`} title="Card URL" value={item.href} wide/>
           <WebsiteImageSelect name={`card.${index}.image`} label="Card image" value={item.image} images={images}/>
-          <Field name={`card.${index}.alt`} title="Image alt text" value={item.alt} wide/>
+          <Field name={`card.${index}.caption`} title="Optional image caption" value={item.caption}/><Field name={`card.${index}.alt`} title="Image alt text" value={item.alt} wide/>
         </fieldset>)}
       </Panel>
 
+      <Panel title="Homepage editorial and footer copy" copy="These footer heading lines apply to Home only; footer images remain shared.">{settings.marqueeCopy.lines.map((line,index)=><Field key={index} name={`marqueeCopy.line.${index}`} title={`Style line ${index+1}`} value={line}/>)}<Field name="marqueeCopy.destinations" title="Destinations line" value={settings.marqueeCopy.destinations} wide/>{settings.marqueeCopy.keywords.map((word,index)=><Field key={index} name={`marqueeCopy.keyword.${index}`} title={`Keyword ${index+1}`} value={word}/>)}{settings.footerCtaLines.map((line,index)=><Field key={index} name={`footerCta.${index}`} title={`Home footer line ${index+1}`} value={line}/>)}</Panel>
       <Panel title="Cinematic story" copy="Introduction, CTA and Vimeo video">
         <Field name="story.eyebrow" title="Eyebrow" value={settings.story.eyebrow} area wide/>
         <Field name="story.title" title="Main text" value={settings.story.title} area wide/>
@@ -72,12 +76,12 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`portfolio.${index}.location`} title="Location / metadata" value={item.location}/>
           <Field name={`portfolio.${index}.href`} title="Project URL" value={item.href} wide/>
           <WebsiteImageSelect name={`portfolio.${index}.image`} label="Project image" value={item.image} images={images}/>
-          <Field name={`portfolio.${index}.alt`} title="Image alt text" value={item.alt} wide/>
+          <Field name={`portfolio.${index}.caption`} title="Optional image caption" value={item.caption}/><Field name={`portfolio.${index}.alt`} title="Image alt text" value={item.alt} wide/>
         </fieldset>)}
       </Panel>
 
       <Panel title="Homepage marquee" copy="Twelve images selected from the portfolio library">
-        {settings.marqueeImages.map((image,index)=><fieldset key={`${index}-${image.src}`} className="grid gap-3 border border-ink-black/10 p-4 md:grid-cols-2"><WebsiteImageSelect name={`marquee.${index}.src`} label={`Marquee image ${index+1}`} value={image.src} images={images}/><Field name={`marquee.${index}.alt`} title="Unique image alt text" value={image.alt}/></fieldset>)}
+        {settings.marqueeImages.map((image,index)=><fieldset key={`${index}-${image.src}`} className="grid gap-3 border border-ink-black/10 p-4 md:grid-cols-2"><WebsiteImageSelect name={`marquee.${index}.src`} label={`Marquee image ${index+1}`} value={image.src} images={images}/><Field name={`marquee.${index}.caption`} title="Optional image caption" value={image.caption}/><Field name={`marquee.${index}.alt`} title="Unique image alt text" value={image.alt}/></fieldset>)}
       </Panel>
 
       <Panel title="Testimonials carousel" copy="Names, locations, quotes and portraits">
@@ -89,7 +93,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{saved?:
           <Field name={`testimonial.${index}.location`} title="Location" value={item.location}/>
           <Field name={`testimonial.${index}.quote`} title="Quote" value={item.quote} area wide/>
           <WebsiteImageSelect name={`testimonial.${index}.image`} label="Portrait image" value={item.image} images={images}/>
-          <Field name={`testimonial.${index}.alt`} title="Image alt text" value={item.alt}/>
+          <Field name={`testimonial.${index}.caption`} title="Optional image caption" value={item.caption}/><Field name={`testimonial.${index}.alt`} title="Image alt text" value={item.alt}/>
         </fieldset>)}
       </Panel>
 

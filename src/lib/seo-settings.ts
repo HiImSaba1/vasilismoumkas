@@ -1,5 +1,5 @@
 import "server-only";
-import type {Metadata} from "next";
+import {publicMetadata} from "@/lib/seo-overrides";
 import type {RowDataPacket} from "mysql2/promise";
 import {z} from "zod";
 import {getDatabase,isDatabaseConfigured} from "@/lib/database";
@@ -48,4 +48,4 @@ export async function getSeoSettings():Promise<SeoSettings>{
 
 export async function saveSeoSettings(value:SeoSettings){await getDatabase().execute("INSERT INTO site_settings (setting_key,value_json) VALUES (?,?) ON DUPLICATE KEY UPDATE value_json=VALUES(value_json),updated_at=CURRENT_TIMESTAMP",[SEO_SETTINGS_KEY,JSON.stringify(value)])}
 
-export function pageMetadata(value:SeoSettings[SeoPageKey],canonical:string):Metadata{return{title:{absolute:value.title},description:value.description,alternates:{canonical},openGraph:{title:value.title,description:value.description,url:canonical,type:"website",images:[{url:value.image,alt:value.imageAlt}]},twitter:{card:"summary_large_image",title:value.title,description:value.description,images:[value.image]}}}
+export const pageMetadata = publicMetadata;
