@@ -20,6 +20,7 @@ import type {SeoSettings} from "@/lib/seo-settings";
 gsap.registerPlugin(SplitText, ScrollTrigger);
 interface FooterProps {
   homeTitleLines?:string[];
+  aboutTitleLines?:string[];
   homePreview?:boolean;
   isBaptism?: boolean;
   proposalMode?: boolean;
@@ -102,7 +103,7 @@ const SectionLabel=({children,animationKey}:{children:React.ReactNode;animationK
 
 type SplitElement=HTMLElement&{_gsapSplitText?:SplitText};
 
-const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePool,business,homeTitleLines,homePreview=false }: FooterProps) => {
+const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePool,business,homeTitleLines,aboutTitleLines,homePreview=false }: FooterProps) => {
   const websiteSettings=useOptionalWebsiteSettings();
   const currentYear = new Date().getFullYear();
   const footerRef = useRef(null);
@@ -210,8 +211,8 @@ const Footer = ({ isBaptism = false,proposalMode=false,hideMarquee=false,imagePo
             </div>
             <div className="flex flex-col gap-6">
               <h3 className="text-[12vw] md:text-[6vw] max-w-md tracking-tighter leading-none uppercase gsap-reveal-text">
-                {(pathname === "/"||homePreview) && !isBaptism && !proposalMode ? (
-                  <>{(homeTitleLines??publicCopy.homeCta)[0]}<br />{(homeTitleLines??publicCopy.homeCta)[1]}</>
+                {(pathname === "/"||homePreview||pathname === "/about"||pathname === "/admin/pages/about/preview") && !isBaptism && !proposalMode ? (
+                  <>{((pathname === "/about"||pathname === "/admin/pages/about/preview")?aboutTitleLines??publicCopy.homeCta:homeTitleLines??publicCopy.homeCta)[0]}<br />{((pathname === "/about"||pathname === "/admin/pages/about/preview")?aboutTitleLines??publicCopy.homeCta:homeTitleLines??publicCopy.homeCta)[1]}</>
                 ) : isBaptism ? (
                   <>
                     Looking for a<br /> Luxury Baptism Photographer in Greece or

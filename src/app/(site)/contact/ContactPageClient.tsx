@@ -107,7 +107,7 @@ export default function ContactPage({content,previewOnly=false}:{content:PublicP
       <h1 className="sr-only">{content.title}</h1>
       {/* LEFT COLUMN */}
       <section
-        className="left-col relative w-full md:w-1/2 h-[50vh] md:h-screen overflow-hidden cursor-pointer"
+        className="left-col relative w-full md:w-1/2 h-[60svh] md:h-screen overflow-hidden cursor-pointer"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
@@ -127,7 +127,7 @@ export default function ContactPage({content,previewOnly=false}:{content:PublicP
             description="luxury-contact-image"
             location="greece"
             fill
-            className="object-cover"
+            className="object-cover max-md:!h-[120%] max-md:!top-[-10%]"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           <div className="absolute inset-0 bg-ink-black/20" />

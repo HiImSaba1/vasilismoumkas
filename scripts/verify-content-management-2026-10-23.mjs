@@ -18,13 +18,22 @@ function load(path,mocks={}) {
 const copy=load("src/app/(site)/data/ApprovedPublicCopy.ts");
 const faqAbout=load("src/app/(site)/data/FaqAboutData.ts",{"@/app/(site)/data/ApprovedPublicCopy":copy});
 const faq=load("src/app/(site)/data/FaqData.ts",{"@/app/(site)/data/ApprovedPublicCopy":copy});
+const aboutGallery=load("src/app/(site)/data/Pages-Photoset/Aboutpage.ts");
+const knownGalleryPhoto={src:aboutGallery.ABOUT_GALLERY_POOL[0],alt:"Existing photograph description"};
 const content=load("src/lib/public-page-content.ts",{
   "@/app/(site)/data/ApprovedPublicCopy":copy,"@/app/(site)/data/FaqAboutData":faqAbout,"@/app/(site)/data/FaqData":faq,
   "@/app/(site)/data/ServicesData":{baseServices:[1,2,3].map(index=>({title:`Service ${index}`,description:"Approved description",tags:["Photography"]}))},
+  "@/app/(site)/data/Pages-Photoset/Aboutpage":aboutGallery,
+  "@/app/(site)/data/ProjectsData":{ProjectsData:[{photoset:[knownGalleryPhoto]}]},
 });
 const oldAbout={title:"Existing title",intro:["Existing paragraph one","Existing paragraph two"],faqIntro:"Existing FAQ introduction",faq:faqAbout.faqAboutData};
 const upgraded=content.publicPageSchemas.about.parse(oldAbout);
 assert.deepEqual(upgraded.intro,oldAbout.intro);
+assert.deepEqual(upgraded.galleryDescriptions.map(image=>image.src),aboutGallery.ABOUT_GALLERY_POOL);
+assert.equal(upgraded.galleryDescriptions[0].alt,knownGalleryPhoto.alt);
+assert.equal(upgraded.galleryDescriptions[1].alt,"");
+assert.deepEqual(upgraded.galleryImages,[]);
+assert.deepEqual(upgraded.footerCtaLines,["YOUR WEDDING. YOUR STORY.","LET’S CREATE SOMETHING MEANINGFUL."]);
 assert.equal(upgraded.faq[0].hidden,false);
 const reordered=content.publicPageSchemas.about.parse({...upgraded,faq:[{...upgraded.faq[1],hidden:true},upgraded.faq[0]]});
 assert.equal(reordered.faq[1].question,upgraded.faq[0].question);

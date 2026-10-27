@@ -45,7 +45,7 @@ const QUOTES = [
   </>,
 ];
 
-const AboutGallerySection = ({galleryImages=[],galleryQuotes=[]}:{galleryImages?:{src:string;alt:string;caption:string}[];galleryQuotes?:string[]}) => {
+const AboutGallerySection = ({galleryImages=[],galleryQuotes=[],galleryDescriptions=[]}:{galleryImages?:{src:string;alt:string;caption:string}[];galleryQuotes?:string[];galleryDescriptions?:{src:string;alt:string}[]}) => {
   const imagePool = useMemo(()=>galleryImages.length >= 4 ? galleryImages.map(image=>image.src) : ABOUT_GALLERY_POOL,[galleryImages]);
   const quotes: React.ReactNode[] = useMemo(()=>galleryQuotes.length ? galleryQuotes.map((text,index)=><InlineContent key={index} text={text}/>) : QUOTES,[galleryQuotes]);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,7 +165,7 @@ const AboutGallerySection = ({galleryImages=[],galleryQuotes=[]}:{galleryImages?
               >
                 <SeoImage
                   key={src}
-                  src={src} alt={galleryImages.find(image=>image.src===src)?.alt}
+                  src={src} alt={galleryImages.find(image=>image.src===src)?.alt||galleryDescriptions.find(image=>image.src===src)?.alt||undefined}
                   fill
                   description="fine-art-wedding-gallery"
                   location="greece-italy"

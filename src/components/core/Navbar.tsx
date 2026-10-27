@@ -98,7 +98,9 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
       <div
         ref={navbarRef}
         className={`main-header-wrapper rounded-b-md transition-all duration-500 ease-in-out ${
-          isAtTop
+          (pathname === "/contact" || pathname === "/admin/pages/contact/preview") && !isActive
+            ? "bg-off-white/95 md:bg-off-white/90 shadow-sm text-ink-black"
+            : isAtTop
             ? "bg-transparent backdrop-blur-none shadow-none"
             : "bg-off-white/15 backdrop-blur-sm shadow-md"
         }`}

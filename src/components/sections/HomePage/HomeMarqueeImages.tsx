@@ -106,9 +106,11 @@ const HomeMarqueeImages = ({images=fallbackImages,copy={lines:publicCopy.homeSty
               >
                 {copy.lines[0]}<br />
                 {copy.lines[1]}
-                <span className="mt-5 block text-sm md:text-base leading-relaxed tracking-wide">{copy.destinations}</span>
               </p>
             </RevealAnimation>
+            <div className="mt-5 flex flex-wrap justify-center gap-x-3 gap-y-1 text-sm md:text-base leading-snug tracking-wide" style={{fontFamily:"var(--font-karena)"}}>
+              {copy.destinations.split(/\s*[·•]\s*/).filter(Boolean).map((destination,index)=><span key={`${index}-${destination}`} className="inline-flex items-center gap-3 whitespace-nowrap">{index>0&&<span aria-hidden="true" className="hidden md:inline">·</span>}<span>{destination}</span></span>)}
+            </div>
           </div>
         </div>
       </div>

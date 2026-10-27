@@ -21,7 +21,7 @@ const SeoImage = forwardRef<HTMLImageElement, SeoImageProps>(
         {...props}
         ref={ref}
         src={src}
-        alt={alt || generatedAlt}
+        alt={alt ?? generatedAlt}
         onError={(event)=>{onError?.(event);if(fallbackSrc&&event.currentTarget.dataset.fallbackApplied!=="true"){event.currentTarget.dataset.fallbackApplied="true";event.currentTarget.srcset="";event.currentTarget.src=fallbackSrc}}}
       />
     );

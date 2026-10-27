@@ -60,7 +60,7 @@ const AboutQuoteSection = ({content=aboutVisualDefaults}:{content?:PublicPageCon
       ref={containerRef}
       className="relative w-full min-h-[85vh] md:min-h-screen py-20 md:my-12 flex flex-col items-center justify-center overflow-hidden"
     >
-      <div className="mx-auto px-4 flex flex-col items-center text-center max-w-6xl">
+      <div className="mx-auto w-full min-w-0 px-5 md:px-4 flex flex-col items-center text-center max-w-6xl">
         <div className="mb-10 w-full flex flex-col items-center">
           <AnimatedBorder
             className="bg-ink-black/40"
@@ -69,9 +69,9 @@ const AboutQuoteSection = ({content=aboutVisualDefaults}:{content?:PublicPageCon
           />
         </div>
         {/* QUOTE SECTION */}
-        <div className="mb-16">
-          <RevealAnimation>
-            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="text-2xl md:text-5xl font-karena leading-[1.1] text-ink-black uppercase tracking-tighter block text-balance">
+        <div className="mb-16 w-full min-w-0">
+          <RevealAnimation responsive>
+            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}} className="w-full min-w-0 text-[clamp(1.5rem,6vw,2rem)] md:text-5xl font-karena leading-[1.1] text-ink-black uppercase tracking-tighter block text-balance">
               “<HighlightedContent text={content.quote} phrases={["calm editorial","emotion","timeless beauty.","light","love","soul","breathtaking"]}/>”
             </h2>
           </RevealAnimation>

@@ -7,6 +7,15 @@ function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+// Replace only arrow glyphs, including the emoji presentation selector.
+// Saved labels, surrounding text and the existing hover layers stay intact.
+function monochromeArrows(node: React.ReactNode): React.ReactNode {
+  if (typeof node === "string") return node.split(/([↗➚]\uFE0F?)/u).map((part,index) => /^[↗➚]\uFE0F?$/u.test(part) ? <svg key={index} aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" className="ml-1 inline-block h-[1em] w-[1em] align-[-0.1em]"><path d="M5 19 19 5M5 5h14v14"/></svg> : part.replace(/^\uFE0F/u,""));
+  if (Array.isArray(node)) return node.map(monochromeArrows);
+  if (React.isValidElement<{children?:React.ReactNode}>(node) && typeof node.type === "string") return React.cloneElement(node, {}, monochromeArrows(node.props.children));
+  return node;
+}
+
 interface CTAButtonProps {
   children: React.ReactNode;
   className?: string;
@@ -30,6 +39,7 @@ const CTAButton: React.FC<CTAButtonProps> = ({
 }) => {
 
   const revealEase = "ease-[0.19,1,0.22,1]";
+  const label = monochromeArrows(children);
   const duration = "duration-[600ms]";
 
   const styles = cn(
@@ -56,7 +66,7 @@ const CTAButton: React.FC<CTAButtonProps> = ({
         revealEase,
         "group-hover:translate-x-8 group-hover:opacity-0"
       )}>
-        {children}
+        {label}
       </span>
 
       {/* HOVER TEXT */}
@@ -66,7 +76,7 @@ const CTAButton: React.FC<CTAButtonProps> = ({
         revealEase,
         "group-hover:translate-x-0 group-hover:opacity-100 group-hover:text-[#f8f5f2]"
       )}>
-        {children}
+        {label}
       </span>
     </>
   );
