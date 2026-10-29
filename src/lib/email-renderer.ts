@@ -9,7 +9,7 @@ export type EmailRenderOptions={
   galleryUrl?:string;
 };
 
-const fallbackSiteUrl="https://www.vasilismoumkas.com";
+const fallbackSiteUrl="https://vasilismoumkas.com";
 const fallbackHeaderPath="/uploads/portfolio/natasa-stamatis/7099163a-198e-4cf5-ab4c-799e6ae5757a.webp";
 const instagramUrl="https://www.instagram.com/vasilismoumkas_weddings/";
 const pinterestUrl="https://gr.pinterest.com/vasilismoumkas/";

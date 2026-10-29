@@ -8,14 +8,16 @@ import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
 import ParallaxImage from "@/components/animations/ParallaxImage";
 import type { Project } from "@/app/(site)/data/ProjectsData";
+import {projectHeaderAlt} from "@/lib/project-presentation";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug">>&{href?:string;alt?:string;caption?:string};
+type ProjectCardProject=Pick<Project,"title"|"thumbnail"|"location">&Partial<Pick<Project,"slug"|"headerImageAlt"|"photoset">>&{href?:string;alt?:string;caption?:string};
 
 export default function ProjectCard({ project, index, hoverOverlay=true, portrait=false, persistentCaption=false }: { project: ProjectCardProject; index: number; hoverOverlay?: boolean; portrait?: boolean; persistentCaption?: boolean }) {
+  const imageAlt=project.alt??projectHeaderAlt({...project,photoset:project.photoset??[]});
   const cardRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const borderRef = useRef<HTMLDivElement>(null);
@@ -138,8 +140,8 @@ export default function ProjectCard({ project, index, hoverOverlay=true, portrai
         >
           {/* Mobile keeps the source image's real aspect ratio. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={project.thumbnail} alt={project.alt??project.title} loading={!hoverOverlay||index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
-          <ParallaxImage src={project.thumbnail} alt={project.alt??project.title} priority={!hoverOverlay||index<2} className={`hidden h-full w-full md:block ${hoverOverlay?"transition-transform duration-900 ease-out group-hover:scale-105":""}`}/>
+          <img src={project.thumbnail} alt={imageAlt} loading={!hoverOverlay||index<2?"eager":"lazy"} decoding="async" data-portfolio-card-image className="block h-auto w-full object-contain md:hidden"/>
+          <ParallaxImage src={project.thumbnail} alt={imageAlt} priority={!hoverOverlay||index<2} className={`hidden h-full w-full md:block ${hoverOverlay?"transition-transform duration-900 ease-out group-hover:scale-105":""}`}/>
           {hoverOverlay&&<motion.div className="absolute inset-0 z-10 hidden flex-col items-center justify-center bg-ink-black/40 p-4 opacity-0 transition-opacity duration-500 group-hover:opacity-100 md:flex">
             <span
               ref={titleRef}

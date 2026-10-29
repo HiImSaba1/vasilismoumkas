@@ -1,7 +1,7 @@
 import {notFound} from "next/navigation";
 import type {Metadata} from "next";
 import {listPortfolioProjects} from "@/lib/portfolio";
-import {homeServices} from "../../data/ServicesData";
+import {portfolioCategories as homeServices} from "@/lib/portfolio-categories";
 import {getSeoSettings,pageMetadata} from "@/lib/seo-settings";
 import CategoryPortfolioClient from "./CategoryPortfolioClient";
 

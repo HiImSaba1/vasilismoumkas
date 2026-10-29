@@ -15,7 +15,7 @@ import { useGSAP } from "@gsap/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Project } from "@/app/(site)/data/ProjectsData";
-import { homeServices } from "@/app/(site)/data/ServicesData";
+import { portfolioCategoryHref, projectHeaderAlt } from "@/lib/project-presentation";
 
 interface CinematicSliderProps {
   projects: Project[];
@@ -171,7 +171,7 @@ function Slide({
   total,
   direction,
 }: {
-  project: any;
+  project: Project;
   idx: number;
   total: number;
   direction: number;
@@ -184,18 +184,7 @@ function Slide({
 
   // 2. CATEGORY ROUTING: Maps "Wedding" -> /portfolio/wedding
   const categoryHref = useMemo(() => {
-    const projectCat = project.category?.toLowerCase() || "";
-    const matchingService = homeServices.find((s) => {
-      const serviceTitle = s.title.toLowerCase();
-      return (
-        serviceTitle === projectCat ||
-        serviceTitle === `${projectCat}s` ||
-        `${serviceTitle}s` === projectCat
-      );
-    });
-    return matchingService
-      ? `/portfolio/${matchingService.slug}`
-      : "/portfolio/editorial";
+    return portfolioCategoryHref(project.category);
   }, [project.category]);
 
   useGSAP(
@@ -280,6 +269,7 @@ function Slide({
         <div ref={imgRef} className="relative h-full w-full">
           <SeoImage
             src={project.thumbnail}
+            alt={projectHeaderAlt(project)}
             description={project.title.toLowerCase().replace(/\s+/g, "-")} 
             location="greece" 
             fill

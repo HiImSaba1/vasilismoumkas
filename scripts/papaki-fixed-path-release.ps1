@@ -29,7 +29,9 @@ $Staged = "/var/www/vhosts/sabaweb.gr/vasilismoumkas-app/releases/github-$Artifa
 
 function Invoke-RemoteScript {
     param([Parameter(Mandatory)][string]$Script)
-    ($Script -replace "`r`n", "`n") | ssh -p $SshPort $SshTarget "bash -s"
+    # Windows PowerShell may prefix piped UTF-8 with a BOM. Strip it remotely
+    # before Bash parses the first command, and normalize remaining CR bytes.
+    ($Script -replace "`r`n", "`n") | ssh -p $SshPort $SshTarget "LC_ALL=C sed '1s/^\xEF\xBB\xBF//' | tr -d '\015' | bash -se"
     if ($LASTEXITCODE -ne 0) { throw "Remote command failed with exit code $LASTEXITCODE." }
 }
 

@@ -20,7 +20,10 @@ const faqAbout=load("src/app/(site)/data/FaqAboutData.ts",{"@/app/(site)/data/Ap
 const faq=load("src/app/(site)/data/FaqData.ts",{"@/app/(site)/data/ApprovedPublicCopy":copy});
 const aboutGallery=load("src/app/(site)/data/Pages-Photoset/Aboutpage.ts");
 const knownGalleryPhoto={src:aboutGallery.ABOUT_GALLERY_POOL[0],alt:"Existing photograph description"};
+const educationData=load("src/app/(site)/data/EducationData.ts");
+const education=load("src/lib/education-content.ts",{"@/app/(site)/data/EducationData":educationData});
 const content=load("src/lib/public-page-content.ts",{
+  "@/lib/education-content":education,
   "@/app/(site)/data/ApprovedPublicCopy":copy,"@/app/(site)/data/FaqAboutData":faqAbout,"@/app/(site)/data/FaqData":faq,
   "@/app/(site)/data/ServicesData":{baseServices:[1,2,3].map(index=>({title:`Service ${index}`,description:"Approved description",tags:["Photography"]}))},
   "@/app/(site)/data/Pages-Photoset/Aboutpage":aboutGallery,
@@ -47,6 +50,54 @@ for(const key of ["leftAlt","leftCaption","partnerAlt","partnerCaption","rightAl
 assert.equal(content.publicPageSchemas.services.parse({...serviceCopy,visuals:oldVisuals}).visuals.leftCaption,"");
 for(const unsafe of ["https://example.invalid","//example.invalid","/\\evil","/%2f%2fevil"]) assert.equal(content.internalLink.safeParse(unsafe).success,false);
 console.log("PASS - existing approved content survives schema upgrades; FAQ ordering/visibility and unsafe link rejection verified.");
+
+{
+  const parsed=content.publicPageSchemas.education.parse(education.defaultEducationContent);
+  assert.equal(parsed.sections.length,4);
+  assert.equal(parsed.sections[0].title,"Online One-to-One Mentoring");
+  assert.equal(parsed.sections[0].paragraph,"Personal online mentoring for wedding photographers, tailored to your experience, questions and creative goals. Together, we review your work and explore natural light, storytelling, working with couples and developing a consistent visual identity.");
+  assert.equal(parsed.sections[0].detail,"Each session takes place live, by appointment, with practical feedback focused on your photography and the areas you want to improve.");
+  assert.equal(parsed.sections[0].buttonLabel,"INQUIRE ABOUT MENTORING");
+  assert.doesNotMatch(JSON.stringify(parsed),/self-paced|carefully curated lessons|Visual [123]/);
+  assert.match(parsed.hero.introduction,/^I provide/);
+  assert.deepEqual(parsed.sections.map(item=>item.image),educationData.EDUCATION_SECTIONS.map(item=>item.image));
+  assert.equal(content.publicPageSchemas.education.safeParse({...parsed,sections:parsed.sections.slice(1)}).success,false);
+  assert.equal(content.publicPageSchemas.education.safeParse({...parsed,sections:parsed.sections.map(item=>({...item,buttonHref:"//evil.invalid"}))}).success,false);
+  const writes=[];
+  const revalidated=[];
+  const actions=load("src/app/admin/pages/actions.ts",{
+    "@/lib/admin-auth":{requireAdmin:async()=>{}},"next/cache":{revalidatePath:path=>revalidated.push(path)},
+    "@/lib/public-page-content":content,"@/lib/homepage-settings":{},"@/lib/website-media":{},
+    "@/lib/public-page-settings":{publicPageSettingKey:page=>`public_page_${page}_v1`},
+    "@/lib/content-workspace":{writeContentWorkspace:async value=>writes.push(value)},
+  });
+  for(const mode of ["draft","publish"]){
+    const data=new FormData();
+    for(const [key,value] of Object.entries({page:"education",version:"a".repeat(64),workspaceVersion:"b".repeat(64),mode,contentJson:JSON.stringify(parsed)}))data.set(key,value);
+    assert.equal((await actions.savePageContentAction({},data)).success,true);
+  }
+  assert.deepEqual(writes.map(item=>[item.key,item.mode]),[["public_page_education_v1","draft"],["public_page_education_v1","publish"]]);
+  assert.equal(revalidated.includes("/education"),true);
+  assert.equal(writes.some(item=>/seo/i.test(item.key)),false);
+}
+console.log("PASS - Education preserves images and approved mentoring copy; draft/publish targets only Education content, not SEO.");
+
+{
+  const presentation=load("src/lib/project-presentation.ts");
+  const project={title:"Test story",location:"Greece",thumbnail:"/cover.jpg",photoset:[{src:"/cover.jpg",alt:"Gallery description"}],headerImageAlt:"CRM header description"};
+  assert.equal(presentation.projectHeaderAlt(project),"CRM header description");
+  assert.equal(presentation.projectHeaderAlt({...project,headerImageAlt:"  "}),"Gallery description");
+  assert.equal(presentation.projectHeaderAlt({...project,headerImageAlt:"",photoset:[]}),"Test story in Greece");
+  for(const category of ["Baptism","Baptisms"," baptism "])assert.equal(presentation.portfolioCategoryHref(category),"/portfolio/baptism");
+  assert.equal(presentation.portfolioCategoryHref("Unknown"),"/portfolio");
+  const config=load("next.config.ts").default;
+  const rules=await config.redirects();
+  assert.deepEqual(rules,[{source:"/:path*",has:[{type:"host",value:"www\\.vasilismoumkas\\.com"}],destination:"https://vasilismoumkas.com/:path*",permanent:true}]);
+  const hostPattern=new RegExp(`^${rules[0].has[0].value}$`);
+  assert.equal(hostPattern.test("www.vasilismoumkas.com"),true);
+  for(const host of ["vasilismoumkas.com","localhost","wwwxvasilismoumkasxcom","other.example"])assert.equal(hostPattern.test(host),false);
+}
+console.log("PASS - CRM header alt precedence, Baptism routing and exact www permanent redirect configuration verified offline.");
 
 function workspaceFixture(raw={title:"Current public content"},revisions=[]) {
   let records=new Map([["page-key",raw]]);

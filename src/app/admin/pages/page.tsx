@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 const pages = [
+  { name: "Education", href: "/admin/pages/education", description: "Mentoring copy, images and alt text, buttons, preview and publishing." },
   { name: "Homepage", href: "/admin/pages/home", description: "Images, stories, personal introduction and homepage content." },
   { name: "About", href: "/admin/pages/about", description: "Personal introduction and public common questions." },
   { name: "Services", href: "/admin/pages/services", description: "Service descriptions and Process & Journey text." },

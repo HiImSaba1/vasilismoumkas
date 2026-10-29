@@ -11,7 +11,7 @@ import {publicPageSchemas,defaultPublicPageContent} from "@/lib/public-page-cont
 import {PageContentForm} from "../PageContentForm";
 export default async function PageEditor({params}:{params:Promise<{page:string}>}){
  await requireAdmin(); const {page}=await params;
- if(page!=="home"&&page!=="about"&&page!=="services"&&page!=="contact")notFound();
+ if(page!=="home"&&page!=="about"&&page!=="services"&&page!=="contact"&&page!=="education")notFound();
  const key=page==="home"?HOMEPAGE_SETTINGS_KEY:publicPageSettingKey(page);
  const [snapshot,work,images,links]=await Promise.all([getPublishedContentSnapshot(key,page==="home"?defaultHomepageSettings:defaultPublicPageContent[page]),getContentWorkspace(key),listWebsiteImages(),listInternalLinks()]);
  const content=page==="home"?homepageSettingsSchema.parse(snapshot.content):publicPageSchemas[page].parse(snapshot.content);

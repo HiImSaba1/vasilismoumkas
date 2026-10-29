@@ -1,23 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import {useEducationMounted,useEducationDesktop} from "./useEducationViewport";
 import EducationCTADesktop from "./EducationCTADesktop";
 import EducationCTAMobile from "./EducationCTAMobile";
 
 
 export default function EducationCTA() {
-  const [isClient, setIsClient] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true); // Default to desktop to avoid flickering
-
-  useEffect(() => {
-    setIsClient(true);
-    const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const isClient=useEducationMounted();
+  const isDesktop=useEducationDesktop();
 
   if (!isClient) return <div className="h-dvh bg-white" />;
 

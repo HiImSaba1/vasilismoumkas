@@ -102,11 +102,13 @@ export default function ContactPage({content,previewOnly=false}:{content:PublicP
   return (
     <main
       ref={container}
-      className="min-h-screen bg-off-white flex flex-col md:flex-row overflow-hidden"
+      data-contact-page="true"
+      className="min-h-screen bg-off-white flex flex-col md:flex-row overflow-hidden pt-[var(--site-header-height,64px)] md:pt-0"
     >
       <h1 className="sr-only">{content.title}</h1>
       {/* LEFT COLUMN */}
       <section
+        data-contact-hero="true"
         className="left-col relative w-full md:w-1/2 h-[60svh] md:h-screen overflow-hidden cursor-pointer"
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -127,7 +129,7 @@ export default function ContactPage({content,previewOnly=false}:{content:PublicP
             description="luxury-contact-image"
             location="greece"
             fill
-            className="object-cover max-md:!h-[120%] max-md:!top-[-10%]"
+            className="object-cover object-top md:object-center"
             sizes="(max-width: 768px) 100vw, 50vw"
           />
           <div className="absolute inset-0 bg-ink-black/20" />

@@ -8,7 +8,8 @@ import { SplitText } from "gsap/SplitText";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin"; // Required for smooth manual scrolling
 import { useGSAP } from "@gsap/react";
 import ParallaxImage from "@/components/animations/ParallaxImage";
-import { EDUCATION_SECTIONS } from "@/app/(site)/data/EducationData";
+import {useEducationContent} from "@/providers/EducationContentContext";
+import type {EducationContent} from "@/lib/education-content";
 import CTAButton from "@/components/ui/CTAButton";
 
 if (typeof window !== "undefined") {
@@ -17,7 +18,7 @@ if (typeof window !== "undefined") {
 }
 
 // Define the type to include the optional id
-type EducationItem = (typeof EDUCATION_SECTIONS)[0] & { id?: string };
+type EducationItem = EducationContent["sections"][number];
 
 const ChessRow = ({
   item,
@@ -27,7 +28,7 @@ const ChessRow = ({
   idx: number;
 }) => {
   const rowRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLSpanElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const paraRef = useRef<HTMLSpanElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -80,6 +81,7 @@ const ChessRow = ({
   return (
     <section
       ref={rowRef}
+      data-education-row="true"
       id={item.id}
       className={`relative w-full flex flex-col md:flex-row items-stretch overflow-hidden border-b border-ink-black/5 scroll-mt-24 ${
         idx % 2 === 1 ? "md:flex-row-reverse" : "flex-col"
@@ -90,13 +92,13 @@ const ChessRow = ({
           <span className="block text-[12px] md:text-[14px] tracking-[0.2em] uppercase text-ink-black/60 mb-4">
             — {item.category}
           </span>
-          <Link href={`/portfolio/${item.slug}`} className="group inline-block">
-            <span
+          <Link href={item.headingHref} className="group inline-block">
+            <h2 style={{margin:0,fontWeight:"inherit",fontFamily:"inherit"}}
               ref={titleRef}
               className="text-[10vw] md:text-[7vw] leading-[0.9] text-ink-black uppercase tracking-tighter group-hover:italic transition-all duration-700 block"
             >
               {item.title}
-            </span>
+            </h2>
           </Link>
         </div>
 
@@ -117,7 +119,7 @@ const ChessRow = ({
             {item.detail}
           </span>
 
-          <ul className="list-disc list-outside ml-6 md:ml-8 space-y-1 my-3 md:my-6">
+          {item.list.length>0&&<ul className="list-disc list-outside ml-6 md:ml-8 space-y-1 my-3 md:my-6">
             {item.list.map((bullet, i) => (
               <li
                 key={i}
@@ -126,7 +128,7 @@ const ChessRow = ({
                 {bullet}
               </li>
             ))}
-          </ul>
+          </ul>}
 
           <span className="footer-text text-[18px] md:text-[20px] leading-[1.2] text-ink-black/80 block mb-8">
             {item.footer}
@@ -134,8 +136,8 @@ const ChessRow = ({
 
           <div className="flex justify-between items-center mt-8 w-full">
             <div className="w-1/2">
-              <CTAButton className="w-full" href="/inquiry">
-                INQUIRE
+              <CTAButton className="w-full" href={item.buttonHref}>
+                {item.buttonLabel}
               </CTAButton>
             </div>
 
@@ -149,7 +151,7 @@ const ChessRow = ({
       <div className="w-full md:w-1/2 relative overflow-hidden h-[60vh] md:h-auto md:min-h-screen z-0">
         <ParallaxImage
           src={item.image}
-          alt={item.title}
+          alt={item.imageAlt}
           fill={true}
           priority={idx === 0}
           className="object-cover"
@@ -161,6 +163,7 @@ const ChessRow = ({
 };
 
 export default function EducationChessSection() {
+  const content=useEducationContent();
   // FIX: Manual scroll to hash on mount
   useGSAP(() => {
     const hash = window.location.hash;
@@ -185,7 +188,7 @@ export default function EducationChessSection() {
 
   return (
     <div className="relative w-full bg-off-white">
-      {EDUCATION_SECTIONS.map((item, idx) => (
+      {content.sections.map((item, idx) => (
         <ChessRow key={idx} item={item} idx={idx} />
       ))}
 

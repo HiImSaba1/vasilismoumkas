@@ -9,7 +9,7 @@ import { useGSAP } from "@gsap/react";
 import ParallaxImage from "@/components/animations/ParallaxImage";
 import AnimatedBorder from "@/components/animations/AnimatedBorder";
 import { Project } from "@/app/(site)/data/ProjectsData";
-import { homeServices } from "@/app/(site)/data/ServicesData";
+import { portfolioCategoryHref, projectHeaderAlt } from "@/lib/project-presentation";
 
 gsap.registerPlugin(SplitText);
 
@@ -18,18 +18,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
 
   // Logic for the Category Link (Matches your CinematicSlider)
   const categoryHref = useMemo(() => {
-    const projectCat = project.category?.toLowerCase() || "";
-    const matchingService = homeServices.find((s) => {
-      const serviceTitle = s.title.toLowerCase();
-      return (
-        serviceTitle === projectCat ||
-        serviceTitle === `${projectCat}s` ||
-        `${serviceTitle}s` === projectCat
-      );
-    });
-    return matchingService
-      ? `/portfolio/${matchingService.slug}`
-      : "/portfolio/editorial";
+    return portfolioCategoryHref(project.category);
   }, [project.category]);
 
   const titleClasses =
@@ -97,7 +86,7 @@ const ProjectHero = ({ project }: { project: Project }) => {
       >
         <ParallaxImage
           src={project.thumbnail}
-          alt={project.title}
+          alt={projectHeaderAlt(project)}
           priority
           unoptimized
           className="w-full h-full object-cover"

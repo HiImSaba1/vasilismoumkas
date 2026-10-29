@@ -11,7 +11,7 @@ import {uploadWebsiteMedia} from "@/lib/website-media";
 export async function uploadPageMediaAction(_state:{success:boolean;message:string},formData:FormData) {
   await requireAdmin();
   try {
-    const scope=z.string().regex(/^\/admin\/(pages\/(home|about|services|contact)|destinations\/[a-z0-9-]+)$/).parse(formData.get("scope"));
+    const scope=z.string().regex(/^\/admin\/(pages\/(home|about|services|contact|education)|destinations\/[a-z0-9-]+)$/).parse(formData.get("scope"));
     const file=formData.get("mediaFile");if(!(file instanceof File))throw new Error("Choose an image to upload.");
     await uploadWebsiteMedia(file,z.string().min(3).max(300).parse(formData.get("mediaAlt")));
     revalidatePath(scope);
@@ -22,7 +22,7 @@ export async function uploadPageMediaAction(_state:{success:boolean;message:stri
 export async function savePageContentAction(_state: { success: boolean; message: string }, formData: FormData) {
   await requireAdmin();
   try {
-    const page = z.enum(["home", "about", "services", "contact"]).parse(formData.get("page"));
+    const page = z.enum(["home", "about", "services", "contact", "education"]).parse(formData.get("page"));
     const version = z.string().regex(/^[a-f0-9]{64}$/).parse(formData.get("version"));
     const workspaceVersion = z.string().regex(/^[a-f0-9]{64}$/).parse(formData.get("workspaceVersion"));
     const mode = z.enum(["draft", "publish"]).parse(formData.get("mode"));

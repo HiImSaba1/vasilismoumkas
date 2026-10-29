@@ -5,6 +5,7 @@ import { faqData } from "@/app/(site)/data/FaqData";
 import { baseServices } from "@/app/(site)/data/ServicesData";
 import { ABOUT_GALLERY_POOL } from "@/app/(site)/data/Pages-Photoset/Aboutpage";
 import { ProjectsData } from "@/app/(site)/data/ProjectsData";
+import {educationContentSchema,defaultEducationContent} from "@/lib/education-content";
 
 const text = z.string().trim().min(1).max(6000);
 export const internalLink = z.string().trim().max(700).regex(/^\/(?!\/)[^\\\s]*$/, "Choose an internal page link.").refine(value => !/[%\u0000-\u001f]/.test(value), "Use a plain internal path.");
@@ -40,6 +41,7 @@ export const servicesVisualDefaults = {
 };
 const servicesVisualSchema = z.object({ heroImage: asset, heroAlt: text, heroLabel: text, heroHeading: text, leftImage: asset, leftAlt:text.default("Editorial wedding details portrait"),leftCaption:z.string().max(500).default(""),partnerImage: asset,partnerAlt:text.default("Vasilis Moumkas editorial detail"),partnerCaption:z.string().max(500).default(""),rightImage: asset,rightAlt:text.default("Destination wedding photography"),rightCaption:z.string().max(500).default(""),heroCaption:z.string().max(500).default(""),video: asset, quote: text });
 export const publicPageSchemas = {
+  education:educationContentSchema,
   about: z.object({ footerCtaLines:z.array(text).length(2).default(["YOUR WEDDING. YOUR STORY.","LET’S CREATE SOMETHING MEANINGFUL."]), galleryDescriptions:z.array(z.object({src:asset,alt:z.string().max(300)})).max(160).default(ABOUT_GALLERY_POOL.map(src=>({src,alt:ProjectsData.flatMap(project=>project.photoset??[]).find(image=>image.src===src)?.alt??""}))), title: text, intro: z.array(text).length(2), faqIntro: text, faq: z.array(item).max(40), faqHeading: text.default("Common Questions"), visuals: aboutVisualSchema.default(aboutVisualDefaults), galleryImages: z.array(z.object({src:asset,alt:text,caption:z.string().max(500).default("")})).max(80).refine(items=>items.length===0||new Set(items.map(item=>item.src).filter(Boolean)).size>=4,"Choose at least four distinct gallery photographs.").default([]), galleryQuotes: z.array(text).max(30).default([]) }),
   services: z.object({ title: text, intro: text, items: z.array(z.object({ title: text, description: text, image_main: asset.default(""), image_small: asset.default(""), imageAlt: z.string().max(300).default(""), detailAlt: z.string().max(300).default(""), caption: z.string().max(500).default(""), tags: z.array(text).max(10).default([]) })).length(3), journey: z.array(item).max(40), journeyHeading: text.default("Photography\nProcess & Journey"), buttonLabel: text.default("Inquire Now"), buttonHref: internalLink.default("/contact"), visuals: servicesVisualSchema.default(servicesVisualDefaults) }),
   contact: z.object({ title: text, intro: text, message: text, heading: text.default("Let's Make It Happen"), label: text.default("(CONTACT)"), video: asset.default("/videos/vasilis_moumkas_homepage_section_lousille_video.mp4"), image: asset.default(""), imageAlt: text.default("Contact Vasilis Moumkas"), caption:z.string().max(500).default(""), buttonLabel: text.default("SEND MESSAGE") }),
@@ -47,6 +49,7 @@ export const publicPageSchemas = {
 export type PublicPageKey = keyof typeof publicPageSchemas;
 export type PublicPageContent = { [K in PublicPageKey]: z.infer<(typeof publicPageSchemas)[K]> };
 export const defaultPublicPageContent: PublicPageContent = {
+  education:defaultEducationContent,
   about: publicPageSchemas.about.parse({ title: publicCopy.aboutTitle, intro: [...publicCopy.aboutIntro], faqIntro: publicCopy.aboutFaqIntro, faq: faqAboutData }),
   services: publicPageSchemas.services.parse({ title: "Wedding Photography Services in Greece & Italy", intro: publicCopy.servicesIntro, items: baseServices.map(({ title, description, tags }) => ({ title, description, tags })), journey: faqData }),
   contact: publicPageSchemas.contact.parse({ title: "Let’s Talk About Your Wedding", intro: publicCopy.contactIntro, message: publicCopy.contactMessage }),

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import type {Project} from "../../data/ProjectsData";
-import { homeServices } from "../../data/ServicesData";
+import { portfolioCategories as homeServices } from "@/lib/portfolio-categories";
 import Link from "next/link";
 import SeoImage from "@/components/ui/SeoImage";
 import { motion } from "framer-motion";
@@ -26,7 +26,8 @@ export default function CategoryPortfolioClient({category,projects}:{category:st
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const serviceInfo = homeServices.find(s => s.slug.toLowerCase() === category.toLowerCase());
+  const categoryInfo = homeServices.find(s => s.slug.toLowerCase() === category.toLowerCase());
+  const serviceInfo=categoryInfo&&categoryInfo.slug==="baptism"&&projects.length?{...categoryInfo,categoryHeroImage:projects[0].thumbnail}:categoryInfo;
 
   const filteredProjects = projects.filter((p) => {
     const cat = p.category.toLowerCase();
@@ -51,6 +52,7 @@ export default function CategoryPortfolioClient({category,projects}:{category:st
             title: serviceInfo.title,
             location: "Selected Works",
             thumbnail: serviceInfo.categoryHeroImage,
+            headerImageAlt:serviceInfo.slug==="baptism"?projects[0].headerImageAlt:undefined,
             slug: serviceInfo.slug,
             description: serviceInfo.description,
             dateShot: "",

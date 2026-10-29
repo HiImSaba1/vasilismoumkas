@@ -16,6 +16,16 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
   const logoRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
+    const header=navbarRef.current;
+    if(!header)return;
+    const update=()=>document.documentElement.style.setProperty("--site-header-height",`${header.offsetHeight}px`);
+    update();
+    const observer=new ResizeObserver(update);
+    observer.observe(header);
+    return()=>{observer.disconnect();document.documentElement.style.removeProperty("--site-header-height");};
+  },[]);
+
+  useEffect(() => {
     const timer = window.setTimeout(() => {
       setIsActive(false);
       setIsStickyVisible(true);
@@ -97,6 +107,7 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
     <>
       <div
         ref={navbarRef}
+        data-site-header="true"
         className={`main-header-wrapper rounded-b-md transition-all duration-500 ease-in-out ${
           (pathname === "/contact" || pathname === "/admin/pages/contact/preview") && !isActive
             ? "bg-off-white/95 md:bg-off-white/90 shadow-sm text-ink-black"

@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import {useEducationContent} from "@/providers/EducationContentContext";
+import React, { useRef } from "react";
+import {useEducationMounted} from "./useEducationViewport";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -11,22 +13,17 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-const KEYWORDS = {
-  photography: ["Photography", "Fine Art", "Editorial", "Luxury"],
-  sessions: ["Sessions", "Mentorship", "Workshops", "Masterclass"],
-  oneOnOne: ["1 on 1", "Private", "Bespoke", "Personal"],
-  bill: ["A Day with Me", "Expert Guidance", "Creative Coaching", "Pro Workflow"],
-  seminar: ["Tailored Seminars", "Learn Online", "Group Training", "Artist Talks"],
-};
 
 const EducationHeroDesktop = () => {
+  const {hero}=useEducationContent();
+  const KEYWORDS=hero.keywords;
   const containerRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLHeadingElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const descRef = useRef<HTMLParagraphElement>(null);
   const visualWrapperRef = useRef<HTMLDivElement>(null);
 
-  const [mounted, setMounted] = useState(false);
+  const mounted=useEducationMounted();
   const { isFirstVisit } = useInitialLoad();
   
   // Added + 0.4s delay as requested
@@ -34,8 +31,6 @@ const EducationHeroDesktop = () => {
 
   const sequenceIndex = useRef(0);
   const activeSplits = useRef<Map<HTMLElement, SplitText>>(new Map());
-
-  useEffect(() => setMounted(true), []);
 
   useGSAP(
     () => {
@@ -178,22 +173,22 @@ const EducationHeroDesktop = () => {
         >
           <div className="absolute left-0 top-30 lg:top-40 w-[12vw] aspect-square overflow-hidden rounded-sm translate-y-[-10%]">
             <ParallaxImage
-              src="/vm_img/Projects/Eirini_Fotis/vasilis_moumkas_eirini_fotis_5.webp"
-              alt="Visual 1"
+              src={hero.images[0].src}
+              alt={hero.images[0].alt}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[30vw] lg:w-[18vw] aspect-square overflow-hidden rounded-sm">
             <ParallaxImage
-              src="/vm_img/Projects/Eirini_Fotis/vasilis_moumkas_eirini_fotis_22.webp"
-              alt="Visual 2"
+              src={hero.images[1].src}
+              alt={hero.images[1].alt}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="absolute right-0 bottom-0 lg:bottom-6 w-[15vw] lg:w-[12vw] lg:aspect-square overflow-hidden rounded-sm translate-y-[10%]">
             <ParallaxImage
-              src="/vm_img/Projects/Eirini_Fotis/vasilis_moumkas_eirini_fotis_9.webp"
-              alt="Visual 3"
+              src={hero.images[2].src}
+              alt={hero.images[2].alt}
               className="w-full h-full object-cover"
             />
           </div>
@@ -206,7 +201,7 @@ const EducationHeroDesktop = () => {
             ref={labelRef}
             className="opacity-0 inline-block text-sm uppercase tracking-widest text-ink-black/60 font-medium"
           >
-            (About our services)
+            {hero.label}
           </span>
         </div>
 
@@ -215,8 +210,7 @@ const EducationHeroDesktop = () => {
             ref={descRef}
             className="opacity-0 text-center md:text-right text-lg md:text-2xl leading-none text-ink-black uppercase max-w-180 lg:max-w-220"
           >
-            We provide a bespoke educational environment to help creators <br />
-            master high-end artistry and build a sustainable business.
+            {hero.introduction.split("\n").map((line,index)=><React.Fragment key={index}>{index>0&&<br/>}{line}</React.Fragment>)}
           </p>
         </div>
       </div>

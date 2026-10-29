@@ -3,7 +3,7 @@ import { listPortfolioProjects } from "@/lib/portfolio";
 import {getSeoOverrides} from "@/lib/seo-overrides";
 import {listDestinations} from "@/lib/destinations";
 import { ProjectsData } from "@/app/(site)/data/ProjectsData";
-import {homeServices} from "@/app/(site)/data/ServicesData";
+import {portfolioCategories as homeServices} from "@/lib/portfolio-categories";
 
 export const dynamic="force-dynamic";
 

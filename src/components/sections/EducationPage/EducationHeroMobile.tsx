@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import {useEducationContent} from "@/providers/EducationContentContext";
+import React, { useRef } from "react";
+import {useEducationMounted} from "./useEducationViewport";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -11,29 +13,22 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(SplitText);
 }
 
-const KEYWORDS = {
-  photography: ["Photography", "Fine Art", "Editorial", "Luxury"],
-  sessions: ["Sessions", "Mentorship", "Workshops", "Masterclass"],
-  oneOnOne: ["1 on 1", "Private", "Bespoke", "Personal"],
-  bill: ["A Day with Me", "Expert Guidance", "Creative Coaching", "Pro Workflow"],
-  seminar: ["Tailored Seminars", "Learn Online", "Group Training", "Artist Talks"],
-};
 
 const EducationHeroMobile = () => {
+  const {hero}=useEducationContent();
+  const KEYWORDS=hero.keywords;
   const containerRef = useRef<HTMLDivElement>(null);
   const headlineRef = useRef<HTMLSpanElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const descRef = useRef<HTMLSpanElement>(null);
   const visualWrapperRef = useRef<HTMLDivElement>(null);
 
-  const [mounted, setMounted] = useState(false);
+  const mounted=useEducationMounted();
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
 
   const sequenceIndex = useRef(0);
   const activeSplits = useRef<Map<HTMLElement, SplitText>>(new Map());
-
-  useEffect(() => setMounted(true), []);
 
   useGSAP(
     () => {
@@ -150,8 +145,8 @@ const EducationHeroMobile = () => {
       >
         <div className="relative w-full h-full">
           <ParallaxImage
-            src="/vm_img/Projects/Eirini_Fotis/vasilis_moumkas_eirini_fotis_22.webp"
-            alt="Education Hero Visual"
+            src={hero.mobileImage.src}
+            alt={hero.mobileImage.alt}
             fill={true}
             className="w-full h-full object-cover grayscale-[0.2]"
           />
@@ -181,7 +176,7 @@ const EducationHeroMobile = () => {
           ref={labelRef}
           className="text-[10px] uppercase tracking-[0.2em] text-off-white/90 block whitespace-nowrap"
         >
-          (About our services)
+          {hero.label}
         </span>
       </div>
 
@@ -191,8 +186,7 @@ const EducationHeroMobile = () => {
           ref={descRef}
           className="block text-[14px] leading-tight text-soft-yellow uppercase max-w-[90%] mx-auto"
         >
-          We provide a bespoke educational environment <br /> to help creators master high-end artistry <br />
-          and build a sustainable business.
+          {hero.introduction.split("\n").map((line,index)=><React.Fragment key={index}>{index>0&&<br/>}{line}</React.Fragment>)}
         </span>
       </div>
     </section>

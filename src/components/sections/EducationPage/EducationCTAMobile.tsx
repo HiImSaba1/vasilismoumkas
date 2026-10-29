@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
-import CTAButton from "@/components/ui/CTAButton";
+import React, { useRef } from "react";
+import {useEducationContent} from "@/providers/EducationContentContext";
 import ParallaxImage from "@/components/animations/ParallaxImage";
+import {useEducationMounted} from "./useEducationViewport";
 import gsap from "gsap";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
@@ -13,6 +14,7 @@ if (typeof window !== "undefined") {
 }
 
 const EducationCTAMobile = () => {
+  const {closing}=useEducationContent();
   const containerRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLSpanElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
@@ -20,13 +22,9 @@ const EducationCTAMobile = () => {
   const visualWrapperRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted=useEducationMounted();
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   useGSAP(
     () => {
@@ -131,9 +129,7 @@ const EducationCTAMobile = () => {
           ref={titleRef}
           className="text-[65px] leading-[0.9] font-light uppercase tracking-tighter text-ink-black block"
         >
-          Elevate your <br />
-          Artistry & <br />
-          Business.
+          {closing.titleLines.map((line,index)=><React.Fragment key={index}>{index>0&&<br/>}{line}</React.Fragment>)}
         </span>
       </div>
       {/* 3. Text & 4. Button Container */}
@@ -143,13 +139,13 @@ const EducationCTAMobile = () => {
             ref={labelRef}
             className="text-[14px] uppercase tracking-widest text-ink-black/60 block border-b border-ink-black/30 w-max pb-1"
           >
-            Mentorship
+            {closing.label}
           </span>
           <span
             ref={descRef}
             className="block text-xl leading-tight text-ink-black uppercase max-w-75"
           >
-            One-on-One education for the modern photographer by Vasilis Moumkas.
+            {closing.description}
           </span>
         </div>
       </div>
@@ -159,8 +155,8 @@ const EducationCTAMobile = () => {
         className="relative w-full aspect-square overflow-hidden shadow-sm"
       >
         <ParallaxImage
-          src="/vm_img/Projects/Eirini_Fotis/vasilis_moumkas_eirini_fotis_7.webp"
-          alt="Education with Vasilis Moumkas"
+          src={closing.mobileImage.src}
+          alt={closing.mobileImage.alt}
           className="w-full h-full object-cover"
           sizes="100vw"
         />

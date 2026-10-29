@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
+import {useEducationMounted} from "./useEducationViewport";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 import { useGSAP } from "@gsap/react";
-import CTAButton from "@/components/ui/CTAButton";
+import {useEducationContent} from "@/providers/EducationContentContext";
 import { useInitialLoad } from "@/providers/InitialLoadContext";
 import ParallaxImage from "@/components/animations/ParallaxImage";
 
@@ -14,21 +15,19 @@ if (typeof window !== "undefined") {
 }
 
 const EducationCTADesktop = () => {
+  const {closing}=useEducationContent();
   const sectionRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
   const imgElementRef = useRef<HTMLImageElement>(null);
+
   const titleRef = useRef<HTMLSpanElement>(null);
   const labelRef = useRef<HTMLSpanElement>(null);
   const descRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted=useEducationMounted();
   const { isFirstVisit } = useInitialLoad();
   const mainEntranceDelay = isFirstVisit ? 0.2 : 0.6;
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   useGSAP(
     () => {
@@ -150,9 +149,7 @@ const EducationCTADesktop = () => {
               ref={titleRef}
               className="text-[clamp(40px,10vw,70px)] lg:text-[clamp(98px,12vw,100px)] leading-[0.85] font-light uppercase tracking-tighter text-ink-black block"
             >
-              Elevate your <br />
-              Artistry & <br />
-              Business.
+              {closing.titleLines.map((line,index)=><React.Fragment key={index}>{index>0&&<br/>}{line}</React.Fragment>)}
             </span>
           </div>
           <div className="col-span-12 md:col-span-5 pointer-events-auto flex flex-col justify-between h-full ">
@@ -161,14 +158,13 @@ const EducationCTADesktop = () => {
                 ref={labelRef}
                 className="text-[16px] uppercase tracking-widest text-ink-black/80 block border-b border-ink-black/80 w-max"
               >
-                Mentorship
+                {closing.label}
               </span>
               <span
                 ref={descRef}
                 className="text-lg md:text-4xl leading-tight text-ink-black uppercase block max-w-xl"
               >
-                One-on-One education for the modern photographer by Vasilis
-                Moumkas.
+                {closing.description}
               </span>
             </div>
 
@@ -183,8 +179,8 @@ const EducationCTADesktop = () => {
     className="relative overflow-hidden will-change-[width,height] flex items-center justify-center"
   >
     <ParallaxImage 
-      src="/vm_img/Projects/Kymara_Pantelis/vasilis_moumkas_kymara_pantelis_11.webp"
-      alt="Education with Vasilis Moumkas"
+      src={closing.desktopImage.src}
+      alt={closing.desktopImage.alt}
       className="w-full h-full" 
       sizes="80vw"
     />
