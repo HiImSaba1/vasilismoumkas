@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import type { RowDataPacket } from "mysql2/promise";
 import { getDatabase, isDatabaseConfigured } from "@/lib/database";
 import { defaultPublicPageContent, publicPageSchemas, type PublicPageContent, type PublicPageKey } from "@/lib/public-page-content";
+import {allowLocalMissingSettings} from "@/lib/local-settings-fallback";
 
 export const publicPageSettingKey = (page: PublicPageKey) => `public_page_${page}_v1`;
 const key = publicPageSettingKey;
@@ -11,7 +12,8 @@ const parse = (raw: unknown): unknown => typeof raw === "string" ? JSON.parse(ra
 
 export async function getPublicPageSettings<K extends PublicPageKey>(page: K): Promise<{ content: PublicPageContent[K]; version: string }> {
   if (!isDatabaseConfigured()) return { content: defaultPublicPageContent[page], version: version(null) };
-  const [rows] = await getDatabase().query<(RowDataPacket & { value_json: unknown })[]>("SELECT value_json FROM site_settings WHERE setting_key=? LIMIT 1", [key(page)]);
+  let rows:(RowDataPacket & { value_json: unknown })[];
+  try{[rows]=await getDatabase().query<typeof rows>("SELECT value_json FROM site_settings WHERE setting_key=? LIMIT 1",[key(page)]);}catch(error){if(allowLocalMissingSettings(error))return{content:defaultPublicPageContent[page],version:version(null)};throw error;}
   const raw = rows[0] ? parse(rows[0].value_json) : null;
   const content = raw === null ? defaultPublicPageContent[page] : publicPageSchemas[page].parse(raw) as PublicPageContent[K];
   return { content, version: version(raw) };

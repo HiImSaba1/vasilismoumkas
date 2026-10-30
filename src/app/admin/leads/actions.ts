@@ -1,4 +1,6 @@
 "use server";
+import {randomUUID} from "node:crypto";
+import {EventDateConflictError} from "@/lib/event-date-lock";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -30,3 +32,19 @@ export async function saveNativeLeadDocumentAction(formData:FormData){await requ
 export async function completeLeadEventAction(formData:FormData){await requireAdmin();const id=z.uuid().parse(formData.get("id"));await completeLeadEvent(id);revalidateAdminWorkflow({leadId:id})}
 export async function deleteLeadAction(formData:FormData){await requireAdmin();await deleteLeadJourney(z.uuid().parse(formData.get("id")));for(const path of["/admin/leads","/admin/clients","/admin/offers","/admin/onboarding","/admin/timelines","/admin/automations","/admin/overview"])revalidatePath(path)}
 export async function updateLeadTemplateHeaderImageAction(_state:unknown,formData:FormData){try{await requireAdmin();const input=z.object({leadId:z.uuid(),templateId:z.string().regex(/^\d{3}$/),headerImage:z.string().trim().max(700)}).parse(Object.fromEntries(formData));const[lead,offer,images]=await Promise.all([getLead(input.leadId),getLatestOfferForLead(input.leadId),listPortfolioEmailImages()]);if(!lead)throw new Error("Lead not found.");if(input.headerImage&&!images.some(image=>image.src===input.headerImage))throw new Error("Select an image from the portfolio library.");const template=await getEmailTemplate(input.templateId,lead.eventType,offer?.language==="en"?"en":"el");if(!template)throw new Error("Email template not found.");await updateEmailTemplate(template.id,template.eventType,template.locale,{subject:template.subject,bodyText:template.bodyText,headerImage:input.headerImage||null,isActive:template.isActive});revalidatePath(`/admin/leads/${lead.id}`);revalidatePath("/admin/leads");revalidatePath("/admin/email-templates");return{success:true,message:`Template ${template.id} image updated.`,headerImage:input.headerImage}}catch(error){return{success:false,message:error instanceof z.ZodError?(error.issues[0]?.message??"Invalid image selection."):error instanceof Error?error.message:"Unable to update template image."}}}
+
+export async function activateClientWorkspaceAction(_state:{success:boolean;message:string;clientId:string},formData:FormData){
+ await requireAdmin();
+ try{
+  const input=z.object({id:z.uuid(),confirmDateConflict:z.string().optional(),dateConflictReason:z.string().trim().max(1000).optional()}).parse(Object.fromEntries(formData));
+  const clientId=await reconcileClientFromLead(input.id,input.confirmDateConflict==="on"?{confirmed:true,reason:input.dateConflictReason??""}:undefined);
+  revalidateAdminWorkflow({leadId:input.id,clientId});
+  return {success:true,message:"Client workspace is available. No payment, signature or email was recorded by this action.",clientId};
+ }catch(error){
+  if(error instanceof EventDateConflictError)return {success:false,message:error.message,clientId:""};
+  if(error instanceof z.ZodError)return {success:false,message:"Check the lead and date confirmation fields.",clientId:""};
+  const reference=randomUUID().replaceAll("-","").slice(0,10).toUpperCase();
+  console.error(`Client workspace activation failed [${reference}]`,error);
+  return {success:false,message:`Workspace activation failed. Your inputs remain available. Reference: ${reference}.`,clientId:""};
+ }
+}

@@ -37,6 +37,7 @@ const AboutBigImageSection = ({intro=publicCopy.aboutIntro,content=aboutVisualDe
             description="luxury-wedding-photographer-profile"
             location="thessaloniki-greece"
             fill
+            sizes="100vw"
             priority
             className="object-cover"
           />

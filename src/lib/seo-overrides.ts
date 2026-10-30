@@ -3,6 +3,7 @@ import { z } from "zod";
 import type { Metadata } from "next";
 import type { RowDataPacket } from "mysql2/promise";
 import { getDatabase, isDatabaseConfigured } from "@/lib/database";
+import {allowLocalMissingSettings} from "@/lib/local-settings-fallback";
 export const SEO_OVERRIDES_KEY = "public_seo_overrides_v1";
 export const seoOverrideSchema = z.object({
   seoTitle: z.string().trim().max(160).default(""), metaDescription: z.string().trim().max(500).default(""),
@@ -14,7 +15,8 @@ export type SeoOverride = z.infer<typeof seoOverrideSchema>;
 export const seoOverridesSchema=z.record(z.string(),seoOverrideSchema);
 export async function getSeoOverrides(): Promise<Record<string, SeoOverride>> {
   if (!isDatabaseConfigured()) return {};
-  const [rows] = await getDatabase().query<(RowDataPacket & { value_json: unknown })[]>("SELECT value_json FROM site_settings WHERE setting_key=?", [SEO_OVERRIDES_KEY]);
+  let rows:(RowDataPacket & { value_json: unknown })[];
+  try{[rows]=await getDatabase().query<typeof rows>("SELECT value_json FROM site_settings WHERE setting_key=?",[SEO_OVERRIDES_KEY]);}catch(error){if(allowLocalMissingSettings(error))return{};throw error;}
   if (!rows[0]) return {};
   return seoOverridesSchema.parse(typeof rows[0].value_json === "string" ? JSON.parse(rows[0].value_json) : rows[0].value_json);
 }

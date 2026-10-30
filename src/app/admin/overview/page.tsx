@@ -27,7 +27,7 @@ export default async function AdminOverviewPage() {
   ];
   return (
     <main className="px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
-      <AdminPageHeader eyebrow="Studio command center" title="Overview" description="The complete wedding client journey—from first inquiry and personalized proposal to timeline, delivery and review." action={<Link href="/admin/dashboard" className="flex w-fit items-center gap-3 bg-ink-black px-5 py-4 text-sm  uppercase tracking-[0.15em] text-soft-white">Create offer <ArrowUpRight className="h-4 w-4" /></Link>} />
+      <div data-admin-locale-isolated="true" className="mb-6"><Link href="/admin/pending" className="inline-block border border-ink-black px-5 py-3 text-sm uppercase">Εκκρεμότητες · Τι χρειάζεται να γίνει →</Link></div><AdminPageHeader eyebrow="Studio command center" title="Overview" description="The complete wedding client journey—from first inquiry and personalized proposal to timeline, delivery and review." action={<Link href="/admin/dashboard" className="flex w-fit items-center gap-3 bg-ink-black px-5 py-4 text-sm  uppercase tracking-[0.15em] text-soft-white">Create offer <ArrowUpRight className="h-4 w-4" /></Link>} />
       <section className="mt-8 grid grid-cols-2 border-l border-t border-ink-black/20 xl:grid-cols-4">
         {metrics.map(([label, value]) => <div key={label} className="border-r border-b border-ink-black/20 bg-[#f7f3e9] p-5 sm:p-7"><p className="text-[10px] uppercase tracking-[0.18em] text-ink-black/45">{label}</p><p className="mt-5 font-[var(--font-karena)] text-6xl leading-none">{value}</p></div>)}
       </section>

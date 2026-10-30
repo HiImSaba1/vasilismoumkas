@@ -1,16 +1,16 @@
 // app/not-found.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useSyncExternalStore } from "react";
 import SeoImage from "@/components/ui/SeoImage";
 import Link from "next/link";
 
-export default function NotFound() {
-  const [isMounted, setIsMounted] = useState(false);
+const subscribe = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+export default function NotFound() {
+  const isMounted = useSyncExternalStore(subscribe, clientSnapshot, serverSnapshot);
 
   return (
     <main className="min-h-screen flex flex-col md:flex-row overflow-hidden bg-[#F8F5F2]">
@@ -23,6 +23,7 @@ export default function NotFound() {
             description="Lost in focus"
             location="Greece"
             fill
+            sizes="100vw"
             priority
             className="object-cover"
           />
@@ -50,7 +51,7 @@ export default function NotFound() {
           <p className="text-lg md:text-xl opacity-80 uppercase tracking-tight" 
              style={{ fontFamily: 'var(--font-bricolage)' }}>
             Oops! Page Not Found. <br />
-            The page you are looking for doesn't exist.
+            The page you are looking for doesn&apos;t exist.
           </p>
 
           <Link 

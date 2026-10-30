@@ -6,7 +6,7 @@ import type { CrmPayload } from "@/lib/crm-records";
 import { cancelOfferAutomationsBySlug, scheduleOfferFollowups } from "@/lib/automations";
 import { sendInternalOfferAcceptance } from "@/lib/email-delivery";
 import { contractForWorkflowProfile } from "@/lib/contract-templates";
-import { lockClientEventDate, releaseClientEventDate } from "@/lib/event-date-lock";
+import { lockClientEventDate, releaseClientEventDate, type EventDateOverride } from "@/lib/event-date-lock";
 
 export type OfferStatus = "draft" | "sent" | "viewed" | "accepted" | "rejected" | "expired" | "revoked";
 export const OFFER_VALIDITY_DAYS = 30;
@@ -82,7 +82,7 @@ export async function regenerateOffer(slug:string){
   await event(slug,"regenerated",{newSlug:next});await getDatabase().execute("UPDATE offers SET status='revoked' WHERE slug=? AND status<>'accepted'",[slug]);return next;
 }
 export async function recordOfferView(slug:string){const connection=await getDatabase().getConnection();try{await connection.beginTransaction();const[rows]=await connection.query<(RowDataPacket&{id:number;status:OfferStatus;first_viewed_at:Date|string|null})[]>("SELECT id,status,first_viewed_at FROM offers WHERE slug=? FOR UPDATE",[slug]);const offer=rows[0];if(!offer||!( ["sent","viewed"] as OfferStatus[]).includes(offer.status)){await connection.rollback();return}const reopened=Boolean(offer.first_viewed_at);await connection.execute("UPDATE offers SET status='viewed',first_viewed_at=COALESCE(first_viewed_at,CURRENT_TIMESTAMP) WHERE id=?",[offer.id]);await connection.execute("INSERT INTO offer_events (offer_id,event_type,metadata) VALUES (?,'viewed',?)",[offer.id,JSON.stringify({reopened})]);await connection.commit()}catch(error){await connection.rollback();throw error}finally{connection.release()}}
-export async function respondToOffer(slug:string,input:{action:"accept"|"revision";name:string;email:string;packageName?:string;message?:string},options?:{adminOverride?:boolean}){
+export async function respondToOffer(slug:string,input:{action:"accept"|"revision";name:string;email:string;packageName?:string;message?:string},options?:{adminOverride?:boolean;dateOverride?:EventDateOverride;suppressNotification?:boolean}){
   const connection=await getDatabase().getConnection();
   let dateLock:string|null=null;
   try{await connection.beginTransaction();const[rows]=await connection.query<OfferRow[]>("SELECT * FROM offers WHERE slug=? FOR UPDATE",[slug]);const offer=rows[0];const publiclyAvailable=offer&&(["sent","viewed"] as OfferStatus[]).includes(offer.status)&&(!offer.expires_at||new Date(offer.expires_at)>new Date());if(!offer||(!options?.adminOverride&&!publiclyAvailable)||offer.status==="accepted")throw new Error(offer?.status==="accepted"?"Offer is already accepted":"Offer unavailable");
@@ -102,7 +102,7 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
         await connection.execute("UPDATE leads SET event_type=?,workflow_locale=?,status='converted' WHERE id=?",[offer.event_type,workflowLocale,offer.lead_id]);
       }
       const[linkedClients]=await connection.query<(RowDataPacket&{id:string})[]>("SELECT id FROM clients WHERE accepted_offer_id=? OR (lead_id IS NOT NULL AND lead_id=?) LIMIT 1",[offer.id,offer.lead_id]);
-      dateLock=await lockClientEventDate(connection,lead?.event_date??null,linkedClients[0]?.id);
+      dateLock=await lockClientEventDate(connection,lead?.event_date??null,linkedClients[0]?.id,options?.adminOverride?options.dateOverride:undefined);
       await connection.execute("UPDATE offers SET status='accepted',accepted_at=CURRENT_TIMESTAMP,payload=? WHERE id=?",[JSON.stringify(payload),offer.id]);
       const[existing]=await connection.query<(RowDataPacket&{id:string})[]>("SELECT id FROM clients WHERE accepted_offer_id=? OR (lead_id IS NOT NULL AND lead_id=?) LIMIT 1",[offer.id,offer.lead_id]);
       const clientId=existing[0]?.id??randomUUID();
@@ -121,8 +121,9 @@ export async function respondToOffer(slug:string,input:{action:"accept"|"revisio
           await connection.execute("INSERT IGNORE INTO lead_document_records (id,lead_id,document_type,template_key,status,document_data) VALUES (?,?,?,?,\"draft\",?)",[randomUUID(),offer.lead_id,type,template,JSON.stringify(data)]);
         }
       }
+      if(options?.adminOverride&&options.dateOverride?.confirmed)await connection.execute("INSERT INTO activity_log (lead_id,event_type,summary,metadata) VALUES (?,\u0027date-conflict-override\u0027,\u0027Administrator explicitly confirmed additional event-date booking\u0027,?)",[offer.lead_id,JSON.stringify({reason:options.dateOverride.reason,actor:"admin"})]);
     }else await connection.execute("UPDATE offers SET payload=? WHERE id=?",[JSON.stringify(payload),offer.id]);
-    await connection.execute("INSERT INTO offer_events (offer_id,event_type,metadata) VALUES (?,?,?)",[offer.id,input.action==="accept"?"accepted":"revision-requested",JSON.stringify(input)]);await connection.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Client responded' WHERE offer_id=? AND status IN ('scheduled','failed')",[offer.id]);await connection.commit();if(input.action==="accept"){const origin=process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000";const notice=await sendInternalOfferAcceptance({clientName:input.name,clientEmail:input.email,offerUrl:`${origin}/offer/${slug}`,packageName:input.packageName,message:input.message});await getDatabase().execute("INSERT INTO offer_events (offer_id,event_type,metadata) VALUES (?,?,?)",[offer.id,notice.success?"acceptance-notification-sent":"acceptance-notification-failed",JSON.stringify(notice)]);if(!notice.success)console.error("Offer acceptance notification failed:",notice.error)}
+    await connection.execute("INSERT INTO offer_events (offer_id,event_type,metadata) VALUES (?,?,?)",[offer.id,input.action==="accept"?"accepted":"revision-requested",JSON.stringify(input)]);await connection.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Client responded' WHERE offer_id=? AND status IN ('scheduled','failed')",[offer.id]);await connection.commit();if(input.action==="accept"&&!options?.suppressNotification){const origin=process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000";const notice=await sendInternalOfferAcceptance({clientName:input.name,clientEmail:input.email,offerUrl:`${origin}/offer/${slug}`,packageName:input.packageName,message:input.message});await getDatabase().execute("INSERT INTO offer_events (offer_id,event_type,metadata) VALUES (?,?,?)",[offer.id,notice.success?"acceptance-notification-sent":"acceptance-notification-failed",JSON.stringify(notice)]);if(!notice.success)console.error("Offer acceptance notification failed:",notice.error)}
   }catch(error){await connection.rollback();throw error}finally{await releaseClientEventDate(connection,dateLock);connection.release()}
 }
 async function event(slug:string,type:string,metadata?:Record<string,unknown>){await getDatabase().execute("INSERT INTO offer_events (offer_id,event_type,metadata) SELECT id, ?, ? FROM offers WHERE slug=?",[type,metadata?JSON.stringify(metadata):null,slug])}

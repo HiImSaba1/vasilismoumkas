@@ -179,7 +179,7 @@ console.log("PASS - project rename, gallery metadata and URL alias share one tra
 console.log("PASS - a saved destination draft remains private even if its future published checkbox is selected.");
 
 {
-  const overrides=load("src/lib/seo-overrides.ts",{"@/lib/database":{isDatabaseConfigured:()=>true,getDatabase:()=>({query:async()=>[[{value_json:JSON.stringify({"/about":{socialTitle:"Independent social title",socialDescription:"",socialImage:"/social.jpg",noindex:true}})}]]})}});
+  const overrides=load("src/lib/seo-overrides.ts",{"@/lib/local-settings-fallback":{allowLocalMissingSettings:()=>false},"@/lib/database":{isDatabaseConfigured:()=>true,getDatabase:()=>({query:async()=>[[{value_json:JSON.stringify({"/about":{socialTitle:"Independent social title",socialDescription:"",socialImage:"/social.jpg",noindex:true}})}]]})}});
   const metadata=await overrides.publicMetadata({title:"Search title",description:"Search description",image:"/default.jpg",imageAlt:"Photograph"},"/about");
   assert.deepEqual(metadata.title,{absolute:"Search title"});assert.equal(metadata.openGraph.title,"Independent social title");assert.equal(metadata.openGraph.description,"Search description");assert.equal(metadata.openGraph.images[0].url,"/social.jpg");assert.equal(metadata.alternates.canonical,"/about");assert.equal(metadata.robots.index,false);
   const fallback=await overrides.publicMetadata({title:"Services search title",description:"Services description",image:"/default.jpg",imageAlt:"Photograph"},"/services");
