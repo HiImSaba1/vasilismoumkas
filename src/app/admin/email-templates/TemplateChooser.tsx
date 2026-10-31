@@ -1,0 +1,15 @@
+"use client";
+import Link from "next/link";
+import {useRef,useState} from "react";
+type Choice={id:string;name:string;eventType:"wedding"|"baptism";locale:"el"|"en";isActive:boolean};
+export function TemplateChooser({templates,eventType,locale}:{templates:Choice[];eventType:"wedding"|"baptism";locale:"el"|"en"}){
+  const dialog=useRef<HTMLDialogElement>(null);
+  const[event,setEvent]=useState(eventType),[language,setLanguage]=useState(locale);
+  const choices=templates.filter(item=>item.eventType===event&&item.locale===language);
+  return <><button type="button" onClick={()=>dialog.current?.showModal()} className="shrink-0 bg-ink-black px-5 py-4 text-sm uppercase text-white">Επιλογή προτύπου / Open email designer</button>
+    <dialog ref={dialog} aria-labelledby="template-chooser-title" className="fixed inset-0 m-auto h-[70vh] max-h-[90dvh] w-[70vw] max-w-[calc(100vw-2rem)] overflow-hidden border border-ink-black/20 bg-[#F5F3EF] p-0 text-ink-black backdrop:bg-black/50 max-sm:h-[85dvh] max-sm:w-[calc(100vw-2rem)]">
+      <div className="flex h-full min-h-0 flex-col"><header className="flex shrink-0 items-start justify-between gap-4 border-b p-5"><div><h2 id="template-chooser-title" className="text-2xl">Επιλογή προτύπου email</h2><p className="mt-2 text-sm">Επεξεργασία κοινής προεπιλογής. Δεν γίνεται αποστολή σε πελάτη.</p></div><button type="button" onClick={()=>dialog.current?.close()} className="border px-4 py-2" aria-label="Close template chooser">Κλείσιμο ×</button></header>
+      <div className="flex shrink-0 flex-wrap gap-3 border-b p-5"><label className="grid gap-1 text-sm">Εκδήλωση<select value={event} onChange={change=>setEvent(change.target.value as typeof event)} className="border bg-white p-3"><option value="wedding">Γάμος / Wedding</option><option value="baptism">Βάπτιση / Baptism</option></select></label><label className="grid gap-1 text-sm">Γλώσσα<select value={language} onChange={change=>setLanguage(change.target.value as typeof language)} className="border bg-white p-3"><option value="el">Ελληνικά</option><option value="en">English</option></select></label></div>
+      <div className="grid min-h-0 content-start gap-3 overflow-y-auto p-5 sm:grid-cols-2 lg:grid-cols-3">{choices.map(item=><Link key={`${item.eventType}-${item.locale}-${item.id}`} href={`/admin/email-templates?template=${item.id}&event=${item.eventType}&locale=${item.locale}&edit=1#email-template-editor`} onClick={click=>{if(document.querySelector('[data-email-design-dirty="true"]')&&!window.confirm("Leave this design without saving?")){click.preventDefault();return}dialog.current?.close()}} className="border border-ink-black/25 bg-white p-5 transition-colors hover:bg-soft-yellow"><span className="text-sm uppercase">Template {item.id} · {item.isActive?"Active":"Paused"}</span><span className="mt-3 block text-lg">{item.name}</span><span className="mt-4 block text-sm underline">Άνοιγμα επεξεργασίας →</span></Link>)}{!choices.length&&<p>No templates available for this selection.</p>}</div></div>
+    </dialog></>;
+}

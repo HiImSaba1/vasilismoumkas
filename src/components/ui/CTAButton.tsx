@@ -11,7 +11,8 @@ function cn(...classes: (string | false | null | undefined)[]) {
 // Saved labels, surrounding text and the existing hover layers stay intact.
 function monochromeArrows(node: React.ReactNode): React.ReactNode {
   if (typeof node === "string") return node.split(/([↗➚]\uFE0F?)/u).map((part,index) => /^[↗➚]\uFE0F?$/u.test(part) ? <svg key={index} aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" className="ml-1 inline-block h-[1em] w-[1em] align-[-0.1em]"><path d="M5 19 19 5M5 5h14v14"/></svg> : part.replace(/^\uFE0F/u,""));
-  if (Array.isArray(node)) return node.map(monochromeArrows);
+  // Children.map supplies stable React keys when rebuilding static JSX siblings.
+  if (Array.isArray(node)) return React.Children.map(node, child => monochromeArrows(child));
   if (React.isValidElement<{children?:React.ReactNode}>(node) && typeof node.type === "string") return React.cloneElement(node, {}, monochromeArrows(node.props.children));
   return node;
 }

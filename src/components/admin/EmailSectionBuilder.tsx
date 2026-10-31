@@ -1,0 +1,36 @@
+"use client";
+/* eslint-disable @next/next/no-img-element -- Approved portfolio assets are previewed exactly as in email. */
+import {useState} from "react";
+import {moveEmailSection,newEmailSection,type EmailSection} from "@/lib/email-composition";
+import type {PortfolioEmailImage} from "@/lib/portfolio";
+import {EmailHeaderImagePicker} from "./EmailHeaderImagePicker";
+const names={image:"Image",text:"Text",columns:"Image + text",button:"Button"};
+const inputClass="w-full border border-ink-black/20 bg-white p-3 text-base";
+export function EmailSectionBuilder({sections,onChange,images,disabled=false}:{sections:EmailSection[];onChange:(sections:EmailSection[])=>void;images:PortfolioEmailImage[];disabled?:boolean}){
+  const[insertAt,setInsertAt]=useState<number|null>(null),[choosing,setChoosing]=useState<string|null>(null);
+  const[removed,setRemoved]=useState<{section:EmailSection;index:number}|null>(null);
+  const update=(next:EmailSection)=>onChange(sections.map(section=>section.id===next.id?next:section));
+  const add=(type:EmailSection["type"])=>{if(sections.length>=30)return;const next=[...sections];next.splice(insertAt??next.length,0,newEmailSection(type,crypto.randomUUID()));onChange(next);setInsertAt(null)};
+  return <fieldset disabled={disabled} className="grid min-w-0 gap-4 border border-ink-black/20 bg-[#F5F3EF] p-4">
+    <legend className="px-2 text-lg">Email sections</legend>
+    <p className="text-sm text-ink-black/65">These sections appear after the introduction, in this order. Add photos between text blocks or place a photo beside text. The footer remains at the end.</p>
+    <button type="button" disabled={sections.length>=30} onClick={()=>setInsertAt(sections.length)} className="justify-self-start bg-ink-black px-5 py-3 text-base text-white disabled:opacity-40">+ Add section</button>
+    {insertAt!==null&&<div className="grid gap-2 border bg-white p-3 sm:grid-cols-2"><p className="col-span-full text-sm">Insert at position {insertAt+1}</p>{(Object.keys(names) as EmailSection["type"][]).map(type=><button key={type} type="button" onClick={()=>add(type)} className="border border-ink-black/20 px-4 py-3 text-left text-sm hover:bg-soft-yellow">+ {names[type]}</button>)}<button type="button" onClick={()=>setInsertAt(null)} className="justify-self-start px-3 py-2 text-sm underline">Cancel</button></div>}
+    {removed&&<div className="flex flex-wrap items-center justify-between gap-2 border bg-white p-3 text-sm"><span>Section removed.</span><button type="button" disabled={sections.length>=30} onClick={()=>{const next=[...sections];next.splice(Math.min(removed.index,next.length),0,removed.section);onChange(next);setRemoved(null)}} className="underline">Undo removal</button></div>}
+    {!sections.length&&<p className="border border-dashed border-ink-black/20 p-5 text-sm">No extra sections yet. Click Add section to start.</p>}
+    {sections.map((section,index)=><section key={section.id} aria-label={`Section ${index+1}: ${names[section.type]}`} className="grid min-w-0 gap-4 border border-ink-black/20 bg-white p-4">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b pb-3"><h4 className="text-base">{index+1}. {names[section.type]}</h4><div className="flex flex-wrap gap-2">
+        <button type="button" aria-label={`Move section ${index+1} up`} disabled={index===0} onClick={()=>onChange(moveEmailSection(sections,section.id,-1))} className="border px-3 py-2 text-sm disabled:opacity-30">↑ Up</button>
+        <button type="button" aria-label={`Move section ${index+1} down`} disabled={index===sections.length-1} onClick={()=>onChange(moveEmailSection(sections,section.id,1))} className="border px-3 py-2 text-sm disabled:opacity-30">↓ Down</button>
+        <button type="button" disabled={sections.length>=30} onClick={()=>{const next=[...sections];next.splice(index+1,0,{...section,id:crypto.randomUUID()});onChange(next)}} className="border px-3 py-2 text-sm disabled:opacity-30">Duplicate</button>
+        <button type="button" onClick={()=>{setRemoved({section,index});onChange(sections.filter(item=>item.id!==section.id));if(choosing===section.id)setChoosing(null)}} className="border border-red-300 px-3 py-2 text-sm text-red-800">Remove</button>
+      </div></header>
+      {(section.type==="image"||section.type==="columns")&&<div className="grid gap-3">{section.image&&<img src={section.image} alt={section.alt||"Selected section photo"} className="max-h-48 w-full object-contain"/>}<button type="button" onClick={()=>setChoosing(choosing===section.id?null:section.id)} className="justify-self-start border px-4 py-3 text-sm">{choosing===section.id?"Close photo library":section.image?"Change photo":"Choose photo"}</button>{choosing===section.id&&<EmailHeaderImagePicker value={section.image} onChange={src=>{const photo=images.find(item=>item.src===src);update({...section,image:src,alt:photo?.alt??section.alt});setChoosing(null)}} images={images} context={`Photo for section ${index+1} only. Natural proportions; no automatic cropping.`}/>}<label className="grid gap-2 text-sm">Image description / alt<input maxLength={500} value={section.alt} onChange={event=>update({...section,alt:event.target.value})} className={inputClass}/></label></div>}
+      {section.type==="columns"&&<label className="grid gap-2 text-sm">Photo position on desktop<select value={section.imageSide} onChange={event=>update({...section,imageSide:event.target.value as "left"|"right"})} className={inputClass}><option value="left">Photo left · text right</option><option value="right">Text left · photo right</option></select><span className="text-sm text-ink-black/60">Columns stack vertically on mobile.</span></label>}
+      {(section.type==="text"||section.type==="columns")&&<><label className="grid gap-2 text-sm">Section heading<input maxLength={300} value={section.title} onChange={event=>update({...section,title:event.target.value})} className={inputClass}/></label><label className="grid gap-2 text-sm">Section text<textarea maxLength={12000} rows={5} value={section.text} onChange={event=>update({...section,text:event.target.value})} className={inputClass}/></label></>}
+      {section.type==="button"&&<><label className="grid gap-2 text-sm">Button label<input maxLength={200} value={section.label} onChange={event=>update({...section,label:event.target.value})} className={inputClass}/></label><label className="grid gap-2 text-sm">Destination<select value={section.destination} onChange={event=>update({...section,destination:event.target.value as "url"|"offer"|"portal"})} className={inputClass}><option value="url">Custom link</option><option value="offer">This customer’s offer (automatic)</option><option value="portal">This customer’s portal (automatic)</option></select></label>{section.destination==="url"&&<label className="grid gap-2 text-sm">Link URL<input maxLength={1500} type="url" value={section.url} onChange={event=>update({...section,url:event.target.value})} placeholder="https://…" className={inputClass}/></label>}</>}
+      <button type="button" disabled={sections.length>=30} onClick={()=>setInsertAt(index+1)} className="justify-self-start text-sm underline">+ Add section after this</button>
+    </section>)}
+    <p className="text-sm text-ink-black/55">{sections.length} / 30 sections</p>
+  </fieldset>;
+}

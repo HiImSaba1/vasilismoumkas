@@ -1,9 +1,12 @@
 import type { EmailTemplate } from "@/lib/email-templates";
+import { readEmailComposition,serializeEmailComposition } from "./email-composition";
 const round=(value:number)=>Math.round((value+Number.EPSILON)*100)/100;
 const euro=(value:number)=>`${new Intl.NumberFormat("el-GR",{minimumFractionDigits:Number.isInteger(value)?0:2,maximumFractionDigits:2}).format(value)}€`;
 export function clientEmailFinancialValues(total:number){const net=round(total*.25),vat=round(net*.24);return{deposit_percent:"25%",vat_rate:"24%",deposit_net_amount:euro(net),deposit_vat_amount:euro(vat),deposit_total_amount:euro(round(net+vat)),remaining_net_amount:euro(round(Math.max(0,total-net)))};}
-export function withClientFinancialParagraph(template:EmailTemplate){
+export function withClientFinancialParagraph(template:EmailTemplate):EmailTemplate{
   if(template.id!=="005")return template;
+  const structured=readEmailComposition(template.bodyText);
+  if(structured){const updated=withClientFinancialParagraph({...template,bodyText:structured.introduction});return{...template,bodyText:serializeEmailComposition({...structured,introduction:updated.bodyText})}}
   const greek=template.locale==="el";
   const event=template.eventType==="baptism"?(greek?"βάπτισης":"baptism"):(greek?"γάμου":"wedding");
   const paragraph=greek
