@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { CONSENT_KEY, saveCookieConsent } from "@/lib/analytics-consent";
 import { ArrowRight } from "lucide-react";
 
 function cn(...classes: (string | false | null | undefined)[]) {
@@ -14,7 +15,8 @@ const CookieBanner = () => {
   const duration = "duration-[600ms]";
 
   useEffect(() => {
-    const consent = localStorage.getItem("vm_cookie_consent");
+    let consent: string | null = null;
+    try { consent = localStorage.getItem(CONSENT_KEY); } catch { /* Show choices when storage is unavailable. */ }
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 2000);
       return () => clearTimeout(timer);
@@ -22,7 +24,7 @@ const CookieBanner = () => {
   }, []);
 
   const acceptCookies = () => {
-    localStorage.setItem("vm_cookie_consent", "accepted");
+    saveCookieConsent("accepted");
     setIsVisible(false);
   };
 
@@ -37,8 +39,8 @@ const CookieBanner = () => {
               Cookie Policy
             </h4>
             <p className="text-[14px] leading-snug text-ink-black font-light ">
-              "We use cookies to enhance your experience and analyze our traffic. 
-              By clicking Accept, you consent to our use of cookies."
+              &quot;We use cookies to enhance your experience and analyze our traffic.
+              By clicking Accept, you consent to our use of cookies.&quot;
             </p>
             <Link href="/cookies" className="inline-block text-[11px] uppercase tracking-widest underline underline-offset-4 hover:text-red-600 transition-colors">
               Cookies Policy
@@ -68,7 +70,7 @@ const CookieBanner = () => {
               </span>
             </button>
             <button
-              onClick={() => setIsVisible(false)}
+              onClick={() => { saveCookieConsent("declined"); setIsVisible(false); }}
               className="group relative flex-1 overflow-hidden border border-ink-black/20 bg-white px-6 py-3.5 text-[10px] uppercase tracking-[0.2em] text-ink-black transition-all duration-500"
             >
               <span 

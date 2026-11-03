@@ -1,3 +1,4 @@
+import GoogleAnalytics from "@/components/core/GoogleAnalytics";
 import ClientLayout from "@/ClientLayout";
 import {getHomepageSettings} from "@/lib/homepage-settings";
 import {getWebsiteSettings} from "@/lib/website-settings";
@@ -10,5 +11,5 @@ export default async function SiteLayout({
   children: React.ReactNode;
 }) {
   const[websiteSettings,seoSettings,home,about]=await Promise.all([getWebsiteSettings(),getSeoSettings(),getHomepageSettings(),getPublicPageSettings("about")]);
-  return <ClientLayout aboutFooterLines={about.content.footerCtaLines} homeFooterLines={home.footerCtaLines} websiteSettings={websiteSettings} businessSettings={seoSettings.business}>{children}</ClientLayout>;
+  return <ClientLayout aboutFooterLines={about.content.footerCtaLines} homeFooterLines={home.footerCtaLines} websiteSettings={websiteSettings} businessSettings={seoSettings.business}><GoogleAnalytics />{children}</ClientLayout>;
 }
