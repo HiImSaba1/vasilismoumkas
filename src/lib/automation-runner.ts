@@ -1,3 +1,4 @@
+import {hasExternalProposal,externalEmailHoldReason} from "@/lib/external-email";
 import "server-only";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/database";
@@ -21,6 +22,7 @@ export async function runDueAutomations(limit=10){
       const[rows]=await db.query<Context[]>(`SELECT j.id,j.job_type,j.send_mode,j.lead_id,j.client_id,j.offer_id,j.template_id,j.attempts,j.payload,COALESCE(o.client_email,c.email,l.email) recipient,COALESCE(o.client_name,c.couple_names,l.couple_names) couple_names,COALESCE(o.event_type,c.event_type,l.event_type) event_type,o.language offer_language,l.workflow_locale,DATE_FORMAT(COALESCE(c.event_date,l.event_date),'%Y-%m-%d') event_date,COALESCE(c.ceremony_location,l.ceremony_location) ceremony_location,COALESCE(c.reception_location,l.reception_location) reception_location,o.slug offer_slug,o.status offer_status,(SELECT t.slug FROM timelines t WHERE t.client_id=j.client_id AND t.status='published' ORDER BY t.updated_at DESC LIMIT 1) timeline_slug,(SELECT p.public_slug FROM client_portals p WHERE p.client_id=j.client_id AND p.status='active' LIMIT 1) portal_slug FROM automation_jobs j LEFT JOIN leads l ON l.id=j.lead_id LEFT JOIN clients c ON c.id=j.client_id LEFT JOIN offers o ON o.id=j.offer_id WHERE j.id=? LIMIT 1`,[item.id]);
       const job=rows[0];if(!job?.template_id)throw new Error("Template is missing");
       if(job.send_mode==="automatic"&&!automaticTemplateIds.has(job.template_id)){await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Automatic delivery is not allowed for this template',locked_at=NULL WHERE id=?",[job.id]);cancelled++;continue}
+      if(["001","002","003"].includes(job.template_id)&&await hasExternalProposal({leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id})){await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error=?,locked_at=NULL WHERE id=?",[externalEmailHoldReason,job.id]);cancelled++;continue}
       if(!job.recipient)throw new Error("Recipient is missing");
       if(await reconcileAutomationAfterDeliveredTemplate({templateId:job.template_id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id})){cancelled++;continue}
       const athensToday=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Athens",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());

@@ -3,8 +3,8 @@ import {useActionState,useEffect,useMemo,useState} from "react";
 import {useEmailPreviewOrigin} from "@/components/admin/useEmailPreviewOrigin";
 import {EmailCompositionFields} from "@/components/admin/EmailCompositionFields";
 import {EmailHeaderImagePicker} from "@/components/admin/EmailHeaderImagePicker";
-import {brandedEmailSubject,compositionPrefix,resolveEmailBody} from "@/lib/email-composition";
-import {approvedEmailLayout} from "@/lib/approved-email-layout";
+import {brandedEmailSubject,compositionPrefix,resolveEmailBody,initialEmailComposition,readEmailComposition} from "@/lib/email-composition";
+import {approvedWeddingProposal} from "@/lib/approved-email-layout";
 import {basicEmailDesign,emailDesignSamples} from "@/lib/email-design-samples";
 import {renderEmailDocument} from "@/lib/email-renderer";
 import type {EmailTemplate} from "@/lib/email-templates";
@@ -15,9 +15,9 @@ const initial={success:false,message:""};
 const fieldClass="w-full border border-ink-black/20 bg-white p-3 text-base normal-case tracking-normal";
 export function TemplateEditor({template,smtpReady}:{template:EmailTemplate;smtpReady:boolean}) {
   const previewOrigin=useEmailPreviewOrigin();
-  const[content,setContent]=useState(()=>approvedEmailLayout(template));
+  const[content,setContent]=useState(()=>initialEmailComposition(template.bodyText,template.locale,template.id));
   const[subject,setSubject]=useState(brandedEmailSubject(template.subject,template.eventType)),[image,setImage]=useState(template.headerImage??"");
-  const[active,setActive]=useState(template.isActive),[mobile,setMobile]=useState(false),[dirty,setDirty]=useState(false);
+  const[active,setActive]=useState(template.isActive),[mobile,setMobile]=useState(false),[dirty,setDirty]=useState(()=>!readEmailComposition(template.bodyText)||brandedEmailSubject(template.subject,template.eventType)!==template.subject);
   const[images,setImages]=useState<PortfolioEmailImage[]>([]),[imageError,setImageError]=useState("");
   const[saveState,saveAction,saving]=useActionState(updateTemplateAction,initial);
   const[testState,testAction,testing]=useActionState(testSendAction,initial);
@@ -32,6 +32,7 @@ export function TemplateEditor({template,smtpReady}:{template:EmailTemplate;smtp
   const changeContent:typeof setContent=value=>{setDirty(true);setContent(value)};
   return <div id="email-template-editor" data-email-design-dirty={dirty?"true":"false"} className="mt-6">
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-sm border border-ink-black/15 bg-white p-4"><div><p className="text-sm text-ink-black/60">{template.id==="010"?"TEST ONLY — copied from 000 ·":"Editing saved template ·"} {template.eventType} · {template.locale.toUpperCase()}</p><h2 className="mt-1 text-xl">{template.id} — {template.name}</h2></div><button type="button" disabled={saving||testing} onClick={()=>{if(window.confirm("Load the basic visual design? This replaces the editor text only. Nothing is saved until you click Save template.")){setContent(basicEmailDesign(template.locale,template.eventType,template.id));setDirty(true)}}} className="border border-ink-black px-4 py-3 text-sm hover:bg-soft-yellow">Use basic visual template</button></div>
+    {template.id==="001"&&template.eventType==="wedding"&&template.locale==="el"&&<div className="mb-4 border border-ink-black/20 bg-[#F5F3EF] p-4"><button type="button" disabled={saving||testing} onClick={()=>{if(window.confirm("Load the approved wedding 001 layout? This replaces this editor's copy and photos. Existing customer drafts are preserved. Save explicitly after reviewing.")){const approved=approvedWeddingProposal();setContent(approved.content);setImage(approved.headerImage);setDirty(true)}}} className="border border-ink-black p-3">Load approved wedding 001 layout</button><p className="mt-2 text-sm">Review the personal introduction and optional practical details for each couple. Reference photos must be available in the portfolio library before saving.</p></div>}
     <div className="grid items-start gap-6 lg:grid-cols-2">
       <section aria-label="Email design editor" className="min-w-0 border border-ink-black/15 bg-white">
         <div className="border-b bg-[#F5F3EF] p-5"><h3 className="text-xl">1. Design & content</h3><p className="mt-2 text-sm text-ink-black/65">Change a field on the left and see it immediately on the right. Saving updates this shared template for future emails.</p></div>
@@ -48,7 +49,7 @@ export function TemplateEditor({template,smtpReady}:{template:EmailTemplate;smtp
       <section aria-label="Live email preview" className="min-w-0 border border-ink-black/15 bg-[#F5F3EF] lg:sticky lg:top-5">
         <div className="border-b bg-white p-5"><div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-xl">2. Live preview</h3><div className="flex border border-ink-black/20"><button type="button" aria-pressed={!mobile} onClick={()=>setMobile(false)} className={`px-3 py-2 text-sm ${!mobile?"bg-ink-black text-white":""}`}>Desktop</button><button type="button" aria-pressed={mobile} onClick={()=>setMobile(true)} className={`px-3 py-2 text-sm ${mobile?"bg-ink-black text-white":""}`}>Mobile</button></div></div><p className="mt-3 break-words text-sm">Subject: {previewSubject}</p><p className="mt-2 text-sm text-ink-black/55">Sample customer details · proposal buttons use sample links.</p></div>
         {preview.error?<p role="alert" className="p-5 text-sm text-red-700">Check the design links: {preview.error}</p>:<div className="overflow-x-auto p-3"><iframe title="Live template design preview" sandbox="" srcDoc={preview.html} style={{width:mobile?390:"100%",maxWidth:"100%"}} className="mx-auto block h-[75vh] min-h-[540px] bg-white"/></div>}
-        <details className="border-t bg-white p-5"><summary className="cursor-pointer text-sm">Send a test of this design</summary><form action={testAction} className="mt-4 grid gap-3">{scope}<p className="text-sm text-ink-black/65">Tests the current editor, including unsaved changes, using sample customer details. No offer status or follow-up changes.</p><label className="grid gap-2 text-sm">Your test email address<input required type="email" name="recipient" placeholder="your@email.com" className={fieldClass}/></label><button disabled={!smtpReady||testing||saving||Boolean(preview.error)} className="justify-self-start border border-ink-black px-4 py-3 text-sm disabled:opacity-40">{testing?"Sending test…":"Send test email"}</button><p role="status" className="text-sm">{testState.message||(!smtpReady?"SMTP is not configured.":"")}</p></form></details>
+        <details className="border-t bg-white p-5"><summary className="cursor-pointer text-sm">Send a test of this design</summary><form action={testAction} className="mt-4 grid gap-3">{scope}<p className="text-sm text-ink-black/65">Save first. Tests the saved template using sample customer details. No client delivery, offer status or follow-up changes.</p><label className="grid gap-2 text-sm">Your test email address<input required type="email" name="recipient" readOnly value="vasilis.moumkas@gmail.com" className={fieldClass}/></label><button disabled={!smtpReady||testing||saving||dirty||Boolean(preview.error)} className="justify-self-start border border-ink-black px-4 py-3 text-sm disabled:opacity-40">{testing?"Sending test…":"Send test email"}</button><p role="status" className="text-sm">{testState.message||(!smtpReady?"SMTP is not configured.":"")}</p></form></details>
       </section>
     </div>
   </div>;

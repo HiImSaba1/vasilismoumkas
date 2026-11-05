@@ -1,5 +1,5 @@
 import { readEmailComposition } from "./email-composition";
-import { renderStructuredEmail } from "./structured-email-renderer";
+import { renderStructuredEmail, renderEmailSignature } from "./structured-email-renderer";
 export type EmailRenderLocale="el"|"en";
 
 export type EmailRenderOptions={
@@ -14,8 +14,6 @@ export type EmailRenderOptions={
 
 const fallbackSiteUrl="https://vasilismoumkas.com";
 const fallbackHeaderPath="/uploads/portfolio/natasa-stamatis/7099163a-198e-4cf5-ab4c-799e6ae5757a.webp";
-const instagramUrl="https://www.instagram.com/vasilismoumkas_weddings/";
-const pinterestUrl="https://gr.pinterest.com/vasilismoumkas/";
 
 const escapeHtml=(value:string)=>value.replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char]!);
 const escapeAttribute=escapeHtml;
@@ -34,7 +32,7 @@ function linkedText(value:string){
   return escaped.replace(/https?:\/\/[^\s<]+/gi,url=>{
     const clean=url.replace(/[),.;!?]+$/g,"");
     const suffix=url.slice(clean.length);
-    return `<a href="${escapeAttribute(clean)}" target="_blank" style="display:inline-block;max-width:100%;padding:12px 18px;background:#221f20;color:#ffffff;font-size:12px;line-height:18px;font-weight:700;letter-spacing:.03em;text-decoration:none;word-break:break-all">${clean}</a>${suffix}`;
+    return `<a href="${escapeAttribute(clean)}" target="_blank" style="display:inline-block;max-width:100%;padding:12px 18px;background:#D9CEC3;color:#292724;font-size:12px;line-height:18px;font-weight:700;letter-spacing:.03em;text-decoration:none;word-break:break-all">${clean}</a>${suffix}`;
   });
 }
 
@@ -51,10 +49,10 @@ function normalizedTextBody(value:string){
   }).join("\n\n");
 }
 
-function button(label:string,url:string,primary:boolean){
-  const background="#221f20";
-  const color="#ffffff";
-  const border=primary?"#221f20":"#4d4844";
+function button(label:string,url:string){
+  const background="#D9CEC3";
+  const color="#292724";
+  const border="#b7aaa0";
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:26px 0"><tr><td align="center"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr><td bgcolor="${background}" style="border:1px solid ${border}"><a href="${escapeAttribute(url)}" target="_blank" style="display:inline-block;padding:15px 24px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:16px;font-weight:700;letter-spacing:.08em;color:${color};text-decoration:none">${escapeHtml(label)}</a></td></tr></table></td></tr></table>`;
 }
 
@@ -86,31 +84,37 @@ function bodyHtml(bodyText:string,options:EmailRenderOptions){
     if(offerUrl&&trimmed.includes(offerUrl)&&!used.has("offer")){
       used.add("offer");
       const remaining=trimmed.replace(offerUrl,"").trim();
-      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button(options.locale==="el"?"ΔΕΙΤΕ ΤΗΝ ΠΡΟΣΩΠΙΚΗ ΣΑΣ ΠΡΟΤΑΣΗ":"VIEW YOUR PERSONAL PROPOSAL",offerUrl,true)}`;
+      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button(options.locale==="el"?"ΔΕΙΤΕ ΤΗΝ ΠΡΟΣΩΠΙΚΗ ΣΑΣ ΠΡΟΤΑΣΗ":"VIEW YOUR PERSONAL PROPOSAL",offerUrl)}`;
     }
     if(portalUrl&&trimmed.includes(portalUrl)&&!used.has("portal")){
       used.add("portal");
       const remaining=trimmed.replace(portalUrl,"").trim();
-      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button("View Client Portal",portalUrl,true)}`;
+      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button("View Client Portal",portalUrl)}`;
     }
     if(galleryUrl&&trimmed.includes(galleryUrl)&&!used.has("gallery")){
       used.add("gallery");
       const remaining=trimmed.replace(galleryUrl,"").trim();
-      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button(options.locale==="el"?"ΔΕΙΤΕ ΜΙΑ ΟΛΟΚΛΗΡΩΜΕΝΗ WEDDING STORY":"VIEW A COMPLETE WEDDING STORY",galleryUrl,false)}`;
+      return `${remaining?`<p style="margin:0 0 18px;text-align:center">${paragraphHtml(remaining)}</p>`:""}${button(options.locale==="el"?"ΔΕΙΤΕ ΜΙΑ ΟΛΟΚΛΗΡΩΜΕΝΗ WEDDING STORY":"VIEW A COMPLETE WEDDING STORY",galleryUrl)}`;
     }
     return `<p style="margin:0 0 18px;text-align:center">${paragraphHtml(trimmed)}</p>`;
   }).join("\n");
 }
 
-function footerHtml(siteUrl:string){return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #d9d5cc"><tr><td align="center" style="padding:28px 16px 34px;font-family:Arial,Helvetica,sans-serif;color:#221f20;text-align:center"><p style="margin:0 0 5px;font-size:14px;line-height:20px;font-weight:700">Vasilis Moumkas | Fine Art Wedding Photographer</p><p style="margin:0 0 18px;font-size:12px;line-height:18px;color:#6c6864">A Refined Storytelling Experience. Documenting Life, Light &amp; Love.</p><p style="margin:0 0 18px;font-size:12px;line-height:18px">Based in Greece &mdash; Available worldwide</p><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin-bottom:12px"><tr><td bgcolor="#ffffff" style="border:1px solid #221f20"><a href="tel:+306972218775" style="display:inline-block;padding:12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em;color:#221f20;text-decoration:none">CALL ME &middot; +30 697 22 18775</a></td></tr></table><table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td bgcolor="#221f20" style="border:1px solid #221f20"><a href="${escapeAttribute(siteUrl)}" target="_blank" style="display:inline-block;padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em;color:#ffffff;text-decoration:none">WEBSITE</a></td><td width="8">&nbsp;</td><td bgcolor="#FFFFC4" style="border:1px solid #d8d89d"><a href="${instagramUrl}" target="_blank" style="display:inline-block;padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em;color:#221f20;text-decoration:none">INSTAGRAM</a></td><td width="8">&nbsp;</td><td bgcolor="#ffffff" style="border:1px solid #221f20"><a href="${pinterestUrl}" target="_blank" style="display:inline-block;padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:10px;line-height:14px;font-weight:700;letter-spacing:.04em;color:#221f20;text-decoration:none">PINTEREST</a></td></tr></table></td></tr></table>`}
+function footerHtml(siteUrl:string,locale:EmailRenderLocale){return renderEmailSignature(locale,siteUrl)}
 
 export function renderEmailDocument(bodyText:string,options:EmailRenderOptions){
   const composition=readEmailComposition(bodyText);
   if(composition)return renderStructuredEmail(composition,options).html;
   const siteUrl=(options.siteUrl||fallbackSiteUrl).replace(/\/$/,"");
   const headerImageUrl=absoluteUrl(options.headerImageUrl||fallbackHeaderPath,siteUrl);
-  return `<!doctype html><html lang="${options.locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title></title><!--[if mso]><style>table,td,p,a{font-family:Arial,Helvetica,sans-serif!important}</style><![endif]--></head><body style="margin:0;padding:0;background:#f3f0ea;color:#221f20"><div style="display:none;max-height:0;overflow:hidden;opacity:0">&nbsp;</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f3f0ea"><tr><td align="center" style="padding:20px 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:640px;background:#fffdf9"><tr><td><a href="${escapeAttribute(siteUrl)}" target="_blank"><img src="${escapeAttribute(headerImageUrl)}" width="640" alt="Santorini" style="display:block;width:100%;max-width:640px;height:auto;border:0"></a></td></tr><tr><td style="padding:42px 20px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#221f20;text-align:center">${bodyHtml(bodyText,options)}</td></tr><tr><td>${footerHtml(siteUrl)}</td></tr></table></td></tr></table></body></html>`;
+  return `<!doctype html><html lang="${options.locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="x-apple-disable-message-reformatting"><title></title><!--[if mso]><style>table,td,p,a{font-family:Arial,Helvetica,sans-serif!important}</style><![endif]--></head><body style="margin:0;padding:0;background:#F5F3EF;color:#292724"><div style="display:none;max-height:0;overflow:hidden;opacity:0">&nbsp;</div><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F5F3EF"><tr><td align="center" style="padding:20px 8px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:640px;background:#F5F3EF"><tr><td><a href="${escapeAttribute(siteUrl)}" target="_blank"><img src="${escapeAttribute(headerImageUrl)}" width="640" alt="Santorini" style="display:block;width:100%;max-width:640px;height:auto;border:0"></a></td></tr><tr><td style="padding:42px 20px 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;color:#292724;text-align:center">${bodyHtml(bodyText,options)}</td></tr><tr><td>${footerHtml(siteUrl,options.locale)}</td></tr></table></td></tr></table></body></html>`;
 }
 
-const signatureText=`Vasilis Moumkas | Fine Art Wedding Photographer\nA Refined Storytelling Experience. Documenting Life, Light & Love.\n\nBased in Greece - Available worldwide\nt +30 697 22 18775\nwww.vasilismoumkas.com\n\nConnect: Instagram | Pinterest`;
+const signatureText=`Vasilis Moumkas
+Fine Art Photographer
++30 697 221 8775
+vasilis.moumkas@gmail.com
+https://vasilismoumkas.com
+Instagram: https://www.instagram.com/vasilismoumkas_weddings/
+Pinterest: https://gr.pinterest.com/vasilismoumkas/`;
 export function renderEmailText(bodyText:string,options?:EmailRenderOptions){const composition=readEmailComposition(bodyText);if(composition)return renderStructuredEmail(composition,options??{locale:"el"}).text;return `${normalizedTextBody(bodyText)}\n\n---\n\n${signatureText}`}

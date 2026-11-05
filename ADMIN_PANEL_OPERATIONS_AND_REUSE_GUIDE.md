@@ -1,5 +1,7 @@
 # Vasilis Moumkas Studio CRM — Admin operations, workflow and reuse guide
 
+Latest email maintenance: [Approved email layout fix — 5 November 2026](EMAIL_APPROVED_LAYOUT_FIX_2026_11_05.md). Covers the permanent beige/light signature renderer, explicit approved wedding/EL/001 layout, saved-template owner-only tests, separate external Gmail 001 history and communication hold. Local source/offline checks pass; owner build, release and real inbox/mobile acceptance remain pending. Existing sent-email archives are preserved.
+
 Updated: 3 September 2026  
 Workspace: `C:\Users\sab_j\Desktop\Projects\moumkas-new\moumkas-awwwards`  
 Current local evidence: `artifacts/verification/sprint-26-results.txt` — full PASS, 3 September 2026 12:17 +03:00.

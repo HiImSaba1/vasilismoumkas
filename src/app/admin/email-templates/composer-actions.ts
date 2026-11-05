@@ -29,7 +29,7 @@ export async function sendComposerTestAction(_state:{success:boolean;message:str
     const origin=(process.env.NEXT_PUBLIC_SITE_URL||"https://vasilismoumkas.com").replace(/\/$/,"");
     const outgoing=renderEditedEmail(input.subject,input.bodyText,input.locale,{email_event_type:record.eventType,offer_url:offer?`${origin}/offer/${offer.slug}`:"",portal_url:portal?`${origin}/portal/${portal.slug}`:"",email_header_image:input.headerImage});
     assertRenderedEmail(outgoing);
-    const recipient=z.email().parse(process.env.INTERNAL_NOTIFICATION_EMAIL?.trim()||process.env.INQUIRY_NOTIFICATION_EMAIL?.trim()||process.env.OWNER_REPLY_EMAIL?.trim()||"vasilis.moumkas@gmail.com");
+    const recipient=z.email().parse("vasilis.moumkas@gmail.com");
     const from=process.env.SMTP_FROM_EMAIL||process.env.SMTP_USERNAME;
     const mime=await inlineEmailBrandAssets(outgoing.html);
     await getSmtpTransport().sendMail({from:`Vasilis Moumkas <${from}>`,to:recipient,subject:`[TEST ${template.id} · ${template.locale}] ${outgoing.subject}`,html:mime.html,text:outgoing.text,attachments:mime.attachments});
