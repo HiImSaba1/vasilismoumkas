@@ -1,3 +1,5 @@
+import {deliverables,getClientProduction} from "@/lib/client-production";
+import {updateClientProduction} from "./production-actions";
 import { QuestionnaireAnswersEditor } from "./QuestionnaireAnswersEditor";
 import { questionnaireAnswerFields } from "@/lib/questionnaire-answer-editing";
 import Link from "next/link";
@@ -30,6 +32,7 @@ export default async function ClientPage({params,searchParams}:{params:Promise<{
   const{id}=await params;const query=await searchParams;
   const[client,history,questionnaire,deliveries,workspace,paymentSummary,clientFiles,extraCatalog,extras,extraTotals,collaborators,teamAssignments]=await Promise.all([getClient(id),getClientActivity(id),getClientQuestionnaire(id),listClientEmailDeliveries(id),getClientWorkspaceSummary(id),getInvoicePaymentSummary(id),listClientFiles(id),listExtraCatalog(),listClientExtras(id),getClientExtraTotals(id),listCollaborators(),listTeamAssignments(id)]);
   if(!client)notFound();
+  const production=await getClientProduction(id);
   const origin=process.env.NEXT_PUBLIC_SITE_URL??"http://localhost:3000";
   const questionnaireUrl=query.questionnaire?`${origin}/questionnaire/${query.questionnaire}`:null;
   const contract=workspace.documents.find(item=>item.type==="contract");
@@ -57,6 +60,23 @@ export default async function ClientPage({params,searchParams}:{params:Promise<{
 
       <ClientWorkspaceSection id="extra-services" title="Extra services" status={`${extraTotals.agreedCount} agreed`} tone={extraTotals.documentUpdateRequired?"orange":extraTotals.agreedCount?"green":"grey"} summary={`${extras.length} records · ${new Intl.NumberFormat("el-GR",{style:"currency",currency:"EUR"}).format(extraTotals.gross)} agreed total`}><ClientExtrasManager clientId={client.id} catalog={extraCatalog} extras={extras} totals={extraTotals} defaultVatRate={Number(rawValue(invoice?.data,"vat_rate","24"))||24}/></ClientWorkspaceSection>
 
+      <section id="production" className="grid gap-4 border p-5">
+        <h2>Production and delivery</h2>
+        {production?.folder && <a href={production.folder} target="_blank" rel="noopener noreferrer">Άνοιγμα φακέλου</a>}
+        <form action={updateClientProduction} className="grid gap-4">
+          <input type="hidden" name="clientId" value={id}/>
+          <label>Φάκελος εικόνων στον server (HTTPS) <input type="url" name="folder" defaultValue={production?.folder}/></label>
+          <label>Private client gallery URL (HTTPS) <input type="url" name="gallery" defaultValue={production?.gallery}/></label>
+          <label>Gallery expiry <input type="date" name="expiry" defaultValue={production?.expiry}/></label>
+          {deliverables.map((key,index)=><fieldset key={key} className="grid gap-2 border p-3">
+            <legend>{["25 preview photos","Full gallery","Film","Album"][index]}</legend>
+            <label>Responsible person <input name={key+"-owner"} maxLength={150} defaultValue={production?.items[index]?.owner}/></label>
+            <label>Due date <input type="date" name={key+"-due"} defaultValue={production?.items[index]?.due}/></label>
+            <label><input type="checkbox" name={key+"-complete"} defaultChecked={production?.items[index]?.complete}/> Delivered</label>
+          </fieldset>)}
+          <button type="submit" className="w-fit border px-4 py-2">Save production details</button>
+        </form>
+      </section>
       <ClientWorkspaceSection id="coverage-team" title="Coverage team" status={`${teamAssignments.filter(item=>item.status==="confirmed").length} confirmed`} tone={teamAssignments.some(item=>item.status==="confirmed")?"green":teamAssignments.length?"orange":"grey"} summary={`${teamAssignments.length} assignments · no automatic email`}><CoverageTeamManager clientId={client.id} collaborators={collaborators} assignments={teamAssignments}/></ClientWorkspaceSection>
 
       <ClientWorkspaceSection id="contract-record" title="Contract" status={contract?.status??client.agreementStatus??"not sent"} tone={tone(contract?.status??client.agreementStatus)} summary={contract?`Updated ${new Date(contract.updatedAt).toLocaleDateString("en-GB")}`:"Agreement has not been prepared"}><div className="grid gap-5"><p className="text-sm leading-relaxed text-ink-black/60">The collaboration agreement, signature status and downloadable PDF remain connected to this client portal.</p>{contract&&<><QuickActions><Link href="#contract-record">View</Link>{workspace.portal?.status==="active"&&<Link target="_blank" href={`/portal/${workspace.portal.slug}?tab=contract`}>Preview</Link>}<a href={`/api/admin/clients/${client.id}/documents/contract/pdf`}>Download</a><Link href={`/admin/clients/${client.id}/email?template=006`}>Send / Resend</Link></QuickActions><ClientContractEditor clientId={client.id} contract={contract}/></>} {!contract&&<Actions portal={workspace.portal?.status==="active"?workspace.portal.slug:null} leadId={client.leadId} label="Manage contract"/>}</div></ClientWorkspaceSection>

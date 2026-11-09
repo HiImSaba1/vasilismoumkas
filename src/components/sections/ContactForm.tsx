@@ -1,4 +1,5 @@
 "use client";
+import { trackInquiry } from "@/lib/analytics-consent";
 import {InlineContent} from "@/components/ui/InlineContent";
 import { publicCopy } from "@/app/(site)/data/ApprovedPublicCopy";
 
@@ -76,12 +77,13 @@ export default function ContactForm({previewOnly=false,content={intro:publicCopy
     // Format the date for the email body
     const submissionData = {
       ...data,
-      date: data.date ? format(data.date, "PPP") : "N/A",
+      date: format(data.date, "yyyy-MM-dd"),
     };
 
     const sendRequest = async () => {
       const result = await sendEmail(submissionData);
       if (!result.success) throw new Error(result.error);
+      trackInquiry(result.leadId, result.inquiryType);
       return result;
     };
 
@@ -152,7 +154,7 @@ export default function ContactForm({previewOnly=false,content={intro:publicCopy
         </div>
 
         {/* ROW 2: DATE & LOCATION */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 relative ${isCalendarOpen ? 'z-100' : 'z-40'}`}>
+        <div id="inquiry-date" className={`scroll-mt-28 grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 relative ${isCalendarOpen ? 'z-100' : 'z-40'}`}>
           <div className="relative border-b border-ink-black/20 pb-1">
             <label className="block text-sm font-bold tracking-wide text-black mb-1 uppercase">on (date)*</label>
             <div 

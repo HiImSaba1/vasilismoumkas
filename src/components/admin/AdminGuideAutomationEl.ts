@@ -90,3 +90,5 @@ export const guideAutomationEl:Record<string,string>={
 ,"Next:":"ΕΠΟΜΕΝΟ:"
 };
 guideAutomationEl["Mark Sent starts the 30-day period and schedules follow-ups for day 6 and day 10."]="Η ΣΗΜΑΝΣΗ ΩΣ ΑΠΟΣΤΑΛΜΕΝΗ ΞΕΚΙΝΑ ΤΙΣ 30 ΗΜΕΡΕΣ ΚΑΙ ΤΑ FOLLOW-UP ΤΩΝ ΗΜΕΡΩΝ 6 ΚΑΙ 10.";
+
+guideAutomationEl["The actual 001 send starts the 30-day period. New offers default to follow-ups after 2 and 6 days, configurable in Settings & Health."]="Η πραγματική αποστολή του 001 ξεκινά την περίοδο των 30 ημερών. Για νέες προσφορές, οι αρχικές τιμές είναι 2 και 6 ημέρες και αλλάζουν στο Settings & Health.";

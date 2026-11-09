@@ -1,4 +1,5 @@
 "use client";
+import { trackInquiry } from "@/lib/analytics-consent";
 
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -63,6 +64,7 @@ export default function ContactForm() {
     const sendRequest = async () => {
       const result = await sendEmail(submissionData);
       if (!result.success) throw new Error(result.error);
+      trackInquiry(result.leadId, result.inquiryType);
       return result;
     };
 

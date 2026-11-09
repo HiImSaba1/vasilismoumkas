@@ -1,3 +1,5 @@
+import {getDatabase} from "@/lib/database";
+import type {RowDataPacket} from "mysql2/promise";
 import {ExternalEmailRecord} from "../ExternalEmailRecord";
 import {listExternalProposals} from "@/lib/external-email";
 import type { ReactNode } from "react";
@@ -16,12 +18,19 @@ import { getLead,getLeadActivity } from "@/lib/leads";
 import { getLatestOfferForLead } from "@/lib/offers";
 import { listPortfolioEmailImages } from "@/lib/portfolio";
 import { LeadWorkflowWizard } from "../LeadWorkflowWizard";
-import { updateLeadDetailsAction } from "./actions";
+import { recordReplyForLead,updateLeadDetailsAction } from "./actions";
 
 export default async function LeadPage({params}:{params:Promise<{id:string}>}){
   const{id}=await params;
   const[lead,activity,deliveries,offer,allTemplates,bookingRecords,nativeRecords,portals,workflow,emailImages]=await Promise.all([getLead(id),getLeadActivity(id),listLeadEmailDeliveries(id),getLatestOfferForLead(id),listAllEmailTemplates(),listLeadBookingDocuments(),listNativeLeadDocuments(),listClientPortals(),getClientWorkflow(id),listPortfolioEmailImages()]);
   if(!lead)notFound();
+  const [dateConflicts] = lead.eventDate ? await getDatabase().query<RowDataPacket[]>(`
+    SELECT 'offer' kind,o.slug ref FROM offers o JOIN leads l ON l.id=o.lead_id
+    WHERE l.id<>? AND l.event_date=? AND o.status IN ('draft','sent','viewed') AND (o.expires_at IS NULL OR o.expires_at>CURRENT_TIMESTAMP)
+    UNION ALL
+    SELECT 'booking' kind,c.id ref FROM clients c JOIN onboarding b ON b.client_id=c.id
+    WHERE (c.lead_id IS NULL OR c.lead_id<>?) AND c.event_date=? AND b.booking_status='confirmed'
+    `,[id,lead.eventDate,id,lead.eventDate]) : [[]];
   const externalEmails=await listExternalProposals(id);
   const offerQuery=new URLSearchParams({lead:lead.id,names:lead.coupleNames,email:lead.email??"",date:lead.eventDate??"",location:lead.receptionLocation??lead.ceremonyLocation??"",type:lead.eventType,lang:lead.workflowLocale==="el"?"gr":"en"});
   const booking=bookingRecords.find(item=>item.leadId===lead.id)??null;
@@ -33,6 +42,8 @@ export default async function LeadPage({params}:{params:Promise<{id:string}>}){
   const initialWizardStep=!lead.workflowLocale?1:nextKey==="000"?0:nextKey==="001"?2:["005","006","007"].includes(nextKey)?4:nextKey==="job-accepted"?5:3;
   const guidedWizard=<LeadWorkflowWizard lead={lead} offer={offer} documents={booking} nativeDocuments={nativeDocuments} templates={templates} emailImages={emailImages} smtpReady={smtpConfigured()} initialStep={initialWizardStep} initialTemplateId={initialTemplateId} triggerLabel="Open 6-step guided wizard →" triggerClassName="border-2 border-ink-black bg-soft-yellow px-5 py-4 text-center text-sm  font-semibold uppercase text-ink-black transition-colors hover:bg-ink-black hover:text-soft-yellow"/>;
   return <main className="admin-record-workspace px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    {dateConflicts.length>0 && <aside role="status" className="mb-4 border border-amber-500 bg-amber-50 p-4">Same date: {dateConflicts.filter(item=>item.kind==="offer").length} active proposals and {dateConflicts.filter(item=>item.kind==="booking").length} confirmed bookings. Review Calendar and Offers before responding.</aside>}
+    <form action={recordReplyForLead} className="mb-4"><input type="hidden" name="leadId" value={id}/><button className="border px-4 py-2">Record reply and stop follow-ups for this job</button></form>
     <header className="border-b border-ink-black/20 pb-6"><div className="flex flex-wrap items-center justify-between gap-3"><Link href="/admin/leads" className="text-[10px] uppercase tracking-[.14em] text-ink-black/55">← All leads</Link><span className="bg-pink-100 px-3 py-1.5 text-[10px] font-semibold uppercase text-pink-900">Lead · {lead.status.replaceAll("-"," ")}</span></div><div className="mt-5 flex flex-wrap items-end justify-between gap-5"><div><p className="text-[10px] uppercase tracking-[.18em] text-ink-black/45">Lead workspace</p><h1 className="mt-2 break-words text-[clamp(2.25rem,5vw,4.75rem)] font-light uppercase leading-[.92] tracking-[-.045em]">{lead.coupleNames}</h1><p className="mt-4 text-sm text-ink-black/55">{lead.eventType} · {lead.eventDate??"Date pending"} · {lead.receptionLocation??lead.ceremonyLocation??"Location pending"}</p></div><div className="flex flex-wrap gap-2">{guidedWizard}{!offer&&<Link href={`/admin/dashboard?${offerQuery}`} className="bg-ink-black px-5 py-4 text-center text-sm  font-semibold uppercase text-soft-yellow transition-colors hover:bg-soft-yellow hover:text-ink-black">Create prefilled offer →</Link>}</div></div></header>
     <div className="mt-6 grid items-start gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(20rem,2fr)]">
       <ClientWorkflowSection leadId={lead.id}/>

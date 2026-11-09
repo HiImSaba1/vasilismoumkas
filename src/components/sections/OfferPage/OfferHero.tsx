@@ -193,7 +193,7 @@ const OfferHero = ({
                 {date}   {location}
                 <br />
               </span>
-              {planner && (
+              {planner?.trim() && !/^direct$/i.test(planner.trim()) && (
                 <span className="mt-2">
                   {localizedContent.collab} &nbsp; {planner}
                 </span>

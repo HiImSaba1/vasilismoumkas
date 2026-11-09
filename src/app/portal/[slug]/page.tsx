@@ -1,3 +1,4 @@
+import {getClientProduction} from "@/lib/client-production";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPortalBySlug } from "@/lib/client-portals";
@@ -27,6 +28,7 @@ export default async function PortalPage({params,searchParams}:{params:Promise<{
   const query=await searchParams;
   const portal=await getPortalBySlug(slug);
   if(!portal)notFound();
+  const gallery = (await getClientProduction(portal.clientId))?.gallery;
   const tab=tabs.includes(query.tab as typeof tabs[number])?query.tab as typeof tabs[number]:"home";
   const document=portal.documents.find(item=>item.type===tab);
   const paymentSummary=tab==="invoice"?await getInvoicePaymentSummary(portal.clientId):null;
@@ -47,7 +49,7 @@ export default async function PortalPage({params,searchParams}:{params:Promise<{
       </nav>
       {query.saved&&<p className="mt-5 bg-green-100 p-4 text-sm text-green-900">{greek?"Οι πληροφοριες σας αποθηκευτηκαν επιτυχως.":"Your information has been saved successfully."}</p>}
       <section className="mt-6 border border-ink-black/20 bg-white p-5 sm:p-8">
-        {tab==="home"&&<Home portal={portal}/>} 
+        {tab==="home"&&<><Home portal={portal}/>{gallery&&<a href={gallery} target="_blank" rel="noopener noreferrer">{portal.language==="gr"?"Άνοιγμα gallery":"Open your gallery"}</a>}</>}
         {tab==="questionnaire"&&<Questionnaire slug={portal.slug} document={document} eventType={portal.eventType} language={portal.language}/>} 
         {tab==="contract"&&<Contract slug={portal.slug} document={document} eventType={portal.eventType} language={portal.language}/>} 
         {tab==="invoice"&&<><DocumentPdfActions slug={portal.slug} type="invoice" language={portal.language}/><PortalInvoicePanel portal={portal} document={document} summary={paymentSummary}/></>}

@@ -151,7 +151,8 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
             </span>
           </Link>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-2 md:gap-6">
+            {pathname === "/" && <Link href="/contact#inquiry-date" className="shrink-0 whitespace-nowrap py-3 text-xs uppercase tracking-normal hover:underline focus-visible:underline md:text-sm md:tracking-widest">Check availability</Link>}
 
             <button
               type="button"

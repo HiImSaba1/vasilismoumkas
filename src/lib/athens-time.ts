@@ -23,3 +23,12 @@ export function athensLocalToUtcSql(value:string){
   if(confirmed.year!==year||confirmed.month!==month||confirmed.day!==day||confirmed.hour!==hour||confirmed.minute!==minute)return null;
   return candidate.toISOString().slice(0,19).replace("T"," ");
 }
+
+export function addAthensCalendarDays(date: Date, days: number): string {
+  const p = athensParts(date);
+  const day = new Date(Date.UTC(+p.year, +p.month - 1, +p.day + days)).toISOString().slice(0, 10);
+  const utc = athensLocalToUtcSql(`${day}T${p.hour}:${p.minute}`);
+  // A clock time skipped by the spring transition moves forward by the DST gap.
+  if (!utc) return new Date(Date.UTC(+day.slice(0,4), +day.slice(5,7)-1, +day.slice(8,10), +p.hour-2, +p.minute, +p.second)).toISOString().slice(0,19).replace("T"," ");
+  return utc.slice(0,-2) + p.second;
+}

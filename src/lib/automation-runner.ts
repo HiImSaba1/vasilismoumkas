@@ -4,7 +4,7 @@ import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { getDatabase } from "@/lib/database";
 import { sendTrackedEmail, smtpConfigured } from "@/lib/email-delivery";
 import { getEmailTemplate, renderEditedEmail, renderTemplate } from "@/lib/email-templates";
-import { finalizeAutomationDelivery,reconcileAutomationAfterDeliveredTemplate } from "@/lib/automations";
+import { finalizeAutomationDelivery,offerFollowupsStopped,reconcileAutomationAfterDeliveredTemplate } from "@/lib/automations";
 
 type Context=RowDataPacket&{id:string;job_type:string;send_mode:"automatic"|"manual";lead_id:string|null;client_id:string|null;offer_id:number|null;template_id:string|null;attempts:number;recipient:string|null;couple_names:string|null;event_type:"wedding"|"baptism"|null;offer_language:"gr"|"en"|null;workflow_locale:"el"|"en"|null;event_date:string|null;ceremony_location:string|null;reception_location:string|null;offer_slug:string|null;offer_status:string|null;timeline_slug:string|null;portal_slug:string|null;payload:string|Record<string,unknown>|null};
 type ManualSnapshot={templateId?:string;headerImage?:string|null;subject?:string;bodyText?:string};
@@ -24,7 +24,11 @@ export async function runDueAutomations(limit=10){
       if(job.send_mode==="automatic"&&!automaticTemplateIds.has(job.template_id)){await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Automatic delivery is not allowed for this template',locked_at=NULL WHERE id=?",[job.id]);cancelled++;continue}
       if(["001","002","003"].includes(job.template_id)&&await hasExternalProposal({leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id})){await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error=?,locked_at=NULL WHERE id=?",[externalEmailHoldReason,job.id]);cancelled++;continue}
       if(!job.recipient)throw new Error("Recipient is missing");
-      if(await reconcileAutomationAfterDeliveredTemplate({templateId:job.template_id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id})){cancelled++;continue}
+      if(await reconcileAutomationAfterDeliveredTemplate({templateId:job.template_id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id})){
+        if(job.template_id==="001"&&job.offer_id)await finalizeAutomationDelivery({templateId:job.template_id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id});
+        cancelled++;
+        continue;
+      }
       const athensToday=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Athens",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
       if(job.template_id==="007"&&(!job.event_date||job.event_date>=athensToday))throw new Error("Safety stop: Template 007 can only send after the event date.");
       if(job.template_id==="009"&&!job.timeline_slug)throw new Error("Safety stop: Template 009 needs a published timeline link.");
@@ -35,9 +39,16 @@ export async function runDueAutomations(limit=10){
       const eventDate=job.event_date?new Intl.DateTimeFormat(template.locale==="el"?"el-GR":"en-GB",{timeZone:"UTC"}).format(new Date(`${job.event_date}T00:00:00Z`)):"";const portalUrl=job.portal_slug?`${origin}/portal/${job.portal_slug}`:"";
       const values={couple_names:names,parents_names:names,child_name:firstName,first_name:firstName,event_date:eventDate,wedding_date:eventDate,ceremony_location:job.ceremony_location??"",reception_location:job.reception_location??"",offer_url:job.offer_slug?`${origin}/offer/${job.offer_slug}`:"",portal_url:portalUrl,questionnaire_url:portalUrl?`${portalUrl}?tab=questionnaire`:"",agreement_url:portalUrl?`${portalUrl}?tab=contract`:"",invoice_url:portalUrl?`${portalUrl}?tab=invoice`:"",timeline_url:job.timeline_slug?`${origin}/timeline/${job.timeline_slug}`:""};
       const rendered=manual.subject&&manual.bodyText?renderEditedEmail(manual.subject,manual.bodyText,template.locale,{...values,email_header_image:template.headerImage??""}):renderTemplate(template,values);
-      const result=await sendTrackedEmail({templateId:template.id,leadId:job.lead_id??undefined,clientId:job.client_id??undefined,offerId:job.offer_id??undefined,recipient:job.recipient,subject:rendered.subject,html:rendered.html,text:rendered.text,archive:{templateName:template.name,coupleNames:names,eventDate}});if(!result.success)throw new Error(result.error??"Delivery failed");await finalizeAutomationDelivery({templateId:template.id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id});
+      if (["002","003"].includes(template.id) && await offerFollowupsStopped(job.lead_id,job.client_id)) {
+        await db.execute("UPDATE automation_jobs SET status='cancelled',completed_at=CURRENT_TIMESTAMP,last_error='Reply recorded on this job',locked_at=NULL WHERE id=?",[job.id]);
+        cancelled++;
+        continue;
+      }
+      const [current]=await db.query<RowDataPacket[]>("SELECT id FROM automation_jobs WHERE id=? AND status='processing'",[job.id]);
+      if (!current.length) { cancelled++; continue; }
+      const result=await sendTrackedEmail({idempotencyKey:job.id,templateId:template.id,leadId:job.lead_id??undefined,clientId:job.client_id??undefined,offerId:job.offer_id??undefined,recipient:job.recipient,subject:rendered.subject,html:rendered.html,text:rendered.text,archive:{templateName:template.name,coupleNames:names,eventDate}});if(!result.success)throw new Error(result.error??"Delivery failed");await finalizeAutomationDelivery({templateId:template.id,leadId:job.lead_id,clientId:job.client_id,offerId:job.offer_id});
       await db.execute("UPDATE automation_jobs SET status='sent',completed_at=CURRENT_TIMESTAMP,last_error=?,locked_at=NULL WHERE id=?",[result.archiveSent===false?"Client email sent; Gmail [SENT] archive copy failed.":null,job.id]);sent++;
-    }catch(error){const message=error instanceof Error?error.message:"Automation failed";await db.execute("UPDATE automation_jobs SET status='failed',last_error=?,locked_at=NULL WHERE id=?",[message.slice(0,2000),item.id]);failed++}
+    }catch(error){const message=error instanceof Error?error.message:"Automation failed";await db.execute("UPDATE automation_jobs SET status='failed',last_error=?,locked_at=NULL WHERE id=? AND status='processing'",[message.slice(0,2000),item.id]);failed++}
   }
   return{processed:sent+failed+cancelled,sent,failed,cancelled};
 }

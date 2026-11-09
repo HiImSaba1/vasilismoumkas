@@ -11,7 +11,7 @@ const schema = z.object({
   phone: z.string().trim().max(60).optional(),
   instagram: z.string().trim().max(120).optional(),
   message: z.string().trim().max(5000).optional(),
-  date: z.string().trim().max(100).optional(),
+  date: z.iso.date().optional(),
   location: z.string().trim().max(255).optional(),
 });
 
@@ -23,13 +23,14 @@ const escape = (value: string) =>
 export async function sendEmail(raw: unknown) {
   try {
     const data = schema.parse(raw);
-    const eventType = /christening|baptism/i.test(data.planning ?? "") ? "baptism" : "wedding";
+    const eventType: "baptism" | "wedding" = /christening|baptism/i.test(data.planning ?? "") ? "baptism" : "wedding";
+    const inquiryType: "education" | "baptism" | "wedding" = /education/i.test(data.planning ?? "") ? "education" : eventType;
     const leadId = await createLead({
       eventType,
       coupleNames: data.name,
       email: data.email,
       phone: data.phone || null,
-      eventDate: null,
+      eventDate: data.date ?? null,
       ceremonyLocation: data.location || null,
       receptionLocation: null,
       guestCount: null,
@@ -66,14 +67,15 @@ export async function sendEmail(raw: unknown) {
     }
 
     return {
-      success: true,
+      success: true as const,
       leadId,
+      inquiryType,
       acknowledgement: "manual-required" as const,
       internalNotification,
     };
   } catch (error) {
     return {
-      success: false,
+      success: false as const,
       error:
         error instanceof z.ZodError
           ? (error.issues[0]?.message ?? "Invalid inquiry.")
