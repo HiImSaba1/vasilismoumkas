@@ -12,6 +12,7 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
   const [isStickyVisible, setIsStickyVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const pathname = usePathname();
+  const isHome = pathname === "/";
   const navbarRef = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLAnchorElement>(null);
 
@@ -123,7 +124,7 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
           width: "100%",
         }}
       >
-        <div className="navbar-header flex items-center justify-between px-4 lg:px-8">
+        <div className={`navbar-header flex items-center justify-between ${isHome ? "px-2 md:px-4" : "px-4"} lg:px-8`}>
           <Link
             href="/"
             prefetch={false}
@@ -133,7 +134,7 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
             onMouseLeave={onMouseLeave}
           >
             <span
-              className="inner-logo-text flex items-center uppercase text-md md:text-xl whitespace-nowrap"
+              className={`inner-logo-text flex items-center uppercase whitespace-nowrap ${isHome ? "text-sm md:text-xl" : "text-md md:text-xl"}`}
               style={{ fontFamily: "var(--font-karena)" }}
             >
               <div className="flex items-center">
@@ -152,7 +153,7 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
           </Link>
 
           <div className="flex items-center gap-2 md:gap-6">
-            {pathname === "/" && <Link href="/contact#inquiry-date" className="shrink-0 whitespace-nowrap py-3 text-xs uppercase tracking-normal hover:underline focus-visible:underline md:text-sm md:tracking-widest">Check availability</Link>}
+            {isHome && <Link href="/contact#inquiry-date" className="shrink-0 whitespace-nowrap py-3 text-xs uppercase tracking-normal hover:underline focus-visible:underline md:text-sm md:tracking-widest">Check availability</Link>}
 
             <button
               type="button"
@@ -166,9 +167,9 @@ const Navbar: React.FC<{business?:SeoSettings["business"]}> = ({business}) => {
             >
               <span className="text-md uppercase tracking-widest flex items-center overflow-hidden">
                 <span className="hidden md:flex items-center">M<span className="expand-part inline-block overflow-hidden w-0 opacity-0 whitespace-nowrap">enu</span></span>
-                <span className="inline md:hidden text-sm">Menu</span>
+                {!isHome && <span className="inline md:hidden text-sm">Menu</span>}
               </span>
-              <div className="menu-button transition-all duration-700 ease-in-out hover:scale-90 rounded-full p-2" style={{zIndex:100000,pointerEvents:"auto",position:"relative"}}>
+              <div className="menu-button min-h-11 min-w-11 md:min-h-0 md:min-w-0 transition-all duration-700 ease-in-out hover:scale-90 rounded-full p-2" style={{zIndex:100000,pointerEvents:"auto",position:"relative"}}>
                 <div className={`burger ${isActive ? "burger-active" : ""}`}></div>
               </div>
             </button>
