@@ -20,7 +20,10 @@ function ScrollReset() {
   useEffect(() => {
     if (lenis) {
       const timeout = setTimeout(() => {
-        lenis.scrollTo(0, { immediate: true });
+        const hash = window.location.hash.slice(1);
+        const target = hash ? document.getElementById(hash) : null;
+        if (target) target.scrollIntoView({ behavior: "instant", block: "start" });
+        else if (!hash) lenis.scrollTo(0, { immediate: true });
       }, 50);
       return () => clearTimeout(timeout);
     }
